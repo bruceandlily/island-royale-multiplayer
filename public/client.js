@@ -1,4 +1,5 @@
 const socket = io();
+const MATCH_TARGET_PLAYERS = 100;
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -334,17 +335,17 @@ function modeRequirementMessage(mode = currentModeName(), count = realPlayerCoun
   const fill = currentFillEnabled();
 
   if (mode === "Solo") {
-    return `Solo needs exactly 1 real player. You have ${count}.`;
+    return `Solo: real players can match as enemies, bots fill to ${MATCH_TARGET_PLAYERS}.`;
   }
 
   if (fill) {
     const missing = Math.max(0, teamSize - count);
     return missing > 0
-      ? `${mode} Fill: waiting for ${missing} real teammate(s).`
-      : `${mode} Fill team is full.`;
+      ? `${mode} Fill: searching for ${missing} real teammate(s), then bots fill to ${MATCH_TARGET_PLAYERS}.`
+      : `${mode} Fill team is full. Bots fill to ${MATCH_TARGET_PLAYERS}.`;
   }
 
-  return `${mode} No Fill allows 1 to ${teamSize} real player(s). You have ${count}.`;
+  return `${mode} No Fill allows 1 to ${teamSize} real player(s). Bots fill to ${MATCH_TARGET_PLAYERS}.`;
 }
 
 function canStartForMode(mode = currentModeName(), count = realPlayerCount()) {
@@ -491,7 +492,7 @@ function updateLobbyUI() {
     roomCodeDisplay.textContent = "No Room";
     roomSub.textContent = settings.fill && (settings.mode || "Solo") !== "Solo"
       ? "Fill is ON. Click FIND MATCH to search for real teammates."
-      : "No Fill can start with your current party size and bots will fill the rest.";
+      : "No Fill starts with your party and bots fill the match to 100 players.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
     const mode = settings.mode || "Solo";
     startMatchBtn.textContent = settings.fill && mode !== "Solo" ? "FIND MATCH" : "QUICK TEST";
@@ -520,7 +521,7 @@ function updateLobbyUI() {
     ? (room.matchmakingMessage || "Searching for players...")
     : modeOkForRoom
       ? (readyOkForRoom
-        ? `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • ${fillOn ? "Fill" : "No Fill"}`
+        ? `${humans.length} real player(s) • ${room.mode || "Solo"} • ${fillOn ? "Fill" : "No Fill"} • 100 total with bots`
         : `Correct mode, but everyone must ready up first. Waiting on: ${notReadyNames().join(", ")}`)
       : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
   hudRoom.textContent = room.code;
@@ -1207,7 +1208,7 @@ function startQuickTestMatch() {
   clearTimeout(eliminationReturnTimer);
 
   if (fill && mode !== "Solo") {
-    toastMessage(`${mode} Fill: searching for real teammates...`);
+    toastMessage(`${mode} Fill: searching for real teammates, then bots fill to 100...`);
     socket.emit("findMatch", playerPayload(), response => {
       if (!response?.ok) return toastMessage(response?.error || "Could not find match");
       room = response.room;
@@ -1219,7 +1220,7 @@ function startQuickTestMatch() {
     return;
   }
 
-  toastMessage(`Starting ${mode} No Fill test...`);
+  toastMessage(`Starting ${mode} No Fill 100-player match...`);
   socket.emit("createRoom", playerPayload(), response => {
     if (!response.ok) return toastMessage(response.error);
     room = response.room;
@@ -1255,7 +1256,7 @@ startMatchBtn.addEventListener("click", () => {
   clearTimeout(eliminationReturnTimer);
 
   if (room.fill && mode !== "Solo" && humans < modeTeamSize(mode)) {
-    toastMessage(`${mode} Fill: searching for teammates...`);
+    toastMessage(`${mode} Fill: searching for teammates, then bots fill to 100...`);
     socket.emit("findMatch", { ...playerPayload(), mode, fill: true }, response => {
       if (!response?.ok) return toastMessage(response?.error || "Could not find match");
       room = response.room;

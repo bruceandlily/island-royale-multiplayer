@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V62 Audio</title>
+  <title>Island Royale Multiplayer V64 100 Players</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -213,32 +213,117 @@
               <h2>STORE / SETTINGS</h2>
               <button class="smallFortBtn yellow" onclick="document.querySelector('[data-tab=play]').click()">BACK TO LOBBY</button>
             </div>
-            <div class="settingsGrid">
+
+            <div class="settingsGrid expandedSettings">
               <div class="settingBox">
-                <label>Graphics</label>
+                <label>Graphics Quality</label>
                 <select id="graphicsSelect">
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
                   <option value="low">Low</option>
                 </select>
+                <small>Changes visual effects and performance mode.</small>
               </div>
-              <div class="settingBox">
-                <label>Volume</label>
-                <input id="volumeSlider" type="range" min="0" max="100" value="60" />
-              </div>
+
               <div class="settingBox">
                 <label>Show Controls</label>
                 <select id="controlsSelect">
                   <option value="on">On</option>
                   <option value="off">Off</option>
                 </select>
+                <small>Shows or hides the controls hint in-game.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Master Volume <b id="volumeValue">60%</b></label>
+                <input id="volumeSlider" type="range" min="0" max="100" value="60" />
+                <small>Controls all game audio.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Music Volume <b id="musicVolumeValue">35%</b></label>
+                <input id="musicVolumeSlider" type="range" min="0" max="100" value="35" />
+                <small>Controls quiet lobby background music.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>SFX Volume <b id="sfxVolumeValue">70%</b></label>
+                <input id="sfxVolumeSlider" type="range" min="0" max="100" value="70" />
+                <small>Controls clicks, hovers, and emote sounds.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Lobby Music</label>
+                <select id="lobbyMusicSelect">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+                <small>Turns the lobby background music on or off.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>UI Sound Effects</label>
+                <select id="uiSoundsSelect">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+                <small>Turns hover and click sounds on or off.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Emote Music</label>
+                <select id="emoteSoundsSelect">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+                <small>Turns emote sound patterns on or off.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Chat Box</label>
+                <select id="chatVisibilitySelect">
+                  <option value="on">On</option>
+                  <option value="minimized">Minimized</option>
+                  <option value="off">Off</option>
+                </select>
+                <small>Controls party chat visibility.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Damage Numbers</label>
+                <select id="damageNumbersSelect">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+                <small>Shows or hides damage number popups.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Auto Open Chat On Message</label>
+                <select id="autoOpenChatSelect">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+                <small>Opens party chat when a party message arrives.</small>
+              </div>
+
+              <div class="settingBox">
+                <label>Reset Settings</label>
+                <button id="resetSettingsBtn" class="smallFortBtn yellow" type="button">RESET TO DEFAULT</button>
+                <small>Restores default settings.</small>
               </div>
             </div>
+
+            <div class="settingsFooter">
+              <button id="saveSettingsBtn" class="smallFortBtn yellow" type="button">SAVE SETTINGS</button>
+              <span id="settingsSavedText">Settings auto-save when changed.</span>
+            </div>
           </section>
+
         </section>
 
         <aside class="fortRightPanel">
-          <div class="regionText">Island Royale<br>NA-East<br>Fill with: Open<br>Play Against: Cross-Platform</div>
+          <div class="regionText">Island Royale<br>NA-East<br>Fill with: Open<br>Play Against: 100 Player Bots + Real Players</div>
 
           <div class="newModeBanner">NEW MODE AVAILABLE!</div>
           <div class="modeCard">

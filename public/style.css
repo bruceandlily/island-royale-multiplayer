@@ -4037,3 +4037,120 @@ button, .tab, .modePickButton, .lockerItem, .bannerChoice {
 button:hover, .tab:hover, .modePickButton:hover, .lockerItem:hover, .bannerChoice:hover {
   filter: brightness(1.09);
 }
+
+
+
+/* ===== V63 working expanded settings menu ===== */
+.expandedSettings {
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.settingBox {
+  min-height: 128px;
+  padding: 18px !important;
+}
+
+.settingBox label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,.86);
+  font-weight: 1000;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.settingBox small {
+  display: block;
+  margin-top: 10px;
+  color: rgba(255,255,255,.58);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.settingBox input[type="range"] {
+  width: 100%;
+  accent-color: #35b8ff;
+}
+
+.settingsFooter {
+  margin-top: 18px;
+  padding: 14px;
+  background: rgba(3,12,33,.62);
+  border: 2px solid rgba(130,170,222,.22);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.settingsFooter span {
+  color: rgba(255,255,255,.68);
+  font-weight: 900;
+}
+
+body.graphics-low .lightBeam,
+body.graphics-low .glowDisc,
+body.graphics-low .gridBg::before,
+body.graphics-low .cloud,
+body.graphics-low .cape {
+  animation: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+body.graphics-low .fortLobby::before {
+  opacity: .18 !important;
+}
+
+body.graphics-medium .cloud,
+body.graphics-medium .cape {
+  animation-duration: 5s !important;
+}
+
+body.hide-controls #controlsPanel,
+body.hide-controls .controlsPanel,
+body.hide-controls #controlHints,
+body.hide-controls .controlHints {
+  display: none !important;
+}
+
+body.hide-damage .damageNumber,
+body.hide-damage .damageFloat {
+  display: none !important;
+}
+
+body.chat-hidden #partyChatBox {
+  display: none !important;
+}
+
+body.chat-minimized #partyChatBox {
+  height: 44px !important;
+}
+
+body.chat-minimized #partyChatMessages,
+body.chat-minimized #partyChatInput,
+body.chat-minimized .partyChatInputRow {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .expandedSettings {
+    grid-template-columns: 1fr !important;
+  }
+
+  .settingsFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ===== V64 100-player match text helpers ===== */
+.roomCardFort span,
+#roomSub,
+.stageFooterMsg span {
+  line-height: 1.35;
+}

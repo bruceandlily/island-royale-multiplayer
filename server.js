@@ -24,6 +24,8 @@ const TICK_RATE = 20;
 const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const rooms = new Map();
 const matchmakingQueue = new Set();
+const MATCH_TARGET_PLAYERS = 100;
+const MATCHMAKING_SEARCH_MS = 3500;
 
 const COLOR_PRESETS = ["#2fb4ff", "#ff5b67", "#55d66b", "#b65cff", "#ffcf4a", "#ff7a00", "#00e5ff", "#8dff55"];
 
@@ -199,17 +201,18 @@ function validateModePlayerCount(room) {
   const teamSize = modeTeamSize(mode);
   const humans = humanPlayers(room).length;
 
-  if (mode === "Solo" && humans !== 1) {
-    return { ok: false, message: `Solo requires exactly 1 real player. You currently have ${humans}.` };
+  if (mode === "Solo") {
+    if (humans < 1 || humans > MATCH_TARGET_PLAYERS) {
+      return { ok: false, message: `Solo needs 1 to ${MATCH_TARGET_PLAYERS} real player(s). You have ${humans}.` };
+    }
+    return { ok: true };
   }
 
-  if (mode !== "Solo") {
-    if (humans < 1 || humans > teamSize) {
-      return {
-        ok: false,
-        message: `${mode} allows 1 to ${teamSize} real player(s) in your party. You currently have ${humans}.`
-      };
-    }
+  if (humans < 1 || humans > teamSize) {
+    return {
+      ok: false,
+      message: `${mode} allows 1 to ${teamSize} real player(s) in your party. Bots fill the rest to 100. You have ${humans}.`
+    };
   }
 
   return { ok: true };
@@ -288,9 +291,7 @@ function assignTeams(room) {
 }
 
 function targetTotalPlayersForMode(mode, humanCount) {
-  if (mode === "Squads") return clamp(Math.max(16, humanCount + 19), 16, 32);
-  if (mode === "Duos") return clamp(Math.max(14, humanCount + 15), 14, 30);
-  return clamp(Math.max(12, humanCount + 14), 12, 28);
+  return MATCH_TARGET_PLAYERS;
 }
 
 function createPlayer(socket, data = {}) {
@@ -434,7 +435,7 @@ function publicRoom(room) {
     fill: !!room.fill,
     matchmakingQueued: !!room.matchmakingQueued,
     matchmakingMessage: room.matchmakingMessage || "",
-    maxPlayers: room.maxPlayers || 16,
+    maxPlayers: room.maxPlayers || MATCH_TARGET_PLAYERS,
     requiredPlayers: modeRequiredPlayers(room.mode || "Solo"),
     loot: room.loot,
     chests: room.chests,
@@ -451,7 +452,7 @@ function publicRoomList() {
     code: room.code,
     hostName: room.players.get(room.hostId)?.name || "Host",
     players: Array.from(room.players.values()).filter(p => !p.isBot).length,
-    maxPlayers: room.maxPlayers || 16,
+    maxPlayers: room.maxPlayers || MATCH_TARGET_PLAYERS,
     requiredPlayers: modeRequiredPlayers(room.mode || "Solo"),
     phase: room.phase,
     mode: room.mode || "Solo",
@@ -601,7 +602,7 @@ function queueRoomForMatchmaking(room, message, timeoutMs = 0) {
     room.matchmakingTimer = setTimeout(() => {
       const fresh = rooms.get(room.code);
       if (!fresh || fresh.phase !== "lobby" || !fresh.matchmakingQueued) return;
-      startMatchmadeRoom(fresh, "No more real players found, filling match with bots");
+      startMatchmadeRoom(fresh, "Starting 100-player match, bots filled missing players");
     }, timeoutMs);
   }
 }
@@ -681,7 +682,11 @@ function requestMatchmaking(socket, data = {}, callback) {
     if (fill && mode !== "Solo") {
       const fullTeam = tryFillTeam(room);
       if (!fullTeam) {
-        queueRoomForMatchmaking(room, `${mode} Fill: waiting for ${teamSize - partySize(room, room.code)} teammate(s)...`);
+        queueRoomForMatchmaking(
+          room,
+          `${mode} Fill: searching for ${teamSize - partySize(room, room.code)} real teammate(s), then bots fill to 100...`,
+          MATCHMAKING_SEARCH_MS
+        );
         return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
       }
     }
@@ -690,7 +695,7 @@ function requestMatchmaking(socket, data = {}, callback) {
 
     if (!fill) {
       // No Fill waits a short moment so another real No Fill party can become an enemy team.
-      queueRoomForMatchmaking(room, `${mode} No Fill: searching for real enemy teams...`, 3000);
+      queueRoomForMatchmaking(room, `${mode} No Fill: searching for real enemies, then bots fill to 100...`, MATCHMAKING_SEARCH_MS);
       return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
     }
 
@@ -717,7 +722,7 @@ function createRoom(hostSocket, data = {}) {
     fill: !!data.fill,
     matchmakingQueued: false,
     matchmakingMessage: "",
-    maxPlayers: 16,
+    maxPlayers: MATCH_TARGET_PLAYERS,
     players: new Map([[hostSocket.id, player]]),
     storm: {
       x: WORLD.width / 2,
@@ -775,6 +780,21 @@ function updatePlayerCosmetics(socket, data = {}) {
   return room;
 }
 
+
+function ensureBotFillToTarget(room) {
+  for (const [id, player] of Array.from(room.players.entries())) {
+    if (player.isBot) room.players.delete(id);
+  }
+
+  const humans = Array.from(room.players.values()).filter(p => !p.isBot).length;
+  const neededBots = Math.max(0, MATCH_TARGET_PLAYERS - humans);
+
+  for (let i = 0; i < neededBots; i++) {
+    const bot = createBot(room, i);
+    room.players.set(bot.id, bot);
+  }
+}
+
 function resetRoomForMatch(room) {
   room.phase = "game";
   room.matchPhase = "bus";
@@ -829,8 +849,9 @@ function resetRoomForMatch(room) {
     room.players.set(bot.id, bot);
   }
 
+  ensureBotFillToTarget(room);
   assignTeams(room);
-  addFeed(room, `${room.mode || "Solo"} match starting`);
+  addFeed(room, `${room.mode || "Solo"} 100-player match starting`);
   addFeed(room, "Battle Bus launching");
 }
 
