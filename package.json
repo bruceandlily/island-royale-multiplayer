@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v39-auto-lobby",
+  "name": "island-royale-multiplayer-v40-balance-ai-animation",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with auto return to lobby after elimination.",
+  "description": "Host-ready multiplayer battle royale with slower movement, balanced bot damage, smarter AI, and walking animations.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

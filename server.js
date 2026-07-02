@@ -18,11 +18,11 @@ const rooms = new Map();
 const COLOR_PRESETS = ["#2fb4ff", "#ff5b67", "#55d66b", "#b65cff", "#ffcf4a", "#ff7a00", "#00e5ff", "#8dff55"];
 
 const WEAPONS = {
-  pistol:  { name: "Pistol",  rarity: "common",    damage: 22, fireMs: 230, range: 650, spread: 0.035, mag: 12, ammoType: "light",  pellets: 1 },
-  smg:     { name: "SMG",     rarity: "uncommon",  damage: 14, fireMs: 90,  range: 520, spread: 0.075, mag: 28, ammoType: "light",  pellets: 1 },
-  rifle:   { name: "Rifle",   rarity: "rare",      damage: 28, fireMs: 145, range: 820, spread: 0.025, mag: 30, ammoType: "medium", pellets: 1 },
-  shotgun: { name: "Shotgun", rarity: "rare",      damage: 13, fireMs: 780, range: 360, spread: 0.18,  mag: 6,  ammoType: "shells", pellets: 7 },
-  sniper:  { name: "Sniper",  rarity: "epic",      damage: 75, fireMs: 1000,range: 1250,spread: 0.008, mag: 4,  ammoType: "heavy",  pellets: 1 }
+  pistol:  { name: "Pistol",  rarity: "common",    damage: 12, fireMs: 260, range: 610, spread: 0.045, mag: 12, ammoType: "light",  pellets: 1 },
+  smg:     { name: "SMG",     rarity: "uncommon",  damage: 8,  fireMs: 110, range: 480, spread: 0.090, mag: 28, ammoType: "light",  pellets: 1 },
+  rifle:   { name: "Rifle",   rarity: "rare",      damage: 16, fireMs: 175, range: 760, spread: 0.038, mag: 30, ammoType: "medium", pellets: 1 },
+  shotgun: { name: "Shotgun", rarity: "rare",      damage: 7,  fireMs: 880, range: 300, spread: 0.22,  mag: 6,  ammoType: "shells", pellets: 7 },
+  sniper:  { name: "Sniper",  rarity: "epic",      damage: 42, fireMs: 1250,range: 1120,spread: 0.018, mag: 4,  ammoType: "heavy",  pellets: 1 }
 };
 
 const ITEM_POOL = [
@@ -224,6 +224,7 @@ function createPlayer(socket, data = {}) {
     health: 100,
     shield: 50,
     alive: true,
+    deathTime: 0,
     kills: 0,
     ready: false,
     color: sanitizeColor(data.color),
@@ -255,6 +256,7 @@ function createBot(index) {
     health: 100,
     shield: randint(0, 50),
     alive: true,
+    deathTime: 0,
     kills: 0,
     ready: true,
     color: COLOR_PRESETS[index % COLOR_PRESETS.length],
@@ -303,6 +305,7 @@ function publicPlayer(player) {
     health: player.health,
     shield: player.shield,
     alive: player.alive,
+    deathTime: player.deathTime || 0,
     kills: player.kills,
     ready: player.ready,
     color: player.color,
@@ -521,6 +524,7 @@ function resetRoomForMatch(room) {
     player.health = 100;
     player.shield = 50;
     player.alive = true;
+    player.deathTime = 0;
     player.kills = 0;
     player.ready = false;
     player.inventory = createDefaultInventory();
@@ -629,6 +633,7 @@ function applyDamage(target, amount, attacker, room) {
   if (target.health <= 0) {
     target.health = 0;
     target.alive = false;
+    target.deathTime = Date.now();
     target.phase = "dead";
     if (attacker && attacker.id !== target.id) {
       attacker.kills += 1;
@@ -726,7 +731,7 @@ function fireShot(room, shooter, angle, clientId = null) {
 
     if (hit) {
       const headshot = Math.random() < (weapon.type === "sniper" ? 0.35 : 0.18);
-      const damage = Math.round(base.damage * (headshot ? 1.85 : 1));
+      const damage = Math.round(base.damage * (headshot ? 1.45 : 1));
       applyDamage(hit, damage, shooter, room);
       event.damage = damage;
       event.headshot = headshot;
@@ -760,6 +765,12 @@ function handleShoot(socket, data) {
 
   for (const event of result.shots || []) io.to(room.code).emit("shot", event);
   broadcastRoom(room);
+  for (const [id, player] of Array.from(room.players.entries())) {
+    if (player.isBot && !player.alive && player.deathTime && Date.now() - player.deathTime > 1800) {
+      room.players.delete(id);
+    }
+  }
+
   checkWin(room);
 }
 
@@ -955,72 +966,155 @@ function playerJump(socket) {
 
 function updateBots(room) {
   if (room.phase !== "game" || room.matchPhase === "bus") return;
+
   const now = Date.now();
-  const humans = Array.from(room.players.values()).filter(p => !p.isBot && p.alive && p.phase === "ground");
 
   for (const bot of room.players.values()) {
     if (!bot.isBot || !bot.alive || bot.phase !== "ground") continue;
 
-    if (now > bot.ai.nextDecision) {
-      bot.ai.nextDecision = now + randint(300, 900);
+    const currentWeapon = weaponInHand(bot);
+    const hasGoodWeapon = currentWeapon && currentWeapon.type !== "pistol";
+    const stormDist = dist(bot, room.storm);
+    const outsideStorm = stormDist > room.storm.radius * 0.88;
 
-      let target = null, targetD = Infinity;
+    if (now > bot.ai.nextDecision) {
+      bot.ai.nextDecision = now + randint(450, 1050);
+
+      let bestTarget = null;
+      let bestTargetD = Infinity;
+
       for (const p of room.players.values()) {
         if (p.id === bot.id || !p.alive || p.phase !== "ground") continue;
         if (isSameTeam(bot, p)) continue;
+
         const d = dist(bot, p);
-        if (d < targetD) {
-          target = p;
-          targetD = d;
+        if (d < bestTargetD) {
+          bestTarget = p;
+          bestTargetD = d;
         }
       }
 
-      bot.ai.targetId = target && targetD < 850 ? target.id : null;
+      let bestLoot = null;
+      let bestLootD = Infinity;
+      for (const item of room.loot) {
+        const d = dist(bot, item);
+        const usefulWeapon = item.type === "weapon" && (!hasGoodWeapon || item.weapon === "rifle" || item.weapon === "shotgun");
+        const usefulHeal = (item.type === "heal" && bot.health < 75) || (item.type === "shield" && bot.shield < 65);
+        const usefulAmmo = item.type === "ammo";
+        if ((usefulWeapon || usefulHeal || usefulAmmo) && d < bestLootD && d < 900) {
+          bestLoot = item;
+          bestLootD = d;
+        }
+      }
 
-      const stormDist = dist(bot, room.storm);
-      if (stormDist > room.storm.radius * 0.9) {
+      let bestChest = null;
+      let bestChestD = Infinity;
+      for (const chest of room.chests) {
+        if (chest.opened) continue;
+        const d = dist(bot, chest);
+        if (d < bestChestD && d < 850) {
+          bestChest = chest;
+          bestChestD = d;
+        }
+      }
+
+      bot.ai.targetId = bestTarget && bestTargetD < 920 ? bestTarget.id : null;
+      bot.ai.lootId = bestLoot ? bestLoot.id : null;
+      bot.ai.chestId = bestChest ? bestChest.id : null;
+
+      if (outsideStorm) {
         bot.ai.moveX = room.storm.x - bot.x;
         bot.ai.moveY = room.storm.y - bot.y;
-      } else if (bot.ai.targetId && targetD > 300) {
-        bot.ai.moveX = target.x - bot.x;
-        bot.ai.moveY = target.y - bot.y;
-      } else if (bot.ai.targetId && targetD < 180) {
-        bot.ai.moveX = bot.x - target.x;
-        bot.ai.moveY = bot.y - target.y;
+      } else if (bot.health < 45 && bestTarget && bestTargetD < 500) {
+        // Retreat and heal instead of deleting the player instantly.
+        bot.ai.moveX = bot.x - bestTarget.x;
+        bot.ai.moveY = bot.y - bestTarget.y;
+      } else if (bestLoot && (!hasGoodWeapon || bot.health < 80 || bot.shield < 70)) {
+        bot.ai.moveX = bestLoot.x - bot.x;
+        bot.ai.moveY = bestLoot.y - bot.y;
+      } else if (bestChest && !hasGoodWeapon) {
+        bot.ai.moveX = bestChest.x - bot.x;
+        bot.ai.moveY = bestChest.y - bot.y;
+      } else if (bestTarget && bestTargetD < 920) {
+        const preferred = currentWeapon?.type === "shotgun" ? 190 : currentWeapon?.type === "sniper" ? 620 : 410;
+        if (bestTargetD > preferred + 90) {
+          bot.ai.moveX = bestTarget.x - bot.x;
+          bot.ai.moveY = bestTarget.y - bot.y;
+        } else if (bestTargetD < preferred - 80) {
+          bot.ai.moveX = bot.x - bestTarget.x;
+          bot.ai.moveY = bot.y - bestTarget.y;
+        } else {
+          // Strafe instead of standing still.
+          const ang = Math.atan2(bestTarget.y - bot.y, bestTarget.x - bot.x) + (Math.random() < 0.5 ? Math.PI/2 : -Math.PI/2);
+          bot.ai.moveX = Math.cos(ang);
+          bot.ai.moveY = Math.sin(ang);
+        }
       } else {
         bot.ai.moveX = rand(-1, 1);
         bot.ai.moveY = rand(-1, 1);
       }
 
-      if (bot.health < 55 && bot.inventory.heals.medkit > 0) {
+      // Smart healing, but slow enough to feel fair.
+      if (bot.health < 55 && bot.inventory.heals.medkit > 0 && Math.random() < 0.6) {
         bot.inventory.heals.medkit -= 1;
-        bot.health = clamp(bot.health + 35, 0, 100);
+        bot.health = clamp(bot.health + 28, 0, 100);
       }
-      if (bot.shield < 35 && bot.inventory.heals.mini > 0) {
+      if (bot.shield < 45 && bot.inventory.heals.mini > 0 && Math.random() < 0.65) {
         bot.inventory.heals.mini -= 1;
-        bot.shield = clamp(bot.shield + 25, 0, 100);
+        bot.shield = clamp(bot.shield + 20, 0, 100);
       }
     }
 
     const len = Math.sqrt(bot.ai.moveX ** 2 + bot.ai.moveY ** 2) || 1;
-    const speed = 3.1;
+    const speed = outsideStorm ? 2.25 : 1.75;
     bot.x = clamp(bot.x + (bot.ai.moveX / len) * speed, 20, WORLD.width - 20);
     bot.y = clamp(bot.y + (bot.ai.moveY / len) * speed, 20, WORLD.height - 20);
 
     const target = room.players.get(bot.ai.targetId);
-    if (target && target.alive && target.phase === "ground") {
+    if (target && target.alive && target.phase === "ground" && !isSameTeam(bot, target)) {
       bot.angle = Math.atan2(target.y - bot.y, target.x - bot.x);
-      if (dist(bot, target) < 760 && Math.random() < 0.08) {
-        const result = fireShot(room, bot, bot.angle + rand(-0.05, 0.05));
+      const d = dist(bot, target);
+      const weapon = weaponInHand(bot);
+      const range = weapon?.type === "shotgun" ? 280 : weapon?.type === "sniper" ? 850 : 610;
+
+      // Bots are smarter with movement but intentionally less accurate/lethal.
+      const clearShotChance = weapon?.type === "sniper" ? 0.025 : weapon?.type === "smg" ? 0.045 : 0.035;
+      if (d < range && Math.random() < clearShotChance) {
+        const aimError = weapon?.type === "shotgun" ? rand(-0.16, 0.16) : weapon?.type === "sniper" ? rand(-0.06, 0.06) : rand(-0.09, 0.09);
+        const result = fireShot(room, bot, bot.angle + aimError);
         if (result?.shots) for (const event of result.shots) io.to(room.code).emit("shot", event);
+      }
+
+      // Defensive build sometimes when weak, so they look smarter.
+      if (bot.health < 55 && now - bot.lastBuildAt > 2200 && (bot.inventory.materials.wood || 0) >= 10 && d < 520 && Math.random() < 0.05) {
+        bot.lastBuildAt = now;
+        bot.inventory.materials.wood -= 10;
+        room.builds.push({
+          id: makeId("build"),
+          ownerId: bot.id,
+          x: bot.x + Math.cos(bot.angle) * 60,
+          y: bot.y + Math.sin(bot.angle) * 60,
+          angle: bot.angle + Math.PI / 2,
+          type: "wall",
+          material: "wood",
+          hp: 90,
+          maxHp: 90,
+          createdAt: Date.now()
+        });
       }
     }
 
-    // Bot pickup nearby loot.
+    // Bot loot pickup and chest opening.
     const loot = room.loot.find(item => dist(item, bot) < 55);
-    if (loot && Math.random() < 0.04) {
+    if (loot && Math.random() < 0.12) {
       pickupItem(room, bot, loot);
       room.loot = room.loot.filter(item => item.id !== loot.id);
+    }
+
+    const chest = room.chests.find(c => !c.opened && dist(c, bot) < 65);
+    if (chest && Math.random() < 0.06) {
+      chest.opened = true;
+      for (let i = 0; i < 3; i++) room.loot.push(itemFromPool(chest.x + randint(-45, 45), chest.y + randint(-45, 45)));
     }
   }
 }
@@ -1187,6 +1281,7 @@ io.on("connection", socket => {
         player.health = 100;
         player.shield = 50;
         player.alive = true;
+        player.deathTime = 0;
         player.phase = "lobby";
       }
     }

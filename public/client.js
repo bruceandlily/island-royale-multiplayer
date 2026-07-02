@@ -67,12 +67,13 @@ let roomsCache = [];
 let keys = {};
 let mouse = { x: 0, y: 0 };
 let camera = { x: 0, y: 0 };
-let localPlayer = { x: 2100, y: 2100, angle: 0, speed: 4.8, gliderOpen: false, dropHeight: 0 };
+let localPlayer = { x: 2100, y: 2100, angle: 0, speed: 2.35, gliderOpen: false, dropHeight: 0 };
 let shots = [];
 let eliminatedReturning = false;
 let eliminatedReturnedToLobby = false;
 let eliminationReturnTimer = null;
 let particles = [];
+let walkAnim = new Map();
 let buildMode = false;
 let buildType = "wall";
 let buildMaterial = "wood";
@@ -558,7 +559,7 @@ function updateLocalPlayer() {
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
   dx /= len; dy /= len;
 
-  const baseSpeed = me.phase === "drop" ? (localPlayer.gliderOpen ? 5.2 : 3.8) : 4.8;
+  const baseSpeed = me.phase === "drop" ? (localPlayer.gliderOpen ? 3.15 : 2.45) : 2.35;
   localPlayer.x = clamp(localPlayer.x + dx * baseSpeed, 20, room.world.width - 20);
   localPlayer.y = clamp(localPlayer.y + dy * baseSpeed, 20, room.world.height - 20);
 
@@ -654,6 +655,16 @@ function worldToScreen(x, y) { return { x: x - camera.x, y: y - camera.y }; }
 function screenToWorld(x, y) { return { x: x + camera.x, y: y + camera.y }; }
 function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
 
 function drawWorld() {
   if (!room) return;
@@ -770,37 +781,97 @@ function drawPlayers() {
   for (const player of room.players) drawPlayer(player);
 }
 function drawPlayer(player) {
+  if (!player.alive) return;
+  if (player.phase === "bus") return;
+
+  const cache = walkAnim.get(player.id) || { x: player.x, y: player.y, phase: 0 };
+  const moved = Math.hypot(player.x - cache.x, player.y - cache.y);
+  cache.phase += Math.min(0.45, moved * 0.13);
+  cache.x = player.x;
+  cache.y = player.y;
+  walkAnim.set(player.id, cache);
+
+  const walk = moved > 0.08 ? Math.sin(cache.phase) : 0;
+  const armSwing = walk * 7;
+  const legSwing = walk * 6;
+
   const x = player.x - camera.x;
   const y = player.y - camera.y - (player.phase === "drop" ? Math.min(120, player.dropHeight * 0.05) : 0);
-  if (!player.alive) ctx.globalAlpha = 0.35;
-  if (player.phase === "bus") return;
 
   if (player.phase === "drop" && player.gliderOpen) drawGlider(x, y - 46);
 
-  ctx.save(); ctx.translate(x, y);
-  ctx.beginPath(); ctx.ellipse(0, 18, 15, 6, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,.24)"; ctx.fill();
-  ctx.strokeStyle = "#111827"; ctx.lineWidth = 5; ctx.lineCap = "round";
-  ctx.beginPath(); ctx.moveTo(-4, 12); ctx.lineTo(-6, 23); ctx.moveTo(4, 12); ctx.lineTo(6, 23); ctx.stroke();
-  ctx.fillStyle = player.color || "#2fb4ff"; ctx.fillRect(-9, -5, 18, 20);
-  ctx.beginPath(); ctx.arc(0, -13, 7, 0, Math.PI * 2); ctx.fillStyle = "#ffd7b6"; ctx.fill();
-  ctx.strokeStyle = "#ffd7b6"; ctx.lineWidth = 4; ctx.beginPath();
-  ctx.moveTo(-5, 2); ctx.lineTo(Math.cos(player.angle) * 13, Math.sin(player.angle) * 13 + 2);
-  ctx.moveTo(5, 2); ctx.lineTo(Math.cos(player.angle) * 15, Math.sin(player.angle) * 15 + 2);
+  ctx.save();
+  ctx.translate(x, y);
+
+  // shadow
+  ctx.beginPath();
+  ctx.ellipse(0, 20, 16, 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,.24)";
+  ctx.fill();
+
+  // legs with walking animation
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-5, 12);
+  ctx.lineTo(-7 + legSwing, 25);
+  ctx.moveTo(5, 12);
+  ctx.lineTo(7 - legSwing, 25);
   ctx.stroke();
+
+  // body
+  ctx.fillStyle = player.color || "#2fb4ff";
+  roundRect(ctx, -10, -7, 20, 22, 5);
+  ctx.fill();
+
+  // head + hair
+  ctx.beginPath();
+  ctx.arc(0, -15, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffd7b6";
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(0, -21, 8, 4, 0, Math.PI, Math.PI * 2);
+  ctx.fillStyle = "#21120e";
+  ctx.fill();
+
+  // arms with walking animation
+  ctx.strokeStyle = "#ffd7b6";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(-7, 1);
+  ctx.lineTo(-13 - armSwing * 0.35, 12 + armSwing * 0.25);
+  ctx.moveTo(7, 1);
+  ctx.lineTo(Math.cos(player.angle) * 16, Math.sin(player.angle) * 16 + 2);
+  ctx.stroke();
+
   drawGun(player.angle, currentWeaponFor(player));
-  if (player.id === selfId) { ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(-12, -8, 24, 28); }
-  ctx.restore(); ctx.globalAlpha = 1;
+
+  if (player.id === selfId) {
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-13, -10, 26, 34);
+  }
+
+  ctx.restore();
+
   const me = getMe();
   const teammate = me && player.teamId && me.teamId && player.teamId === me.teamId && player.id !== selfId;
   ctx.fillStyle = teammate ? "#55d66b" : player.isBot ? "#ffcf4a" : "white";
-  ctx.font = "bold 13px Arial"; ctx.textAlign = "center";
+  ctx.font = "bold 13px Arial";
+  ctx.textAlign = "center";
   const label = teammate ? `${player.name} • TEAM` : player.name;
-  ctx.fillText(label, x, y - 34);
+  ctx.fillText(label, x, y - 38);
+
   if (player.health < 100 || player.shield < 100) {
-    ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(x - 22, y - 30, 44, 5);
-    ctx.fillStyle = "#55d66b"; ctx.fillRect(x - 22, y - 30, 44 * (player.health / 100), 5);
+    ctx.fillStyle = "rgba(0,0,0,.35)";
+    ctx.fillRect(x - 23, y - 32, 46, 5);
+    ctx.fillStyle = "#55d66b";
+    ctx.fillRect(x - 23, y - 32, 46 * (player.health / 100), 5);
   }
 }
+
 function currentWeaponFor(player) {
   return player.inventory?.slots?.[player.inventory.selected] || player.inventory?.slots?.find(Boolean);
 }

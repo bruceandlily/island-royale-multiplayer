@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V39 Auto Lobby
+# Island Royale Multiplayer V40 Balance + Smart AI
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -111,3 +111,17 @@ When you die:
 3. After about 2.6 seconds, it automatically brings you back to the lobby
 
 You do not have to press Esc after dying anymore.
+
+
+## V40 Balance / AI / Animation Changes
+
+Fixed:
+- Player movement is much slower and easier to control
+- Added a real walking animation for players and bots
+- Dead bots no longer stay on the map as faded/invisible bodies
+- Bots now disappear shortly after dying
+- Gun damage is reduced a lot so bots do not delete you instantly
+- Headshot multiplier is lower
+- Bot aim is less perfect
+- Bots are smarter with looting, chests, storm rotation, healing, distance control, and occasional defensive builds
+- Bots move smarter, but are less unfair
