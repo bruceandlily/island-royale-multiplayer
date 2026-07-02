@@ -158,6 +158,62 @@ function publicInventory(inv) {
   };
 }
 
+
+function modeTeamSize(mode) {
+  if (mode === "Squads") return 4;
+  if (mode === "Duos") return 2;
+  return 1;
+}
+
+function getAliveTeamIds(room) {
+  const teams = new Set();
+  for (const player of room.players.values()) {
+    if (player.alive && player.phase !== "dead") teams.add(player.teamId || player.id);
+  }
+  return teams;
+}
+
+function isSameTeam(a, b) {
+  return a && b && a.teamId && b.teamId && a.teamId === b.teamId;
+}
+
+function assignTeams(room) {
+  const teamSize = modeTeamSize(room.mode || "Solo");
+  const humans = Array.from(room.players.values()).filter(p => !p.isBot);
+  const bots = Array.from(room.players.values()).filter(p => p.isBot);
+
+  if (room.mode === "Solo") {
+    for (const p of room.players.values()) {
+      p.teamId = p.id;
+      p.teamIndex = 1;
+      p.teamSize = 1;
+    }
+    return;
+  }
+
+  // Put all real players in one party team so friends are teammates.
+  const partyTeam = "team_party";
+  humans.forEach((p, idx) => {
+    p.teamId = partyTeam;
+    p.teamIndex = idx + 1;
+    p.teamSize = teamSize;
+  });
+
+  // Put bots into proper duo/squad teams.
+  bots.forEach((p, idx) => {
+    const teamNumber = Math.floor(idx / teamSize) + 2;
+    p.teamId = `team_${teamNumber}`;
+    p.teamIndex = (idx % teamSize) + 1;
+    p.teamSize = teamSize;
+  });
+}
+
+function targetTotalPlayersForMode(mode, humanCount) {
+  if (mode === "Squads") return clamp(Math.max(16, humanCount + 19), 16, 32);
+  if (mode === "Duos") return clamp(Math.max(14, humanCount + 15), 14, 30);
+  return clamp(Math.max(12, humanCount + 14), 12, 28);
+}
+
 function createPlayer(socket, data = {}) {
   return {
     id: socket.id,
@@ -179,6 +235,9 @@ function createPlayer(socket, data = {}) {
     lastHealAt: 0,
     roomCode: null,
     isBot: false,
+    teamId: null,
+    teamIndex: 1,
+    teamSize: 1,
     inventory: createDefaultInventory(),
     phase: "lobby",
     dropHeight: 0,
@@ -206,6 +265,9 @@ function createBot(index) {
     lastBuildAt: 0,
     lastHealAt: 0,
     isBot: true,
+    teamId: null,
+    teamIndex: 1,
+    teamSize: 1,
     inventory: createDefaultInventory(),
     phase: "ground",
     dropHeight: 0,
@@ -247,6 +309,9 @@ function publicPlayer(player) {
     outfit: player.outfit,
     banner: player.banner,
     isBot: player.isBot,
+    teamId: player.teamId,
+    teamIndex: player.teamIndex,
+    teamSize: player.teamSize,
     inventory: publicInventory(player.inventory),
     phase: player.phase,
     dropHeight: player.dropHeight,
@@ -468,7 +533,7 @@ function resetRoomForMatch(room) {
   }
 
   const humanCount = Array.from(room.players.values()).filter(p => !p.isBot).length;
-  const targetTotal = clamp(humanCount + 14, 12, 28);
+  const targetTotal = targetTotalPlayersForMode(room.mode || "Solo", humanCount);
   let botIndex = 0;
   for (const [id, p] of Array.from(room.players.entries())) {
     if (p.isBot) room.players.delete(id);
@@ -479,6 +544,8 @@ function resetRoomForMatch(room) {
     room.players.set(bot.id, bot);
   }
 
+  assignTeams(room);
+  addFeed(room, `${room.mode || "Solo"} match starting`);
   addFeed(room, "Battle Bus launching");
 }
 
@@ -637,6 +704,7 @@ function fireShot(room, shooter, angle, clientId = null) {
     if (!blocked) {
       for (const target of room.players.values()) {
         if (target.id === shooter.id || !target.alive || target.phase !== "ground") continue;
+        if (isSameTeam(shooter, target)) continue;
         const d = linePointDistance(target.x, target.y, startX, startY, endX, endY);
         const along = dist(shooter, target);
         if (d < 25 && along < hitDistance && along <= base.range) {
@@ -899,6 +967,7 @@ function updateBots(room) {
       let target = null, targetD = Infinity;
       for (const p of room.players.values()) {
         if (p.id === bot.id || !p.alive || p.phase !== "ground") continue;
+        if (isSameTeam(bot, p)) continue;
         const d = dist(bot, p);
         if (d < targetD) {
           target = p;
@@ -1005,12 +1074,20 @@ function updateMatch(room) {
 
 function checkWin(room) {
   if (room.phase !== "game") return;
+
   const alive = Array.from(room.players.values()).filter(player => player.alive);
-  if (alive.length <= 1 && room.players.size > 1) {
+  const aliveTeams = getAliveTeamIds(room);
+
+  if (aliveTeams.size <= 1 && room.players.size > 1) {
     room.phase = "ended";
     room.matchPhase = "ended";
-    room.winner = alive[0] ? publicPlayer(alive[0]) : null;
-    addFeed(room, room.winner ? `${room.winner.name} wins the match` : "Match ended");
+
+    const winningTeamId = Array.from(aliveTeams)[0] || null;
+    const winner = alive.find(p => p.teamId === winningTeamId) || alive[0] || null;
+    room.winner = winner ? publicPlayer(winner) : null;
+
+    const teamText = room.mode === "Solo" ? (room.winner ? `${room.winner.name} wins the match` : "Match ended") : `Team ${winningTeamId || ""} wins the match`;
+    addFeed(room, teamText);
     io.to(room.code).emit("matchEnded", publicRoom(room));
   }
 }

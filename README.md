@@ -1,8 +1,16 @@
-# Island Royale Multiplayer V37 Gameplay Upgrade
+# Island Royale Multiplayer V38 Modes + Quick Test
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
-Gameplay added:
+V38 changes:
+- Solo / Duos / Squads now changes match rules
+- Duos and Squads assign teams
+- Friends in the same room become teammates
+- Friendly fire is disabled
+- Win condition is last team alive in Duos/Squads
+- Quick Test lets you start immediately without manually creating a room
+
+Gameplay included:
 - Battle bus phase
 - Player drop/glider phase
 - Bots fill the match
@@ -63,3 +71,33 @@ H = harvest nearby tree/rock
 6 = shield item
 Esc = show lobby overlay
 ```
+
+
+## Quick Test
+
+You do not have to create a room just to test anymore.
+
+1. Open Settings
+2. Pick Solo, Duos, or Squads
+3. Click Save
+4. Go to Play
+5. Click Quick Test
+
+It automatically creates a temporary room and starts the match with bots.
+
+## Mode Rules
+
+Solo:
+- Everyone is against everyone.
+
+Duos:
+- Real players in your room are on your party team.
+- Bots are split into teams of 2.
+- Friendly fire is disabled.
+- Last team alive wins.
+
+Squads:
+- Real players in your room are on your party team.
+- Bots are split into teams of 4.
+- Friendly fire is disabled.
+- Last team alive wins.

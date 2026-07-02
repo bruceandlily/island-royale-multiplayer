@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v37-gameplay",
+  "name": "island-royale-multiplayer-v38-modes-quicktest",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with upgraded gameplay systems.",
+  "description": "Host-ready multiplayer battle royale with working Solo/Duos/Squads and quick test matches.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

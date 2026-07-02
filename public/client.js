@@ -215,8 +215,10 @@ function enableRoomButtons() {
 function updateLobbyUI() {
   if (!room) {
     roomCodeDisplay.textContent = "No Room";
-    roomSub.textContent = "Create or join a room to invite friends.";
+    roomSub.textContent = "Pick Solo, Duos, or Squads in Settings, then click Quick Test to instantly start with bots.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
+    startMatchBtn.textContent = "Quick Test";
+    startMatchBtn.classList.remove("disabled");
     return;
   }
   const humans = room.players.filter(p => !p.isBot);
@@ -228,8 +230,8 @@ function updateLobbyUI() {
   const me = getMe();
   const isHost = room.hostId === selfId;
   readyBtn.textContent = me?.ready ? "Unready" : "Ready";
-  startMatchBtn.textContent = isHost ? "Start Match" : "Waiting Host";
-  startMatchBtn.classList.toggle("disabled", !isHost || humans.length < 1);
+  startMatchBtn.textContent = room ? (isHost ? "Start Match" : "Waiting Host") : "Quick Test";
+  startMatchBtn.classList.toggle("disabled", room ? (!isHost || humans.length < 1) : false);
 
   partyList.innerHTML = humans.map(player => {
     const isMe = player.id === selfId;
@@ -348,7 +350,28 @@ async function copyInvite() {
 copyInviteBtn.addEventListener("click", copyInvite);
 partyCopyInviteBtn.addEventListener("click", copyInvite);
 readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => { if (!response?.ok) toastMessage(response?.error || "Could not ready"); }));
-startMatchBtn.addEventListener("click", () => socket.emit("startMatch", response => { if (!response?.ok) toastMessage(response?.error || "Could not start"); }));
+
+function startQuickTestMatch() {
+  toastMessage(`Starting ${settings.mode || "Solo"} test match...`);
+  socket.emit("createRoom", playerPayload(), response => {
+    if (!response.ok) return toastMessage(response.error);
+    room = response.room;
+    selfId = response.selfId;
+    enableRoomButtons();
+    updateLobbyUI();
+
+    socket.emit("startMatch", startResponse => {
+      if (!startResponse?.ok) toastMessage(startResponse?.error || "Could not start test");
+    });
+  });
+}
+
+startMatchBtn.addEventListener("click", () => {
+  if (!room) return startQuickTestMatch();
+  socket.emit("startMatch", response => {
+    if (!response?.ok) toastMessage(response?.error || "Could not start");
+  });
+});
 refreshRoomsBtn.addEventListener("click", requestRoomList);
 applyLockerBtn.addEventListener("click", () => {
   saveLocal("selectedCosmetic", selectedCosmetic); applyCosmeticPreview();
@@ -369,7 +392,7 @@ saveSettingsBtn.addEventListener("click", () => {
     if (!response?.ok) toastMessage(response?.error || "Settings saved locally");
     else toastMessage("Settings saved and mode updated");
   });
-  else toastMessage("Settings saved");
+  else toastMessage(`${settings.mode} saved — click Quick Test`);
 });
 modeSelect.addEventListener("change", () => { settings.mode = modeSelect.value; applySettingsToUI(); });
 emoteBtn.addEventListener("click", () => {
@@ -710,7 +733,12 @@ function drawPlayer(player) {
   drawGun(player.angle, currentWeaponFor(player));
   if (player.id === selfId) { ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.strokeRect(-12, -8, 24, 28); }
   ctx.restore(); ctx.globalAlpha = 1;
-  ctx.fillStyle = player.isBot ? "#ffcf4a" : "white"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center"; ctx.fillText(player.name, x, y - 34);
+  const me = getMe();
+  const teammate = me && player.teamId && me.teamId && player.teamId === me.teamId && player.id !== selfId;
+  ctx.fillStyle = teammate ? "#55d66b" : player.isBot ? "#ffcf4a" : "white";
+  ctx.font = "bold 13px Arial"; ctx.textAlign = "center";
+  const label = teammate ? `${player.name} • TEAM` : player.name;
+  ctx.fillText(label, x, y - 34);
   if (player.health < 100 || player.shield < 100) {
     ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(x - 22, y - 30, 44, 5);
     ctx.fillStyle = "#55d66b"; ctx.fillRect(x - 22, y - 30, 44 * (player.health / 100), 5);
@@ -765,7 +793,9 @@ function updateMinimap() {
   for (const p of room.players) {
     if (!p.alive) continue;
     mini.beginPath(); mini.arc(p.x / room.world.width * w, p.y / room.world.height * h, p.id === selfId ? 5 : p.isBot ? 2.4 : 3.5, 0, Math.PI * 2);
-    mini.fillStyle = p.id === selfId ? "#ffffff" : p.isBot ? "#ffcf4a" : "#2fb4ff"; mini.fill();
+    const me = getMe();
+    const teammate = me && p.teamId && me.teamId && p.teamId === me.teamId && p.id !== selfId;
+    mini.fillStyle = p.id === selfId ? "#ffffff" : teammate ? "#55d66b" : p.isBot ? "#ffcf4a" : "#2fb4ff"; mini.fill();
   }
 }
 function gameLoop() {
