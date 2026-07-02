@@ -69,6 +69,8 @@ let mouse = { x: 0, y: 0 };
 let camera = { x: 0, y: 0 };
 let localPlayer = { x: 2100, y: 2100, angle: 0, speed: 2.35, gliderOpen: false, dropHeight: 0 };
 let shots = [];
+let lastKnownPhase = "lobby";
+let justJumpedFromBus = false;
 let eliminatedReturning = false;
 let eliminatedReturnedToLobby = false;
 let eliminationReturnTimer = null;
@@ -109,7 +111,7 @@ document.addEventListener("keydown", event => {
 
   if (room?.phase === "game") {
     if (event.code === "Space" && getMe()?.phase === "bus") {
-      socket.emit("jumpFromBus");
+      clientSideJumpFromBus();
       return;
     }
     if (event.key.toLowerCase() === "e") socket.emit("interact");
@@ -214,6 +216,43 @@ function currentWeapon() {
   const me = getMe();
   if (!me) return null;
   return me.inventory?.slots?.[me.inventory.selected] || me.inventory?.slots?.find(Boolean);
+}
+
+function syncLocalToServerPlayer(me, force = false) {
+  if (!me) return;
+
+  const farAway = Math.hypot((localPlayer.x || 0) - me.x, (localPlayer.y || 0) - me.y) > 600;
+  const phaseChanged = lastKnownPhase !== me.phase;
+
+  if (force || farAway || phaseChanged || me.phase === "bus") {
+    localPlayer.x = me.x;
+    localPlayer.y = me.y;
+    localPlayer.angle = me.angle || localPlayer.angle || 0;
+    localPlayer.dropHeight = me.dropHeight || 0;
+    localPlayer.gliderOpen = !!me.gliderOpen;
+  }
+
+  lastKnownPhase = me.phase || lastKnownPhase;
+}
+
+function clientSideJumpFromBus() {
+  const me = getMe();
+  if (!me || me.phase !== "bus") return;
+
+  justJumpedFromBus = true;
+  me.phase = "drop";
+  me.dropHeight = 1650;
+  me.gliderOpen = false;
+
+  localPlayer.x = me.x;
+  localPlayer.y = me.y;
+  localPlayer.angle = me.angle || localPlayer.angle || 0;
+  localPlayer.dropHeight = 1650;
+  localPlayer.gliderOpen = false;
+
+  centerMessage.textContent = "Dropping...";
+  toastMessage("Dropping — use WASD to steer");
+  socket.emit("jumpFromBus");
 }
 function playerPayload() {
   return {
@@ -454,6 +493,12 @@ socket.on("roomState", state => {
   room = state;
   const me = getMe();
 
+  if (me && room.phase === "game") {
+    const phaseChanged = previousMe && previousMe.phase !== me.phase;
+    syncLocalToServerPlayer(me, phaseChanged || me.phase === "bus" || justJumpedFromBus);
+    if (me.phase === "drop") justJumpedFromBus = false;
+  }
+
   updateLobbyUI();
   updateHud();
   updatePrompt();
@@ -483,6 +528,8 @@ socket.on("roomList", list => updateRoomsUI(list));
 socket.on("matchStarted", state => {
   eliminatedReturning = false;
   eliminatedReturnedToLobby = false;
+  justJumpedFromBus = false;
+  lastKnownPhase = "bus";
   clearTimeout(eliminationReturnTimer);
   room = state;
   quests.matches += 1; saveLocal("quests", quests);
@@ -501,7 +548,10 @@ socket.on("matchEnded", state => {
   updateLobbyUI(); updateQuestUI();
 });
 socket.on("shot", shot => {
-  shots.push({ ...shot, life: 18 });
+  shots.push({ ...shot, life: shot.blockedByBuild ? 10 : 18 });
+  if (shot.blockedByBuild) {
+    toastMessage("Build blocked the shot");
+  }
   if (shot.damage) spawnDamage(shot.hitId, shot.damage, shot.headshot);
 });
 socket.on("actionResult", data => toastMessage(data.message || data.type || "Action"));
@@ -559,7 +609,7 @@ function updateLocalPlayer() {
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
   dx /= len; dy /= len;
 
-  const baseSpeed = me.phase === "drop" ? (localPlayer.gliderOpen ? 3.15 : 2.45) : 2.35;
+  const baseSpeed = me.phase === "drop" ? (localPlayer.gliderOpen ? 5.2 : 4.4) : 2.35;
   localPlayer.x = clamp(localPlayer.x + dx * baseSpeed, 20, room.world.width - 20);
   localPlayer.y = clamp(localPlayer.y + dy * baseSpeed, 20, room.world.height - 20);
 
@@ -567,7 +617,9 @@ function updateLocalPlayer() {
   localPlayer.angle = Math.atan2(worldMouse.y - localPlayer.y, worldMouse.x - localPlayer.x);
 
   if (me.phase === "drop") {
+    // Holding Space opens the glider, but WASD movement always works while falling.
     localPlayer.gliderOpen = localPlayer.gliderOpen || keys[" "];
+    localPlayer.dropHeight = Math.max(0, me.dropHeight || localPlayer.dropHeight || 0);
   }
 
   socket.emit("updatePlayer", {
@@ -613,6 +665,9 @@ function updateHud() {
   }).join("");
 
   feedBox.innerHTML = (room.feed || []).slice(-5).reverse().map(item => `<div class="feedItem">${escapeHtml(item.text)}</div>`).join("");
+  if (me && me.alive && me.phase === "ground" && centerMessage.textContent === "Dropping...") {
+    centerMessage.textContent = "";
+  }
   if (me && !me.alive && room.phase === "game" && !eliminatedReturning && !eliminatedReturnedToLobby) {
     centerMessage.textContent = "You are eliminated";
   }
@@ -621,7 +676,7 @@ function updatePrompt() {
   const me = getMe();
   if (!me) return;
   if (me.phase === "bus") phasePrompt.textContent = "SPACE Jump from Bus";
-  else if (me.phase === "drop") phasePrompt.textContent = "WASD Glide • SPACE Glider";
+  else if (me.phase === "drop") phasePrompt.textContent = "WASD Steer Drop • Hold SPACE Glider";
   else phasePrompt.textContent = "WASD Move";
 
   let nearText = "";
@@ -641,6 +696,7 @@ function updateCamera() {
   const me = getMe();
   if (!me) return;
   let focus = { x: me.x, y: me.y };
+  if (me.phase === "drop") focus = { x: localPlayer.x, y: localPlayer.y };
   if (me.phase === "bus" && room.bus) focus = busPosition();
   camera.x = clamp(focus.x - canvas.width / 2, 0, room.world.width - canvas.width);
   camera.y = clamp(focus.y - canvas.height / 2, 0, room.world.height - canvas.height);
@@ -896,8 +952,8 @@ function drawShots() {
     const ex = shot.x - camera.x + Math.cos(shot.angle) * range;
     const ey = shot.y - camera.y + Math.sin(shot.angle) * range;
     ctx.globalAlpha = shot.life / 18;
-    ctx.strokeStyle = shot.headshot ? "#ffcf4a" : "#f8fafc";
-    ctx.lineWidth = shot.headshot ? 4 : 2;
+    ctx.strokeStyle = shot.blockedByBuild ? "#ff8a3d" : (shot.headshot ? "#ffcf4a" : "#f8fafc");
+    ctx.lineWidth = shot.blockedByBuild ? 3 : (shot.headshot ? 4 : 2);
     ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
     ctx.globalAlpha = 1; shot.life--;
   }
