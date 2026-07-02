@@ -3085,24 +3085,24 @@ input[type="range"] {
 
 
 
-/* ===== V57 Lobby-only Fortnite-style emote wheel ===== */
+/* ===== V59 safe lobby-only emote wheel ===== */
 .emoteWheelOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: grid;
-  place-items: center;
-  pointer-events: auto;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: grid !important;
+  place-items: center !important;
+  pointer-events: auto !important;
 }
 
 .emoteWheelOverlay.hidden {
-  display: none;
+  display: none !important;
 }
 
 .emoteWheelBackdrop {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(0,0,0,.12), rgba(0,0,0,.58));
+  background: radial-gradient(circle at center, rgba(0,0,0,.14), rgba(0,0,0,.62));
   backdrop-filter: blur(2px);
 }
 
@@ -3127,12 +3127,6 @@ input[type="range"] {
     );
   border: 6px solid rgba(255,255,255,.82);
   box-shadow: 0 22px 80px rgba(0,0,0,.48), inset 0 0 0 5px rgba(255,255,255,.1);
-  animation: wheelPop .16s ease-out;
-}
-
-@keyframes wheelPop {
-  from { transform: scale(.82); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
 }
 
 .emoteWheelCenter {
@@ -3151,18 +3145,16 @@ input[type="range"] {
   align-content: center;
   gap: 6px;
   text-align: center;
-  box-shadow: inset 0 0 28px rgba(255,255,255,.08);
 }
 
 .emoteWheelCenter b {
   color: #ffe822;
   font-size: 24px;
   font-weight: 1000;
-  letter-spacing: 1px;
 }
 
 .emoteWheelCenter span {
-  color: rgba(255,255,255,.72);
+  color: rgba(255,255,255,.75);
   font-size: 13px;
   font-weight: 900;
 }
@@ -3176,23 +3168,19 @@ input[type="range"] {
   margin-left: -58px;
   margin-top: -25px;
   border-radius: 999px;
-  background: rgba(8,18,40,.88);
+  background: rgba(8,18,40,.9);
   border: 3px solid rgba(255,255,255,.72);
   color: white;
   font-size: 13px;
   font-weight: 1000;
   text-transform: uppercase;
-  box-shadow: 0 8px 22px rgba(0,0,0,.22);
   cursor: pointer;
-  transition: background .12s ease, color .12s ease, filter .12s ease;
 }
 
 .emoteOption:hover,
 .emoteOption.selected {
   background: #ffe822;
   color: #061126;
-  border-color: white;
-  filter: drop-shadow(0 0 14px rgba(255,232,34,.7));
 }
 
 .emotePos1 { transform: rotate(0deg) translateY(-182px) rotate(0deg); }
@@ -3213,7 +3201,7 @@ input[type="range"] {
 .v56Avatar.emote-dab { animation: emoteDab .7s ease-in-out infinite alternate !important; }
 .v56Avatar.emote-floss { animation: emoteFloss .32s ease-in-out infinite alternate !important; }
 .v56Avatar.emote-salute .arm.right.fore { animation: emoteSalute .35s ease-in-out infinite alternate; }
-.v56Avatar.emote-heart:after {
+.v56Avatar.emote-heart::after {
   content: "♥";
   position: absolute;
   left: 69px;
@@ -3223,7 +3211,7 @@ input[type="range"] {
   text-shadow: 0 0 18px rgba(255,91,143,.8);
   animation: heartFloat .9s ease-in-out infinite alternate;
 }
-.v56Avatar.emote-laugh:after {
+.v56Avatar.emote-laugh::after {
   content: "😂";
   position: absolute;
   left: 65px;
@@ -3233,8 +3221,6 @@ input[type="range"] {
 }
 .v56Avatar.emote-point .arm.right.fore { animation: emotePoint .35s ease-in-out infinite alternate; }
 .v56Avatar.emote-sit { transform: translateX(-50%) scale(1.02) translateY(30px) !important; }
-.v56Avatar.emote-sit .thigh,
-.v56Avatar.emote-sit .shin { transform: rotate(78deg); }
 
 @keyframes emoteWave { from { transform: rotate(-28deg); } to { transform: rotate(-96deg); } }
 @keyframes emoteClapL { from { transform: rotate(20deg); } to { transform: rotate(-40deg); } }
@@ -3246,19 +3232,8 @@ input[type="range"] {
 @keyframes heartFloat { from { transform: translateY(0) scale(.92); } to { transform: translateY(-14px) scale(1.08); } }
 
 @media (max-width: 650px) {
-  .emoteWheel {
-    width: 330px;
-    height: 330px;
-  }
-
-  .emoteOption {
-    width: 88px;
-    height: 38px;
-    margin-left: -44px;
-    margin-top: -19px;
-    font-size: 10px;
-  }
-
+  .emoteWheel { width: 330px; height: 330px; }
+  .emoteOption { width: 88px; height: 38px; margin-left: -44px; margin-top: -19px; font-size: 10px; }
   .emotePos1 { transform: rotate(0deg) translateY(-132px) rotate(0deg); }
   .emotePos2 { transform: rotate(36deg) translateY(-132px) rotate(-36deg); }
   .emotePos3 { transform: rotate(72deg) translateY(-132px) rotate(-72deg); }
@@ -3270,114 +3245,3 @@ input[type="range"] {
   .emotePos9 { transform: rotate(288deg) translateY(-132px) rotate(-288deg); }
   .emotePos10 { transform: rotate(324deg) translateY(-132px) rotate(-324deg); }
 }
-
-
-
-/* ===== V58 emote wheel fix ===== */
-.emoteWheelOverlay {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 99999 !important;
-  display: grid !important;
-  place-items: center !important;
-  pointer-events: auto !important;
-}
-
-.emoteWheelOverlay.hidden {
-  display: none !important;
-}
-
-.emoteWheelBackdrop {
-  position: absolute !important;
-  inset: 0 !important;
-  background: radial-gradient(circle at center, rgba(0,0,0,.12), rgba(0,0,0,.62)) !important;
-  backdrop-filter: blur(2px);
-}
-
-.emoteWheel {
-  position: relative !important;
-  width: 460px !important;
-  height: 460px !important;
-  border-radius: 50% !important;
-  background:
-    radial-gradient(circle at center, rgba(11,25,55,.96) 0 21%, transparent 22%),
-    conic-gradient(
-      rgba(255,232,34,.95) 0 36deg,
-      rgba(42,85,145,.92) 36deg 72deg,
-      rgba(53,99,166,.92) 72deg 108deg,
-      rgba(42,85,145,.92) 108deg 144deg,
-      rgba(53,99,166,.92) 144deg 180deg,
-      rgba(42,85,145,.92) 180deg 216deg,
-      rgba(53,99,166,.92) 216deg 252deg,
-      rgba(42,85,145,.92) 252deg 288deg,
-      rgba(53,99,166,.92) 288deg 324deg,
-      rgba(42,85,145,.92) 324deg 360deg
-    ) !important;
-  border: 6px solid rgba(255,255,255,.82) !important;
-  box-shadow: 0 22px 80px rgba(0,0,0,.48), inset 0 0 0 5px rgba(255,255,255,.1) !important;
-}
-
-.emoteWheelCenter {
-  position: absolute !important;
-  left: 50% !important;
-  top: 50% !important;
-  width: 154px !important;
-  height: 154px !important;
-  transform: translate(-50%, -50%) !important;
-  border-radius: 50% !important;
-  background: linear-gradient(180deg, rgba(10,21,45,.98), rgba(18,44,89,.98)) !important;
-  border: 4px solid rgba(255,255,255,.72) !important;
-  color: white !important;
-  display: grid !important;
-  place-items: center !important;
-  align-content: center !important;
-  gap: 6px !important;
-  text-align: center !important;
-}
-
-.emoteWheelCenter b {
-  color: #ffe822 !important;
-  font-size: 24px !important;
-  font-weight: 1000 !important;
-}
-
-.emoteWheelCenter span {
-  color: rgba(255,255,255,.72) !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
-}
-
-.emoteOption {
-  position: absolute !important;
-  left: 50% !important;
-  top: 50% !important;
-  width: 116px !important;
-  height: 50px !important;
-  margin-left: -58px !important;
-  margin-top: -25px !important;
-  border-radius: 999px !important;
-  background: rgba(8,18,40,.88) !important;
-  border: 3px solid rgba(255,255,255,.72) !important;
-  color: white !important;
-  font-size: 13px !important;
-  font-weight: 1000 !important;
-  text-transform: uppercase !important;
-  cursor: pointer !important;
-}
-
-.emoteOption:hover,
-.emoteOption.selected {
-  background: #ffe822 !important;
-  color: #061126 !important;
-}
-
-.emotePos1 { transform: rotate(0deg) translateY(-182px) rotate(0deg) !important; }
-.emotePos2 { transform: rotate(36deg) translateY(-182px) rotate(-36deg) !important; }
-.emotePos3 { transform: rotate(72deg) translateY(-182px) rotate(-72deg) !important; }
-.emotePos4 { transform: rotate(108deg) translateY(-182px) rotate(-108deg) !important; }
-.emotePos5 { transform: rotate(144deg) translateY(-182px) rotate(-144deg) !important; }
-.emotePos6 { transform: rotate(180deg) translateY(-182px) rotate(-180deg) !important; }
-.emotePos7 { transform: rotate(216deg) translateY(-182px) rotate(-216deg) !important; }
-.emotePos8 { transform: rotate(252deg) translateY(-182px) rotate(-252deg) !important; }
-.emotePos9 { transform: rotate(288deg) translateY(-182px) rotate(-288deg) !important; }
-.emotePos10 { transform: rotate(324deg) translateY(-182px) rotate(-324deg) !important; }

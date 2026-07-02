@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v58-emote-wheel-fixed",
-  "version": "58.0.0",
-  "description": "Island Royale multiplayer with fixed lobby-only emote wheel.",
+  "name": "island-royale-multiplayer-v59-emote-safe-fix",
+  "version": "59.0.0",
+  "description": "Island Royale multiplayer with safe fixed lobby-only emote wheel.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

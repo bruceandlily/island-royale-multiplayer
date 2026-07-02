@@ -1,34 +1,23 @@
-# Island Royale Multiplayer V58 — Emote Wheel Fixed
+# Island Royale Multiplayer V59 — Safe Fix
 
-This fixes the lobby-only emote wheel not opening.
+This build rolls back the broken V58 lobby code and adds the emote wheel safely on top of the last good build.
 
 ## Fixed
-- Hold **B** in the lobby now opens the emote wheel
-- The **EMOTE** button also opens the wheel as a backup
-- Emote wheel HTML loads before client.js
-- The JS uses safe/lazy lookup, so it does not miss the wheel
-- Emotes still only work in the lobby
-- **B still works as build mode in the actual game**
-
-## Emotes
-- Dance
-- Wave
-- Laugh
-- Clap
-- Dab
-- Salute
-- Floss
-- Heart
-- Point
-- Sit
+- Lobby loads again
+- Characters show again
+- Status should connect again
+- Emote wheel is lobby-only
+- Hold **B** in lobby to open the wheel
+- Click **EMOTE** as a backup
+- B still works as build mode in-game
 
 ## Upload these files
 Replace these in GitHub:
-- `package.json`
-- `server.js`
-- `render.yaml`
-- `public/index.html`
-- `public/style.css`
-- `public/client.js`
+- package.json
+- server.js
+- render.yaml
+- public/index.html
+- public/client.js
+- public/style.css
 
-Then wait for Render and press **Ctrl + F5**.
+After Render redeploys, press Ctrl + F5.
