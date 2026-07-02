@@ -2006,3 +2006,45 @@ input[type="range"] {
   .fortCenter { min-height: 640px; }
   .partyStage { height: 620px; }
 }
+
+
+
+/* === V44 lobby button fix/name input === */
+.namePlateBox {
+  width: 290px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(7,18,42,.82);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+}
+
+.namePlateLabel {
+  color: rgba(255,255,255,.65);
+  font-weight: 1000;
+  letter-spacing: 1.2px;
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+
+.fortNameInput {
+  width: 100%;
+  height: 40px;
+  border-radius: 0;
+  border: 2px solid rgba(130,170,222,.35);
+  background: rgba(1,8,26,.72);
+  color: white;
+  font-weight: 1000;
+  padding: 0 12px;
+  outline: none;
+}
+
+.fortNameInput:focus {
+  border-color: #ffe822;
+}
+
+#createRoomBtn,
+#startMatchBtn,
+#readyBtn {
+  pointer-events: auto;
+}

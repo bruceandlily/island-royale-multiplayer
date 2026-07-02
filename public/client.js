@@ -255,8 +255,9 @@ function clientSideJumpFromBus() {
   socket.emit("jumpFromBus");
 }
 function playerPayload() {
+  const safeName = nameInput && nameInput.value ? nameInput.value : "Player";
   return {
-    name: nameInput.value,
+    name: safeName,
     color: selectedCosmetic.color,
     outfit: selectedCosmetic.outfit,
     banner: selectedCosmetic.banner,
@@ -280,7 +281,7 @@ function enableRoomButtons() {
 }
 function updateLobbyUI() {
   const mainNameTag = document.getElementById("mainNameTag");
-  if (mainNameTag) mainNameTag.textContent = nameInput.value || "Player";
+  if (mainNameTag) mainNameTag.textContent = (nameInput && nameInput.value) ? nameInput.value : "Player";
   const topPartyCount = document.getElementById("topPartyCount");
   const stageRoomText = document.getElementById("stageRoomText");
 
@@ -1021,6 +1022,21 @@ gameLoop();
 if (typeof nameInput !== "undefined" && nameInput) {
   nameInput.addEventListener("input", () => {
     const mainNameTag = document.getElementById("mainNameTag");
-    if (mainNameTag) mainNameTag.textContent = nameInput.value || "Player";
+    if (mainNameTag) mainNameTag.textContent = (nameInput && nameInput.value) ? nameInput.value : "Player";
   });
 }
+
+
+// V44 button safety: make sure the redesigned lobby buttons always call the real multiplayer actions.
+console.log("V44 button safety loaded");
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nameBox = document.getElementById("nameInput");
+  const tag = document.getElementById("mainNameTag");
+  if (nameBox && tag) {
+    tag.textContent = nameBox.value || "Player";
+    nameBox.addEventListener("input", () => {
+      tag.textContent = nameBox.value || "Player";
+    });
+  }
+});

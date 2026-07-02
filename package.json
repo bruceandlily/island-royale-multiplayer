@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v43-fort-lobby-redesign",
+  "name": "island-royale-multiplayer-v44-lobby-buttons-fixed",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with a classic battle royale lobby redesign.",
+  "description": "Host-ready multiplayer battle royale with fixed V43 lobby buttons.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

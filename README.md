@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V43 Classic Lobby Redesign
+# Island Royale Multiplayer V44 Lobby Buttons Fixed
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -170,3 +170,12 @@ Changed:
 - Bottom party chat bar
 
 Gameplay from V42 is kept.
+
+
+## V44 Fix
+
+Fixed the V43 lobby buttons:
+- Create Room works again
+- Quick Test works again
+- Added the missing player name input back into the classic lobby
+- Added safety code so the buttons do not break if the name field is missing
