@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Island Royale Multiplayer V34</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="lobby" class="screen">
+    <div class="lobbyShell">
+      <div class="topBar glass">
+        <div class="brand">
+          <div class="brandIcon"></div>
+          <div>
+            <div class="eyebrow">Island Royale</div>
+            <h1>Multiplayer Lobby</h1>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab active">Play</div>
+          <div class="tab">Party</div>
+          <div class="tab">Rooms</div>
+          <div class="tab">Settings</div>
+        </div>
+        <div class="serverStatus" id="serverStatus">Connecting...</div>
+      </div>
+
+      <div class="lobbyGrid">
+        <div class="glass panel">
+          <div class="sectionTitle">Player</div>
+          <label>Your Name</label>
+          <input id="nameInput" placeholder="Enter your name" maxlength="18" value="Player" />
+
+          <div class="playerPreview">
+            <div class="character">
+              <div class="head"></div>
+              <div class="hair"></div>
+              <div class="body"></div>
+              <div class="arm left"></div>
+              <div class="arm right"></div>
+              <div class="leg left"></div>
+              <div class="leg right"></div>
+              <div class="gun"></div>
+            </div>
+          </div>
+
+          <button id="createRoomBtn" class="goldButton">Create Room</button>
+
+          <div class="divider"></div>
+
+          <label>Join Room Code</label>
+          <div class="joinRow">
+            <input id="roomCodeInput" placeholder="ABCD" maxlength="6" />
+            <button id="joinRoomBtn" class="smallButton">Join</button>
+          </div>
+
+          <div class="hint">
+            Testing on one PC: create a room, copy invite, open another browser tab, paste the link.
+          </div>
+        </div>
+
+        <div class="glass centerPanel">
+          <div class="islandScene">
+            <div class="sun"></div>
+            <div class="cloud c1"></div>
+            <div class="cloud c2"></div>
+            <div class="sea"></div>
+            <div class="island"></div>
+            <div class="battleBus"></div>
+          </div>
+
+          <div class="roomCard">
+            <div>
+              <div class="sectionTitle">Room</div>
+              <div class="roomCode" id="roomCodeDisplay">No Room</div>
+              <div class="roomSub" id="roomSub">Create or join a room to invite friends.</div>
+            </div>
+            <div class="roomActions">
+              <button id="copyInviteBtn" class="smallButton disabled">Copy Invite</button>
+              <button id="readyBtn" class="smallButton disabled">Ready</button>
+              <button id="startMatchBtn" class="goldButton disabled">Start Match</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass panel">
+          <div class="sectionTitle">Party</div>
+          <div id="partyList" class="partyList">
+            <div class="emptyParty">No players yet.</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="sectionTitle">How Real Multiplayer Works</div>
+          <p class="smallText">
+            This uses Socket.io. Everyone must connect to the same server URL.
+            Localhost works for your own computer. Friends need the server hosted online.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hud" class="hud hidden">
+    <div class="hudTopLeft glass">
+      <div><span>Players</span><b id="playersLeft">0</b></div>
+      <div><span>Kills</span><b id="kills">0</b></div>
+      <div><span>Room</span><b id="hudRoom">----</b></div>
+    </div>
+
+    <div class="hudTopCenter glass">
+      <span>WASD Move</span>
+      <span>Mouse Aim</span>
+      <span>Click Shoot</span>
+      <span>Esc Lobby</span>
+    </div>
+
+    <div class="hudBottomLeft glass">
+      <div class="barLabel"><span>Health</span><b id="healthText">100</b></div>
+      <div class="bar"><div id="healthFill" class="healthFill"></div></div>
+      <div class="barLabel"><span>Shield</span><b id="shieldText">50</b></div>
+      <div class="bar"><div id="shieldFill" class="shieldFill"></div></div>
+    </div>
+
+    <div class="hudBottomRight glass">
+      <div class="weaponName">Rifle</div>
+      <div class="ammoText">∞</div>
+      <div class="smallText">Server-checked shots</div>
+    </div>
+
+    <div id="centerMessage" class="centerMessage"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>

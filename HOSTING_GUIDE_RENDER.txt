@@ -1,0 +1,106 @@
+ISLAND ROYALE V35 HOST-READY GUIDE
+
+WHAT THIS IS
+
+This folder is ready to host online so your friends can join from their own houses.
+
+The easiest beginner way is:
+
+1. Put this folder on GitHub
+2. Connect that GitHub repo to Render
+3. Render gives you a public link
+4. You send your friends that link
+5. Inside the game, create a room and copy invite link
+
+IMPORTANT
+
+Do NOT send your friends localhost.
+localhost only works on your own computer.
+
+Good link after hosting:
+https://your-game-name.onrender.com
+
+Bad link for friends:
+http://localhost:3000
+
+
+FILES THAT MATTER
+
+server.js              = multiplayer server
+package.json           = tells host how to install/start
+render.yaml            = Render hosting settings
+public/index.html      = game page
+public/client.js       = browser game code
+public/style.css       = lobby/game style
+
+
+SIMPLE RENDER STEPS
+
+STEP 1 — Make a GitHub repo
+
+- Go to GitHub
+- Create a new repository
+- Name it something like island-royale-multiplayer
+- Upload everything inside this folder to that repo
+- Do NOT upload node_modules if it exists
+
+STEP 2 — Make Render web service
+
+- Go to Render
+- Click New
+- Click Web Service
+- Connect your GitHub repo
+- Build Command:
+  npm install
+
+- Start Command:
+  npm start
+
+- Deploy it
+
+STEP 3 — Open your public link
+
+Render will give you a link like:
+https://island-royale-multiplayer.onrender.com
+
+Open that link.
+Create a room.
+Copy invite.
+Send the invite to your friend.
+
+
+HOW FRIENDS JOIN
+
+You host it online.
+You open the public link.
+Click Create Room.
+Click Copy Invite.
+Send that invite link to friends.
+
+They do NOT need the zip.
+They only need the public invite link.
+
+
+IF IT DOES NOT LOAD
+
+Check Render logs.
+
+Common issue:
+- package.json missing
+- start command wrong
+- server not using process.env.PORT
+
+This project already uses:
+process.env.PORT || 3000
+so it should work on Render.
+
+
+LOCAL TEST STILL WORKS
+
+You can still test on your PC:
+
+npm install
+npm start
+
+Then open:
+http://localhost:3000
