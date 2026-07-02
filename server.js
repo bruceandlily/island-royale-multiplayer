@@ -5,30 +5,23 @@ const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, "public")));
 
-const WORLD = {
-  width: 4200,
-  height: 4200
-};
-
+const WORLD = { width: 4200, height: 4200 };
 const TICK_RATE = 20;
 const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const rooms = new Map();
 
+const COLOR_PRESETS = ["#2fb4ff", "#ff5b67", "#55d66b", "#b65cff", "#ffcf4a", "#ff7a00", "#00e5ff", "#8dff55"];
+
 function randomRoomCode() {
   let code = "";
-  for (let i = 0; i < 4; i++) {
-    code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
-  }
-  if (rooms.has(code)) return randomRoomCode();
-  return code;
+  for (let i = 0; i < 4; i++) code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
+  return rooms.has(code) ? randomRoomCode() : code;
 }
 
 function clamp(value, min, max) {
@@ -47,27 +40,42 @@ function sanitizeName(name) {
   return cleaned || "Player";
 }
 
+function sanitizeColor(color) {
+  if (typeof color !== "string") return COLOR_PRESETS[Math.floor(Math.random() * COLOR_PRESETS.length)];
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) return color;
+  return COLOR_PRESETS[Math.floor(Math.random() * COLOR_PRESETS.length)];
+}
+
+function sanitizeOutfit(outfit) {
+  if (typeof outfit !== "string") return "Raider";
+  return outfit.replace(/[^\w\s-]/g, "").trim().slice(0, 16) || "Raider";
+}
+
 function makeSpawn(index, count) {
   const centerX = WORLD.width / 2;
   const centerY = WORLD.height / 2;
   const radius = 260 + count * 16;
   const angle = (Math.PI * 2 * index) / Math.max(1, count);
-  return {
-    x: centerX + Math.cos(angle) * radius,
-    y: centerY + Math.sin(angle) * radius
-  };
+  return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
 }
 
-function publicRoom(room) {
+function createPlayer(socket, data = {}) {
   return {
-    code: room.code,
-    hostId: room.hostId,
-    phase: room.phase,
-    world: WORLD,
-    storm: room.storm,
-    players: Array.from(room.players.values()).map(publicPlayer),
-    startedAt: room.startedAt,
-    winner: room.winner
+    id: socket.id,
+    name: sanitizeName(data.name),
+    x: WORLD.width / 2,
+    y: WORLD.height / 2,
+    angle: 0,
+    health: 100,
+    shield: 50,
+    alive: true,
+    kills: 0,
+    ready: false,
+    color: sanitizeColor(data.color),
+    outfit: sanitizeOutfit(data.outfit),
+    banner: data.banner === "Gold" ? "Gold" : data.banner === "Purple" ? "Purple" : "Blue",
+    lastShotAt: 0,
+    roomCode: null
   };
 }
 
@@ -83,38 +91,49 @@ function publicPlayer(player) {
     alive: player.alive,
     kills: player.kills,
     ready: player.ready,
-    color: player.color
+    color: player.color,
+    outfit: player.outfit,
+    banner: player.banner
   };
 }
 
-function createPlayer(socket, name) {
-  const colors = ["#2fb4ff", "#ff5b67", "#55d66b", "#b65cff", "#ffcf4a", "#ff7a00"];
+function publicRoom(room) {
   return {
-    id: socket.id,
-    name: sanitizeName(name),
-    x: WORLD.width / 2,
-    y: WORLD.height / 2,
-    angle: 0,
-    health: 100,
-    shield: 50,
-    alive: true,
-    kills: 0,
-    ready: false,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    lastShotAt: 0,
-    roomCode: null
+    code: room.code,
+    hostId: room.hostId,
+    phase: room.phase,
+    world: WORLD,
+    storm: room.storm,
+    players: Array.from(room.players.values()).map(publicPlayer),
+    startedAt: room.startedAt,
+    winner: room.winner,
+    mode: room.mode || "Solo",
+    maxPlayers: room.maxPlayers || 16
   };
 }
 
-function createRoom(hostSocket, name) {
+function publicRoomList() {
+  return Array.from(rooms.values()).map(room => ({
+    code: room.code,
+    hostName: room.players.get(room.hostId)?.name || "Host",
+    players: room.players.size,
+    maxPlayers: room.maxPlayers || 16,
+    phase: room.phase,
+    mode: room.mode || "Solo"
+  }));
+}
+
+function createRoom(hostSocket, data = {}) {
   const code = randomRoomCode();
-  const player = createPlayer(hostSocket, name);
+  const player = createPlayer(hostSocket, data);
   player.roomCode = code;
 
   const room = {
     code,
     hostId: hostSocket.id,
     phase: "lobby",
+    mode: data.mode === "Squads" ? "Squads" : data.mode === "Duos" ? "Duos" : "Solo",
+    maxPlayers: 16,
     players: new Map([[hostSocket.id, player]]),
     storm: {
       x: WORLD.width / 2,
@@ -124,8 +143,7 @@ function createRoom(hostSocket, name) {
       phase: 1
     },
     startedAt: null,
-    winner: null,
-    lastTick: Date.now()
+    winner: null
   };
 
   rooms.set(code, room);
@@ -134,24 +152,31 @@ function createRoom(hostSocket, name) {
   return room;
 }
 
-function joinRoom(socket, code, name) {
+function joinRoom(socket, code, data = {}) {
   const normalized = String(code || "").trim().toUpperCase();
   const room = rooms.get(normalized);
-  if (!room) {
-    throw new Error("Room not found");
-  }
-  if (room.phase !== "lobby") {
-    throw new Error("Match already started");
-  }
-  if (room.players.size >= 16) {
-    throw new Error("Room is full");
-  }
+  if (!room) throw new Error("Room not found");
+  if (room.phase !== "lobby") throw new Error("Match already started");
+  if (room.players.size >= room.maxPlayers) throw new Error("Room is full");
 
-  const player = createPlayer(socket, name);
+  const player = createPlayer(socket, data);
   player.roomCode = normalized;
   room.players.set(socket.id, player);
   socket.join(normalized);
   socket.data.roomCode = normalized;
+  return room;
+}
+
+function updatePlayerCosmetics(socket, data = {}) {
+  const room = rooms.get(socket.data.roomCode);
+  if (!room) return null;
+  const player = room.players.get(socket.id);
+  if (!player) return null;
+
+  player.name = sanitizeName(data.name ?? player.name);
+  player.color = sanitizeColor(data.color ?? player.color);
+  player.outfit = sanitizeOutfit(data.outfit ?? player.outfit);
+  player.banner = data.banner === "Gold" ? "Gold" : data.banner === "Purple" ? "Purple" : "Blue";
   return room;
 }
 
@@ -183,17 +208,13 @@ function resetRoomForMatch(room) {
 }
 
 function linePointDistance(px, py, ax, ay, bx, by) {
-  const abx = bx - ax;
-  const aby = by - ay;
-  const apx = px - ax;
-  const apy = py - ay;
+  const abx = bx - ax, aby = by - ay;
+  const apx = px - ax, apy = py - ay;
   const abLen2 = abx * abx + aby * aby || 1;
   const t = clamp((apx * abx + apy * aby) / abLen2, 0, 1);
   const cx = ax + abx * t;
   const cy = ay + aby * t;
-  const dx = px - cx;
-  const dy = py - cy;
-  return Math.sqrt(dx * dx + dy * dy);
+  return Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
 }
 
 function applyDamage(target, amount, attacker) {
@@ -207,19 +228,15 @@ function applyDamage(target, amount, attacker) {
   }
 
   target.health -= remaining;
-
   if (target.health <= 0) {
     target.health = 0;
     target.alive = false;
-    if (attacker && attacker.id !== target.id) {
-      attacker.kills += 1;
-    }
+    if (attacker && attacker.id !== target.id) attacker.kills += 1;
   }
 }
 
 function handleShoot(socket, data) {
-  const code = socket.data.roomCode;
-  const room = rooms.get(code);
+  const room = rooms.get(socket.data.roomCode);
   if (!room || room.phase !== "game") return;
 
   const shooter = room.players.get(socket.id);
@@ -243,10 +260,8 @@ function handleShoot(socket, data) {
 
   for (const target of room.players.values()) {
     if (target.id === shooter.id || !target.alive) continue;
-
     const d = linePointDistance(target.x, target.y, startX, startY, endX, endY);
     const along = distance(shooter, target);
-
     if (d < 26 && along < hitDistance && along <= range) {
       hit = target;
       hitDistance = along;
@@ -275,8 +290,7 @@ function handleShoot(socket, data) {
 }
 
 function updatePlayerInput(socket, data) {
-  const code = socket.data.roomCode;
-  const room = rooms.get(code);
+  const room = rooms.get(socket.data.roomCode);
   if (!room || room.phase !== "game") return;
 
   const player = room.players.get(socket.id);
@@ -293,7 +307,6 @@ function updatePlayerInput(socket, data) {
 
 function checkWin(room) {
   if (room.phase !== "game") return;
-
   const alive = Array.from(room.players.values()).filter(player => player.alive);
 
   if (alive.length <= 1 && room.players.size > 1) {
@@ -315,7 +328,6 @@ function tickRoom(room) {
 
   for (const player of room.players.values()) {
     if (!player.alive) continue;
-
     const dist = distance(player, room.storm);
     if (dist > room.storm.radius) {
       player._stormTicks = (player._stormTicks || 0) + 1;
@@ -333,14 +345,16 @@ function tickRoom(room) {
 
 function broadcastRoom(room) {
   io.to(room.code).emit("roomState", publicRoom(room));
+  io.emit("roomList", publicRoomList());
 }
 
 io.on("connection", socket => {
   socket.emit("connected", { id: socket.id });
+  socket.emit("roomList", publicRoomList());
 
-  socket.on("createRoom", ({ name } = {}, callback) => {
+  socket.on("createRoom", (data = {}, callback) => {
     try {
-      const room = createRoom(socket, name);
+      const room = createRoom(socket, data);
       callback?.({ ok: true, room: publicRoom(room), selfId: socket.id });
       broadcastRoom(room);
     } catch (error) {
@@ -348,9 +362,9 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("joinRoom", ({ roomCode, name } = {}, callback) => {
+  socket.on("joinRoom", ({ roomCode, ...data } = {}, callback) => {
     try {
-      const room = joinRoom(socket, roomCode, name);
+      const room = joinRoom(socket, roomCode, data);
       callback?.({ ok: true, room: publicRoom(room), selfId: socket.id });
       broadcastRoom(room);
     } catch (error) {
@@ -358,7 +372,29 @@ io.on("connection", socket => {
     }
   });
 
-  socket.on("toggleReady", (callback) => {
+  socket.on("listRooms", callback => {
+    callback?.({ ok: true, rooms: publicRoomList() });
+    socket.emit("roomList", publicRoomList());
+  });
+
+  socket.on("updateCosmetics", (data = {}, callback) => {
+    const room = updatePlayerCosmetics(socket, data);
+    if (!room) return callback?.({ ok: false, error: "Join or create a room first" });
+    callback?.({ ok: true });
+    broadcastRoom(room);
+  });
+
+  socket.on("setMode", ({ mode } = {}, callback) => {
+    const room = rooms.get(socket.data.roomCode);
+    if (!room) return callback?.({ ok: false, error: "Not in a room" });
+    if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can change mode" });
+    if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
+    room.mode = mode === "Squads" ? "Squads" : mode === "Duos" ? "Duos" : "Solo";
+    callback?.({ ok: true });
+    broadcastRoom(room);
+  });
+
+  socket.on("toggleReady", callback => {
     const room = rooms.get(socket.data.roomCode);
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
 
@@ -370,10 +406,10 @@ io.on("connection", socket => {
     broadcastRoom(room);
   });
 
-  socket.on("startMatch", (callback) => {
+  socket.on("startMatch", callback => {
     const room = rooms.get(socket.data.roomCode);
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
-    if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only the host can start" });
+    if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can start" });
     if (room.players.size < 2) return callback?.({ ok: false, error: "Need at least 2 players" });
 
     resetRoomForMatch(room);
@@ -388,7 +424,7 @@ io.on("connection", socket => {
   socket.on("returnToLobby", callback => {
     const room = rooms.get(socket.data.roomCode);
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
-    if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only the host can return to lobby" });
+    if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can return to lobby" });
 
     room.phase = "lobby";
     room.winner = null;
@@ -408,15 +444,13 @@ io.on("connection", socket => {
     if (!room) return;
 
     room.players.delete(socket.id);
-
     if (room.players.size === 0) {
       rooms.delete(code);
+      io.emit("roomList", publicRoomList());
       return;
     }
 
-    if (room.hostId === socket.id) {
-      room.hostId = room.players.keys().next().value;
-    }
+    if (room.hostId === socket.id) room.hostId = room.players.keys().next().value;
 
     broadcastRoom(room);
     checkWin(room);
@@ -431,5 +465,5 @@ setInterval(() => {
 }, 1000 / TICK_RATE);
 
 server.listen(PORT, () => {
-  console.log(`Island Royale multiplayer server running on http://localhost:${PORT}`);
+  console.log(`Island Royale V36 running on http://localhost:${PORT}`);
 });

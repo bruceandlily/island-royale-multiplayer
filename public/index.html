@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V34</title>
+  <title>Island Royale Multiplayer V36</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -16,26 +16,31 @@
           <div class="brandIcon"></div>
           <div>
             <div class="eyebrow">Island Royale</div>
-            <h1>Multiplayer Lobby</h1>
+            <h1>Battle Lobby</h1>
           </div>
         </div>
+
         <div class="tabs">
-          <div class="tab active">Play</div>
-          <div class="tab">Party</div>
-          <div class="tab">Rooms</div>
-          <div class="tab">Settings</div>
+          <button class="tab active" data-tab="play">Play</button>
+          <button class="tab" data-tab="party">Party</button>
+          <button class="tab" data-tab="rooms">Rooms</button>
+          <button class="tab" data-tab="locker">Locker</button>
+          <button class="tab" data-tab="quests">Quests</button>
+          <button class="tab" data-tab="settings">Settings</button>
         </div>
+
         <div class="serverStatus" id="serverStatus">Connecting...</div>
       </div>
 
-      <div class="lobbyGrid">
-        <div class="glass panel">
+      <div class="contentGrid">
+        <aside class="leftRail glass">
           <div class="sectionTitle">Player</div>
           <label>Your Name</label>
           <input id="nameInput" placeholder="Enter your name" maxlength="18" value="Player" />
 
-          <div class="playerPreview">
-            <div class="character">
+          <div class="avatarCard">
+            <div class="bigCharacter" id="lobbyCharacter">
+              <div class="cape"></div>
               <div class="head"></div>
               <div class="hair"></div>
               <div class="body"></div>
@@ -45,61 +50,228 @@
               <div class="leg right"></div>
               <div class="gun"></div>
             </div>
+            <div class="platform"></div>
           </div>
 
-          <button id="createRoomBtn" class="goldButton">Create Room</button>
-
-          <div class="divider"></div>
-
-          <label>Join Room Code</label>
-          <div class="joinRow">
-            <input id="roomCodeInput" placeholder="ABCD" maxlength="6" />
-            <button id="joinRoomBtn" class="smallButton">Join</button>
-          </div>
-
-          <div class="hint">
-            Testing on one PC: create a room, copy invite, open another browser tab, paste the link.
-          </div>
-        </div>
-
-        <div class="glass centerPanel">
-          <div class="islandScene">
-            <div class="sun"></div>
-            <div class="cloud c1"></div>
-            <div class="cloud c2"></div>
-            <div class="sea"></div>
-            <div class="island"></div>
-            <div class="battleBus"></div>
-          </div>
-
-          <div class="roomCard">
+          <div class="levelCard">
             <div>
-              <div class="sectionTitle">Room</div>
-              <div class="roomCode" id="roomCodeDisplay">No Room</div>
-              <div class="roomSub" id="roomSub">Create or join a room to invite friends.</div>
+              <div class="eyebrow">Battle Pass</div>
+              <strong>Level 18</strong>
             </div>
-            <div class="roomActions">
-              <button id="copyInviteBtn" class="smallButton disabled">Copy Invite</button>
-              <button id="readyBtn" class="smallButton disabled">Ready</button>
-              <button id="startMatchBtn" class="goldButton disabled">Start Match</button>
+            <div class="levelBadge">18</div>
+          </div>
+          <div class="xpBar"><div></div></div>
+
+          <button id="emoteBtn" class="secondaryButton">Emote</button>
+        </aside>
+
+        <main class="mainArea glass">
+          <section id="playPanel" class="tabPanel activePanel">
+            <div class="stage">
+              <div class="sun"></div>
+              <div class="cloud c1"></div>
+              <div class="cloud c2"></div>
+              <div class="cloud c3"></div>
+              <div class="sea"></div>
+              <div class="island"></div>
+              <div class="battleBus"></div>
+              <div class="lootFloat lf1">Rifle</div>
+              <div class="lootFloat lf2">Shield</div>
+              <div class="lootFloat lf3">Build</div>
+            </div>
+
+            <div class="playFooter">
+              <div>
+                <div class="sectionTitle">Selected Mode</div>
+                <h2 id="selectedModeTitle">Solo Battle Royale</h2>
+                <p id="selectedModeDesc">Create a room, invite friends, ready up, and fight until one player wins.</p>
+              </div>
+              <div class="playActions">
+                <button id="createRoomBtn" class="goldButton">Create Room</button>
+                <button id="readyBtn" class="secondaryButton disabled">Ready</button>
+                <button id="startMatchBtn" class="goldButton disabled">Start Match</button>
+              </div>
+            </div>
+
+            <div class="roomStrip">
+              <div>
+                <div class="sectionTitle">Room Code</div>
+                <div id="roomCodeDisplay" class="roomCode">No Room</div>
+                <div id="roomSub" class="roomSub">Create or join a room to invite friends.</div>
+              </div>
+              <button id="copyInviteBtn" class="secondaryButton disabled">Copy Invite</button>
+            </div>
+          </section>
+
+          <section id="partyPanel" class="tabPanel">
+            <div class="panelHeader">
+              <div>
+                <div class="sectionTitle">Party</div>
+                <h2>Party Channel</h2>
+                <p>See who joined, who is host, and who is ready.</p>
+              </div>
+              <button id="partyCopyInviteBtn" class="goldButton compact disabled">Copy Invite</button>
+            </div>
+            <div id="partyList" class="partyGrid">
+              <div class="emptyParty">No players yet.</div>
+            </div>
+          </section>
+
+          <section id="roomsPanel" class="tabPanel">
+            <div class="panelHeader">
+              <div>
+                <div class="sectionTitle">Rooms</div>
+                <h2>Join or Browse Rooms</h2>
+                <p>Join by room code or refresh the public room list.</p>
+              </div>
+              <button id="refreshRoomsBtn" class="secondaryButton compact">Refresh</button>
+            </div>
+
+            <div class="joinCard">
+              <input id="roomCodeInput" placeholder="Room code like ABCD" maxlength="6" />
+              <button id="joinRoomBtn" class="goldButton compact">Join Room</button>
+            </div>
+
+            <div id="roomList" class="roomList">
+              <div class="emptyParty">No open rooms yet.</div>
+            </div>
+          </section>
+
+          <section id="lockerPanel" class="tabPanel">
+            <div class="panelHeader">
+              <div>
+                <div class="sectionTitle">Locker</div>
+                <h2>Cosmetics</h2>
+                <p>Pick an outfit, banner, and character color. If you are in a room, everyone sees it.</p>
+              </div>
+              <button id="applyLockerBtn" class="goldButton compact">Apply</button>
+            </div>
+
+            <div class="lockerGrid">
+              <button class="lockerItem selected" data-outfit="Raider" data-color="#2fb4ff">
+                <div class="lockerIcon blue"></div>
+                <b>Raider</b>
+                <span>Default</span>
+              </button>
+              <button class="lockerItem" data-outfit="Striker" data-color="#ff5b67">
+                <div class="lockerIcon red"></div>
+                <b>Striker</b>
+                <span>Rare</span>
+              </button>
+              <button class="lockerItem" data-outfit="Scout" data-color="#55d66b">
+                <div class="lockerIcon green"></div>
+                <b>Scout</b>
+                <span>Uncommon</span>
+              </button>
+              <button class="lockerItem" data-outfit="Shadow" data-color="#b65cff">
+                <div class="lockerIcon purple"></div>
+                <b>Shadow</b>
+                <span>Epic</span>
+              </button>
+            </div>
+
+            <div class="bannerChoices">
+              <button class="bannerChoice selected" data-banner="Blue">Blue Banner</button>
+              <button class="bannerChoice" data-banner="Purple">Purple Banner</button>
+              <button class="bannerChoice" data-banner="Gold">Gold Banner</button>
+            </div>
+          </section>
+
+          <section id="questsPanel" class="tabPanel">
+            <div class="panelHeader">
+              <div>
+                <div class="sectionTitle">Quests</div>
+                <h2>Daily Challenges</h2>
+                <p>These are saved in your browser and update as you play.</p>
+              </div>
+              <button id="resetQuestsBtn" class="secondaryButton compact">Reset</button>
+            </div>
+
+            <div class="questList">
+              <div class="questCard">
+                <div class="questTop"><b>Get 5 eliminations</b><span id="questElimsText">0 / 5</span></div>
+                <div class="questBar"><div id="questElimsBar"></div></div>
+              </div>
+              <div class="questCard">
+                <div class="questTop"><b>Play 3 matches</b><span id="questMatchesText">0 / 3</span></div>
+                <div class="questBar"><div id="questMatchesBar"></div></div>
+              </div>
+              <div class="questCard">
+                <div class="questTop"><b>Create or join a party</b><span id="questPartyText">0 / 1</span></div>
+                <div class="questBar"><div id="questPartyBar"></div></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="settingsPanel" class="tabPanel">
+            <div class="panelHeader">
+              <div>
+                <div class="sectionTitle">Settings</div>
+                <h2>Game Options</h2>
+                <p>These settings actually save in your browser.</p>
+              </div>
+              <button id="saveSettingsBtn" class="goldButton compact">Save</button>
+            </div>
+
+            <div class="settingsGrid">
+              <div class="settingBox">
+                <label>Mode</label>
+                <select id="modeSelect">
+                  <option value="Solo">Solo</option>
+                  <option value="Duos">Duos</option>
+                  <option value="Squads">Squads</option>
+                </select>
+              </div>
+              <div class="settingBox">
+                <label>Graphics</label>
+                <select id="graphicsSelect">
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+              <div class="settingBox">
+                <label>Volume</label>
+                <input id="volumeSlider" type="range" min="0" max="100" value="60" />
+              </div>
+              <div class="settingBox">
+                <label>Show Controls</label>
+                <select id="controlsSelect">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="rightRail glass">
+          <div class="sectionTitle">News</div>
+          <div class="newsCard goldNews">
+            <b>V36 Lobby Update</b>
+            <span>Tabs now work, rooms are browsable, locker saves, quests track progress, and party tools function.</span>
+          </div>
+          <div class="newsCard">
+            <b>Invite Friends</b>
+            <span>Create a room, copy invite, and send the public Render link to your friends.</span>
+          </div>
+          <div class="newsCard">
+            <b>Tip</b>
+            <span>Host must press Start Match. You need at least 2 players.</span>
+          </div>
+
+          <div class="miniMapCard">
+            <div class="sectionTitle">Island Preview</div>
+            <div class="miniMap">
+              <div class="miniRoad r1"></div>
+              <div class="miniRoad r2"></div>
+              <div class="miniPOI p1"></div>
+              <div class="miniPOI p2"></div>
+              <div class="miniPOI p3"></div>
+              <div class="miniStorm"></div>
             </div>
           </div>
-        </div>
-
-        <div class="glass panel">
-          <div class="sectionTitle">Party</div>
-          <div id="partyList" class="partyList">
-            <div class="emptyParty">No players yet.</div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="sectionTitle">How Real Multiplayer Works</div>
-          <p class="smallText">
-            This uses Socket.io. Everyone must connect to the same server URL.
-            Localhost works for your own computer. Friends need the server hosted online.
-          </p>
-        </div>
+        </aside>
       </div>
     </div>
   </div>
@@ -111,7 +283,7 @@
       <div><span>Room</span><b id="hudRoom">----</b></div>
     </div>
 
-    <div class="hudTopCenter glass">
+    <div id="controlsHud" class="hudTopCenter glass">
       <span>WASD Move</span>
       <span>Mouse Aim</span>
       <span>Click Shoot</span>

@@ -1,81 +1,54 @@
-# Island Royale Multiplayer V34
+# Island Royale Multiplayer V36
 
-This is a real multiplayer browser-game starter using:
+This is the new host-ready multiplayer version with a cleaner, functional lobby.
 
-- HTML/CSS/JavaScript client
-- Node.js server
-- Socket.io real-time multiplayer
-- Room codes
-- Invite links
-- Lobby player list
-- Ready button
-- Host Start Match
-- Real-time movement
-- Server-checked shooting
-- Health, shield, kills
-- Storm circle
-- Match winner
+New lobby features:
+- Functional top tabs: Play, Party, Rooms, Locker, Quests, Settings
+- Create room
+- Join by room code
+- Browse open rooms
+- Copy invite link
+- Ready/unready
+- Host start match
+- Change mode as host
+- Locker cosmetics that sync to room
+- Quests saved in browser
+- Settings saved in browser
+- Cleaner Fortnite-style layout
 
-## Install
+## Host on Render
 
-You need Node.js installed.
+Use the same setup as before.
 
-In this folder, run:
+Build Command:
 
 ```bash
 npm install
 ```
 
-## Start Server
+Start Command:
 
 ```bash
 npm start
 ```
 
-Then open:
+## Updating your existing Render game
+
+Upload/replace these files in your GitHub repo:
 
 ```text
-http://localhost:3000
+package.json
+server.js
+render.yaml
+public/index.html
+public/client.js
+public/style.css
 ```
 
-## Test On Your Own Computer
+Then commit changes. Render should redeploy automatically.
 
-1. Open `http://localhost:3000`
-2. Type your name
-3. Click **Create Room**
-4. Click **Copy Invite**
-5. Open a second browser tab
-6. Paste the invite link
-7. Type another name
-8. Click **Join**
-9. In the first tab, click **Start Match**
-
-## Controls
+If it does not, go to Render and click:
 
 ```text
-WASD = move
-Mouse = aim
-Left click = shoot
-Esc = show lobby overlay
+Manual Deploy → Deploy latest commit
 ```
-
-## Playing With Real Friends
-
-Your friends cannot join `localhost` because localhost means your computer only.
-
-To let friends join, host this project online using something like:
-
-- Render
-- Railway
-- Replit
-- Glitch
-- Fly.io
-- your own VPS
-
-After hosting, share the public website link or the copied room invite link.
-
-## Important
-
-This is a multiplayer starter. It is not secure enough for a commercial game yet.
-For a serious game, the server needs stronger anti-cheat, server-side movement validation,
-better prediction, lag compensation, authentication, and real matchmaking.
