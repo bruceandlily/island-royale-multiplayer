@@ -23,6 +23,7 @@ const WORLD = { width: 5200, height: 5200 };
 const TICK_RATE = 20;
 const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const rooms = new Map();
+const matchmakingQueue = new Set();
 
 const COLOR_PRESETS = ["#2fb4ff", "#ff5b67", "#55d66b", "#b65cff", "#ffcf4a", "#ff7a00", "#00e5ff", "#8dff55"];
 
@@ -186,16 +187,20 @@ function humanPlayers(room) {
 
 function validateModePlayerCount(room) {
   const mode = room.mode || "Solo";
-  const required = modeRequiredPlayers(mode);
+  const teamSize = modeTeamSize(mode);
   const humans = humanPlayers(room).length;
 
-  if (humans !== required) {
-    const label = required === 1 ? "player" : "players";
-    const currentLabel = humans === 1 ? "player" : "players";
-    return {
-      ok: false,
-      message: `${mode} requires exactly ${required} real ${label}. You currently have ${humans} real ${currentLabel}.`
-    };
+  if (mode === "Solo" && humans !== 1) {
+    return { ok: false, message: `Solo requires exactly 1 real player. You currently have ${humans}.` };
+  }
+
+  if (mode !== "Solo") {
+    if (humans < 1 || humans > teamSize) {
+      return {
+        ok: false,
+        message: `${mode} allows 1 to ${teamSize} real player(s) in your party. You currently have ${humans}.`
+      };
+    }
   }
 
   return { ok: true };
@@ -245,20 +250,31 @@ function assignTeams(room) {
     return;
   }
 
-  // Put all real players in one party team so friends are teammates.
-  const partyTeam = "team_party";
-  humans.forEach((p, idx) => {
-    p.teamId = partyTeam;
-    p.teamIndex = idx + 1;
-    p.teamSize = teamSize;
-  });
+  const partyGroups = new Map();
+  for (const p of humans) {
+    const partyId = p.partyId || p.roomCode || p.id;
+    p.partyId = partyId;
+    if (!partyGroups.has(partyId)) partyGroups.set(partyId, []);
+    partyGroups.get(partyId).push(p);
+  }
 
-  // Put bots into proper duo/squad teams.
+  let teamNumber = 1;
+  for (const [partyId, players] of partyGroups.entries()) {
+    const teamId = `team_real_${teamNumber}`;
+    players.forEach((p, idx) => {
+      p.teamId = teamId;
+      p.teamIndex = idx + 1;
+      p.teamSize = teamSize;
+    });
+    teamNumber++;
+  }
+
   bots.forEach((p, idx) => {
-    const teamNumber = Math.floor(idx / teamSize) + 2;
-    p.teamId = `team_${teamNumber}`;
+    const botTeamNumber = Math.floor(idx / teamSize) + teamNumber;
+    p.teamId = `team_${botTeamNumber}`;
     p.teamIndex = (idx % teamSize) + 1;
     p.teamSize = teamSize;
+    p.partyId = p.teamId;
   });
 }
 
@@ -290,6 +306,7 @@ function createPlayer(socket, data = {}) {
     lastHealAt: 0,
     roomCode: null,
     isBot: false,
+    partyId: null,
     teamId: null,
     teamIndex: 1,
     teamSize: 1,
@@ -321,6 +338,7 @@ function createBot(index) {
     lastBuildAt: 0,
     lastHealAt: 0,
     isBot: true,
+    partyId: null,
     teamId: null,
     teamIndex: 1,
     teamSize: 1,
@@ -366,6 +384,7 @@ function publicPlayer(player) {
     outfit: player.outfit,
     banner: player.banner,
     isBot: player.isBot,
+    partyId: player.partyId || null,
     teamId: player.teamId,
     teamIndex: player.teamIndex,
     teamSize: player.teamSize,
@@ -403,6 +422,9 @@ function publicRoom(room) {
     startedAt: room.startedAt,
     winner: room.winner,
     mode: room.mode || "Solo",
+    fill: !!room.fill,
+    matchmakingQueued: !!room.matchmakingQueued,
+    matchmakingMessage: room.matchmakingMessage || "",
     maxPlayers: room.maxPlayers || 16,
     requiredPlayers: modeRequiredPlayers(room.mode || "Solo"),
     loot: room.loot,
@@ -423,7 +445,10 @@ function publicRoomList() {
     maxPlayers: room.maxPlayers || 16,
     requiredPlayers: modeRequiredPlayers(room.mode || "Solo"),
     phase: room.phase,
-    mode: room.mode || "Solo"
+    mode: room.mode || "Solo",
+    fill: !!room.fill,
+    matchmakingQueued: !!room.matchmakingQueued,
+    matchmakingMessage: room.matchmakingMessage || ""
   }));
 }
 
@@ -482,10 +507,197 @@ function createWorldObjects(room) {
   }
 }
 
+
+function removeFromMatchmaking(roomOrCode) {
+  const code = typeof roomOrCode === "string" ? roomOrCode : roomOrCode?.code;
+  if (!code) return;
+  matchmakingQueue.delete(code);
+  const room = rooms.get(code);
+  if (room) {
+    room.matchmakingQueued = false;
+    room.matchmakingMessage = "";
+    if (room.matchmakingTimer) {
+      clearTimeout(room.matchmakingTimer);
+      room.matchmakingTimer = null;
+    }
+  }
+}
+
+function partyIds(room) {
+  return [...new Set(humanPlayers(room).map(p => p.partyId || p.roomCode || p.id))];
+}
+
+function partySize(room, partyId) {
+  return humanPlayers(room).filter(p => (p.partyId || p.roomCode || p.id) === partyId).length;
+}
+
+function humanCount(room) {
+  return humanPlayers(room).length;
+}
+
+function moveHumansToRoom(source, target, options = {}) {
+  const samePartyId = options.samePartyId || null;
+  const moving = humanPlayers(source);
+
+  for (const player of moving) {
+    source.players.delete(player.id);
+    player.roomCode = target.code;
+    if (samePartyId) player.partyId = samePartyId;
+    else player.partyId = player.partyId || source.code;
+    player.ready = true;
+    target.players.set(player.id, player);
+
+    const s = io.sockets.sockets.get(player.id);
+    if (s) {
+      s.leave(source.code);
+      s.join(target.code);
+      s.data.roomCode = target.code;
+    }
+  }
+
+  removeFromMatchmaking(source);
+  rooms.delete(source.code);
+}
+
+function findQueuedRoom(mode, predicate) {
+  for (const code of Array.from(matchmakingQueue)) {
+    const room = rooms.get(code);
+    if (!room || room.phase !== "lobby" || room.mode !== mode) {
+      matchmakingQueue.delete(code);
+      continue;
+    }
+    if (predicate(room)) return room;
+  }
+  return null;
+}
+
+function startMatchmadeRoom(room, reason = "Matchmaking found a match") {
+  removeFromMatchmaking(room);
+  markHumansReady(room);
+  addFeed(room, reason);
+  resetRoomForMatch(room);
+  io.to(room.code).emit("matchStarted", publicRoom(room));
+  broadcastRoom(room);
+}
+
+function queueRoomForMatchmaking(room, message, timeoutMs = 0) {
+  room.matchmakingQueued = true;
+  room.matchmakingMessage = message;
+  matchmakingQueue.add(room.code);
+  addFeed(room, message);
+  broadcastRoom(room);
+
+  if (timeoutMs > 0) {
+    if (room.matchmakingTimer) clearTimeout(room.matchmakingTimer);
+    room.matchmakingTimer = setTimeout(() => {
+      const fresh = rooms.get(room.code);
+      if (!fresh || fresh.phase !== "lobby" || !fresh.matchmakingQueued) return;
+      startMatchmadeRoom(fresh, "No more real players found, filling match with bots");
+    }, timeoutMs);
+  }
+}
+
+function tryFillTeam(room) {
+  const mode = room.mode || "Solo";
+  const teamSize = modeTeamSize(mode);
+  if (mode === "Solo" || !room.fill) return true;
+
+  const mainPartyId = room.code;
+  for (const p of humanPlayers(room)) {
+    if (!p.partyId) p.partyId = mainPartyId;
+  }
+
+  let currentSize = partySize(room, mainPartyId);
+
+  while (currentSize < teamSize) {
+    const candidate = findQueuedRoom(mode, other => {
+      if (other.code === room.code || !other.fill) return false;
+      const otherHumans = humanCount(other);
+      return otherHumans > 0 && currentSize + otherHumans <= teamSize;
+    });
+
+    if (!candidate) break;
+
+    moveHumansToRoom(candidate, room, { samePartyId: mainPartyId });
+    currentSize = partySize(room, mainPartyId);
+  }
+
+  return currentSize >= teamSize;
+}
+
+function mergeQueuedOpponents(room) {
+  const mode = room.mode || "Solo";
+  const teamSize = modeTeamSize(mode);
+
+  for (const code of Array.from(matchmakingQueue)) {
+    const other = rooms.get(code);
+    if (!other || other.code === room.code || other.phase !== "lobby" || other.mode !== mode) continue;
+
+    // Do not pull an unfinished Fill team as enemies.
+    if (other.fill && mode !== "Solo" && partySize(other, other.code) < teamSize) continue;
+
+    if (humanCount(room) + humanCount(other) > (room.maxPlayers || 16)) continue;
+
+    moveHumansToRoom(other, room);
+  }
+}
+
+function requestMatchmaking(socket, data = {}, callback) {
+  let room = rooms.get(socket.data.roomCode);
+  const mode = data.mode === "Squads" ? "Squads" : data.mode === "Duos" ? "Duos" : "Solo";
+  const fill = !!data.fill;
+
+  try {
+    if (!room) {
+      room = createRoom(socket, { ...data, mode, fill });
+      const player = room.players.get(socket.id);
+      if (player) player.ready = true;
+    } else {
+      if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can start matchmaking" });
+      if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
+      room.mode = mode;
+      room.fill = fill;
+
+      const modeCheck = validateModePlayerCount(room);
+      if (!modeCheck.ok) return callback?.({ ok: false, error: modeCheck.message });
+
+      const readyCheck = validateReadyPlayers(room);
+      if (!readyCheck.ok) return callback?.({ ok: false, error: readyCheck.message });
+    }
+
+    removeFromMatchmaking(room);
+
+    const teamSize = modeTeamSize(mode);
+
+    if (fill && mode !== "Solo") {
+      const fullTeam = tryFillTeam(room);
+      if (!fullTeam) {
+        queueRoomForMatchmaking(room, `${mode} Fill: waiting for ${teamSize - partySize(room, room.code)} teammate(s)...`);
+        return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
+      }
+    }
+
+    mergeQueuedOpponents(room);
+
+    if (!fill) {
+      // No Fill waits a short moment so another real No Fill party can become an enemy team.
+      queueRoomForMatchmaking(room, `${mode} No Fill: searching for real enemy teams...`, 3000);
+      return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
+    }
+
+    startMatchmadeRoom(room, `${mode} Fill match found`);
+    return callback?.({ ok: true, started: true, room: publicRoom(room), selfId: socket.id });
+  } catch (error) {
+    return callback?.({ ok: false, error: error.message });
+  }
+}
+
+
 function createRoom(hostSocket, data = {}) {
   const code = randomRoomCode();
   const player = createPlayer(hostSocket, data);
   player.roomCode = code;
+  player.partyId = code;
 
   const room = {
     code,
@@ -493,6 +705,9 @@ function createRoom(hostSocket, data = {}) {
     phase: "lobby",
     matchPhase: "lobby",
     mode: data.mode === "Squads" ? "Squads" : data.mode === "Duos" ? "Duos" : "Solo",
+    fill: !!data.fill,
+    matchmakingQueued: false,
+    matchmakingMessage: "",
     maxPlayers: 16,
     players: new Map([[hostSocket.id, player]]),
     storm: {
@@ -531,6 +746,7 @@ function joinRoom(socket, code, data = {}) {
 
   const player = createPlayer(socket, data);
   player.roomCode = normalized;
+  player.partyId = normalized;
   room.players.set(socket.id, player);
   socket.join(normalized);
   socket.data.roomCode = normalized;
@@ -1383,9 +1599,25 @@ io.on("connection", socket => {
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
     if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can change mode" });
     if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
+    removeFromMatchmaking(room);
     room.mode = mode === "Squads" ? "Squads" : mode === "Duos" ? "Duos" : "Solo";
     callback?.({ ok: true });
     broadcastRoom(room);
+  });
+
+  socket.on("setFill", ({ fill } = {}, callback) => {
+    const room = rooms.get(socket.data.roomCode);
+    if (!room) return callback?.({ ok: false, error: "Not in a room" });
+    if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can change fill" });
+    if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
+    removeFromMatchmaking(room);
+    room.fill = !!fill;
+    callback?.({ ok: true, fill: room.fill });
+    broadcastRoom(room);
+  });
+
+  socket.on("findMatch", (data = {}, callback) => {
+    requestMatchmaking(socket, data, callback);
   });
 
   socket.on("toggleReady", callback => {
@@ -1409,21 +1641,26 @@ io.on("connection", socket => {
     if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can start" });
     if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
 
+    removeFromMatchmaking(room);
+
     const modeCheck = validateModePlayerCount(room);
     if (!modeCheck.ok) return callback?.({ ok: false, error: modeCheck.message });
 
-    // Quick Test is the only shortcut: it is allowed only for one-person Solo testing.
-    // Normal room starts always require every real player to be ready.
     const quickTest = !!payload?.quickTest;
+
     if (quickTest) {
-      const humans = humanPlayers(room);
-      if ((room.mode || "Solo") !== "Solo" || humans.length !== 1) {
-        return callback?.({ ok: false, error: "Quick Test only works in Solo by yourself." });
+      // Quick Test is allowed for No Fill modes, including solo-duo/solo-squad testing.
+      if (room.fill && (room.mode || "Solo") !== "Solo") {
+        return requestMatchmaking(socket, { mode: room.mode, fill: true }, callback);
       }
       markHumansReady(room);
     } else {
       const readyCheck = validateReadyPlayers(room);
       if (!readyCheck.ok) return callback?.({ ok: false, error: readyCheck.message });
+
+      if (room.fill && (room.mode || "Solo") !== "Solo" && partySize(room, room.code) < modeTeamSize(room.mode)) {
+        return requestMatchmaking(socket, { mode: room.mode, fill: true }, callback);
+      }
     }
 
     resetRoomForMatch(room);
@@ -1445,6 +1682,7 @@ io.on("connection", socket => {
     const room = rooms.get(socket.data.roomCode);
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
     if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can return to lobby" });
+    removeFromMatchmaking(room);
     room.phase = "lobby";
     room.matchPhase = "lobby";
     room.winner = null;
@@ -1488,6 +1726,8 @@ io.on("connection", socket => {
   });
 
   socket.on("disconnect", () => {
+    const queuedRoom = rooms.get(socket.data.roomCode);
+    if (queuedRoom) removeFromMatchmaking(queuedRoom);
     const code = socket.data.roomCode;
     const room = rooms.get(code);
     if (!room) return;

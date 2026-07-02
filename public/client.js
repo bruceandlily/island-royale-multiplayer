@@ -30,6 +30,7 @@ const graphicsSelect = document.getElementById("graphicsSelect");
 const volumeSlider = document.getElementById("volumeSlider");
 const controlsSelect = document.getElementById("controlsSelect");
 const selectedModeTitle = document.getElementById("selectedModeTitle");
+const fillToggleBtn = document.getElementById("fillToggleBtn");
 
 const playersLeftText = document.getElementById("playersLeft");
 const killsText = document.getElementById("kills");
@@ -81,7 +82,8 @@ let buildType = "wall";
 let buildMaterial = "wood";
 let lastShootAt = 0;
 let selectedCosmetic = loadLocal("selectedCosmetic", { outfit: "Raider", color: "#2fb4ff", banner: "Blue" });
-let settings = loadLocal("settings", { graphics: "high", volume: 60, controls: "on", mode: "Solo" });
+let settings = loadLocal("settings", { graphics: "high", volume: 60, controls: "on", mode: "Solo", fill: false });
+if (settings.fill === undefined) settings.fill = false;
 let quests = loadLocal("quests", { eliminations: 0, matches: 0, party: 0 });
 let progression = loadLocal("progression", {
   xp: 0,
@@ -281,15 +283,45 @@ function currentModeName() {
   return room?.mode || settings.mode || "Solo";
 }
 
+function modeTeamSize(mode = currentModeName()) {
+  if (mode === "Squads") return 4;
+  if (mode === "Duos") return 2;
+  return 1;
+}
+
+function currentFillEnabled() {
+  return !!(room ? room.fill : settings.fill);
+}
+
+function syncFillButton(fill = currentFillEnabled()) {
+  if (!fillToggleBtn) return;
+  fillToggleBtn.textContent = fill ? "FILL" : "NO FILL";
+  fillToggleBtn.classList.toggle("fillOn", !!fill);
+  fillToggleBtn.classList.toggle("locked", !!room && !isRoomHost());
+}
+
 function modeRequirementMessage(mode = currentModeName(), count = realPlayerCount()) {
-  const required = modeRequiredPlayers(mode);
-  const label = required === 1 ? "player" : "players";
-  const currentLabel = count === 1 ? "player" : "players";
-  return `${mode} needs exactly ${required} real ${label}. You have ${count} real ${currentLabel}.`;
+  const teamSize = modeTeamSize(mode);
+  const fill = currentFillEnabled();
+
+  if (mode === "Solo") {
+    return `Solo needs exactly 1 real player. You have ${count}.`;
+  }
+
+  if (fill) {
+    const missing = Math.max(0, teamSize - count);
+    return missing > 0
+      ? `${mode} Fill: waiting for ${missing} real teammate(s).`
+      : `${mode} Fill team is full.`;
+  }
+
+  return `${mode} No Fill allows 1 to ${teamSize} real player(s). You have ${count}.`;
 }
 
 function canStartForMode(mode = currentModeName(), count = realPlayerCount()) {
-  return count === modeRequiredPlayers(mode);
+  const teamSize = modeTeamSize(mode);
+  if (mode === "Solo") return count === 1;
+  return count >= 1 && count <= teamSize;
 }
 
 function allRealPlayersReady() {
@@ -316,6 +348,7 @@ function syncModeButtons(mode = currentModeName()) {
   });
 
   if (selectedModeTitle) selectedModeTitle.textContent = `${String(mode).toUpperCase()} BATTLE ROYALE`;
+  syncFillButton();
 }
 
 function setModeEverywhere(mode, showToast = true) {
@@ -356,6 +389,38 @@ function setModeEverywhere(mode, showToast = true) {
   }
 }
 
+
+function setFillEverywhere(fill, showToast = true) {
+  fill = !!fill;
+
+  if (room && !isRoomHost()) {
+    syncFillButton(room.fill);
+    if (showToast) toastMessage("Only the host can change Fill");
+    return;
+  }
+
+  settings.fill = fill;
+  saveLocal("settings", settings);
+  syncFillButton(fill);
+
+  if (room && isRoomHost()) {
+    room.fill = fill;
+    updateLobbyUI();
+
+    socket.emit("setFill", { fill }, response => {
+      if (!response?.ok) {
+        toastMessage(response?.error || "Could not change Fill");
+        return;
+      }
+      if (showToast) toastMessage(fill ? "Fill ON" : "No Fill");
+    });
+  } else {
+    updateLobbyUI();
+    if (showToast) toastMessage(fill ? "Fill ON" : "No Fill");
+  }
+}
+
+
 function playerPayload() {
   const safeName = nameInput && nameInput.value ? nameInput.value : "Player";
   return {
@@ -363,7 +428,8 @@ function playerPayload() {
     color: selectedCosmetic.color,
     outfit: selectedCosmetic.outfit,
     banner: selectedCosmetic.banner,
-    mode: settings.mode || "Solo"
+    mode: settings.mode || "Solo",
+    fill: !!settings.fill
   };
 }
 function switchTab(tabName) {
@@ -394,11 +460,14 @@ function updateLobbyUI() {
 
   if (!room) {
     roomCodeDisplay.textContent = "No Room";
-    roomSub.textContent = "Pick Solo, Duos, or Squads in Settings, then click Quick Test to instantly start with bots.";
+    roomSub.textContent = settings.fill && (settings.mode || "Solo") !== "Solo"
+      ? "Fill is ON. Click FIND MATCH to search for real teammates."
+      : "No Fill can start with your current party size and bots will fill the rest.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
-    const soloOk = (settings.mode || "Solo") === "Solo";
-    startMatchBtn.textContent = soloOk ? "QUICK TEST" : "SOLO ONLY";
-    startMatchBtn.classList.toggle("disabled", !soloOk);
+    const mode = settings.mode || "Solo";
+    startMatchBtn.textContent = settings.fill && mode !== "Solo" ? "FIND MATCH" : "QUICK TEST";
+    startMatchBtn.classList.remove("disabled");
+    syncFillButton(settings.fill);
     const mainReadyText = document.getElementById("mainReadyText");
     if (mainReadyText) {
       mainReadyText.textContent = "Not Ready";
@@ -406,27 +475,31 @@ function updateLobbyUI() {
     }
     if (topPartyCount) topPartyCount.textContent = "1";
     if (partyChatStatus) partyChatStatus.textContent = "Create/join a room to chat";
-    if (stageRoomText) stageRoomText.textContent = (settings.mode || "Solo") === "Solo"
-      ? "Solo selected. Quick Test can start with 1 player."
-      : `${settings.mode} selected. Create a room and invite exactly ${modeRequiredPlayers(settings.mode)} players.`;
+    if (stageRoomText) stageRoomText.textContent = settings.fill && (settings.mode || "Solo") !== "Solo"
+      ? `${settings.mode} Fill selected. Find Match will search for real teammates.`
+      : `${settings.mode || "Solo"} No Fill selected. You can start with your party size.`;
     renderFunctionalPanels();
     return;
   }
   const humans = room.players.filter(p => !p.isBot);
   roomCodeDisplay.textContent = room.code;
-  const requiredForMode = modeRequiredPlayers(room.mode || "Solo");
-  const modeOkForRoom = humans.length === requiredForMode;
+  const requiredForMode = modeTeamSize(room.mode || "Solo");
+  const modeOkForRoom = canStartForMode(room.mode || "Solo", humans.length);
+  const fillOn = !!room.fill;
   const readyOkForRoom = room.players.filter(p => !p.isBot).every(p => p.ready);
-  roomSub.textContent = modeOkForRoom
-    ? (readyOkForRoom
-      ? `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • Ready to start`
-      : `Correct mode, but everyone must ready up first. Waiting on: ${notReadyNames().join(", ")}`)
-    : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
+  roomSub.textContent = room.matchmakingQueued
+    ? (room.matchmakingMessage || "Searching for players...")
+    : modeOkForRoom
+      ? (readyOkForRoom
+        ? `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • ${fillOn ? "Fill" : "No Fill"}`
+        : `Correct mode, but everyone must ready up first. Waiting on: ${notReadyNames().join(", ")}`)
+      : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
   hudRoom.textContent = room.code;
   if (document.activeElement !== modeSelect) {
     modeSelect.value = room.mode || settings.mode || "Solo";
   }
   syncModeButtons(room.mode || settings.mode || "Solo");
+  syncFillButton(!!room.fill);
 
   const me = getMe();
   const isHost = room.hostId === selfId;
@@ -434,9 +507,11 @@ function updateLobbyUI() {
   const modeOk = canStartForMode(room.mode || "Solo", humans.length);
   const readyOk = allRealPlayersReady();
   startMatchBtn.textContent = room
-    ? (isHost ? (modeOk ? (readyOk ? "START MATCH" : "READY UP") : "WRONG MODE") : "WAITING HOST")
+    ? (isHost
+      ? (room.matchmakingQueued ? "SEARCHING..." : (modeOk ? (readyOk ? ((room.fill && room.mode !== "Solo" && humans.length < modeTeamSize(room.mode)) ? "FIND FILL" : "START MATCH") : "READY UP") : "WRONG MODE"))
+      : "WAITING HOST")
     : "QUICK TEST";
-  startMatchBtn.classList.toggle("disabled", room ? (!isHost || !modeOk || !readyOk) : false);
+  startMatchBtn.classList.toggle("disabled", room ? (!isHost || !modeOk || !readyOk || room.matchmakingQueued) : false);
 
   partyList.innerHTML = humans.map(player => {
     const isMe = player.id === selfId;
@@ -876,16 +951,27 @@ readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => 
 }));
 
 function startQuickTestMatch() {
-  if ((settings.mode || "Solo") !== "Solo") {
-    toastMessage(`${settings.mode} needs ${modeRequiredPlayers(settings.mode)} real players. Use Solo for testing alone.`);
-    switchTab("play");
-    return;
-  }
+  const mode = settings.mode || "Solo";
+  const fill = !!settings.fill;
 
   eliminatedReturning = false;
   eliminatedReturnedToLobby = false;
   clearTimeout(eliminationReturnTimer);
-  toastMessage("Starting Solo test match...");
+
+  if (fill && mode !== "Solo") {
+    toastMessage(`${mode} Fill: searching for real teammates...`);
+    socket.emit("findMatch", playerPayload(), response => {
+      if (!response?.ok) return toastMessage(response?.error || "Could not find match");
+      room = response.room;
+      selfId = response.selfId || selfId;
+      enableRoomButtons();
+      updateLobbyUI();
+      toastMessage(response.message || "Searching for players...");
+    });
+    return;
+  }
+
+  toastMessage(`Starting ${mode} No Fill test...`);
   socket.emit("createRoom", playerPayload(), response => {
     if (!response.ok) return toastMessage(response.error);
     room = response.room;
@@ -904,6 +990,7 @@ startMatchBtn.addEventListener("click", () => {
 
   const humans = room.players.filter(p => !p.isBot).length;
   const mode = room.mode || settings.mode || "Solo";
+
   if (!canStartForMode(mode, humans)) {
     toastMessage(modeRequirementMessage(mode, humans));
     return;
@@ -918,6 +1005,19 @@ startMatchBtn.addEventListener("click", () => {
   eliminatedReturning = false;
   eliminatedReturnedToLobby = false;
   clearTimeout(eliminationReturnTimer);
+
+  if (room.fill && mode !== "Solo" && humans < modeTeamSize(mode)) {
+    toastMessage(`${mode} Fill: searching for teammates...`);
+    socket.emit("findMatch", { ...playerPayload(), mode, fill: true }, response => {
+      if (!response?.ok) return toastMessage(response?.error || "Could not find match");
+      room = response.room;
+      selfId = response.selfId || selfId;
+      updateLobbyUI();
+      toastMessage(response.message || "Searching for players...");
+    });
+    return;
+  }
+
   socket.emit("startMatch", response => {
     if (!response?.ok) toastMessage(response?.error || "Could not start");
   });
@@ -940,12 +1040,16 @@ saveSettingsBtn.addEventListener("click", () => {
   settings.volume = Number(volumeSlider.value);
   settings.controls = controlsSelect.value;
   settings.mode = modeSelect.value || settings.mode || "Solo";
+  settings.fill = currentFillEnabled();
   saveLocal("settings", settings);
   applySettingsToUI();
   setModeEverywhere(settings.mode, true);
 });
 modeSelect.addEventListener("change", () => {
   setModeEverywhere(modeSelect.value, true);
+});
+fillToggleBtn?.addEventListener("click", () => {
+  setFillEverywhere(!currentFillEnabled(), true);
 });
 emoteBtn.addEventListener("click", () => {
   const char = document.querySelector("#stagePartyMembers .fortCharacter") || document.getElementById("lobbyCharacter");

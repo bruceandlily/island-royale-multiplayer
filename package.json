@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v53-chat-load-order-fixed",
+  "name": "island-royale-multiplayer-v54-fill-no-fill-matchmaking",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with party chat fixed by correct DOM load order.",
+  "description": "Host-ready multiplayer battle royale with working Fill / No Fill matchmaking.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

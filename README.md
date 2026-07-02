@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V53 Chat Load Order Fixed
+# Island Royale Multiplayer V54 Fill / No Fill Matchmaking
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -329,3 +329,27 @@ This fixes the real cause of the chat bug:
 - Enter sends
 - Esc minimizes
 - Chat stays room/party-only
+
+
+## V54 Fill / No Fill Matchmaking
+
+Added working Fill / No Fill logic.
+
+No Fill:
+- Duos No Fill can start with 1 or 2 real players
+- Squads No Fill can start with 1 to 4 real players
+- You can solo-duo or solo-squad
+- Bots still fill the rest of the match
+- If another real No Fill party is searching at the same time, they can be merged as enemy teams
+
+Fill:
+- Duos Fill searches for 1 real teammate
+- Squads Fill searches for up to 3 real teammates
+- If another Fill player/party is online and searching, they can be merged into your team
+- If nobody is online, the room waits and says how many teammates it needs
+- Only the host can change Fill while in a room
+
+Other:
+- Real players are now grouped by party/team instead of forcing every real player to be on one team
+- Invited friends stay on your team
+- Matchmade enemy parties can be real opponents
