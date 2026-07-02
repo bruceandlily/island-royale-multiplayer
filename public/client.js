@@ -31,6 +31,7 @@ const volumeSlider = document.getElementById("volumeSlider");
 const controlsSelect = document.getElementById("controlsSelect");
 const selectedModeTitle = document.getElementById("selectedModeTitle");
 const fillToggleBtn = document.getElementById("fillToggleBtn");
+const emoteWheelOverlay = document.getElementById("emoteWheelOverlay");
 
 const playersLeftText = document.getElementById("playersLeft");
 const killsText = document.getElementById("kills");
@@ -111,6 +112,136 @@ window.addEventListener("resize", () => {
   canvas.height = window.innerHeight;
 });
 
+
+const LOBBY_EMOTES = ["dance", "wave", "laugh", "clap", "dab", "salute", "floss", "heart", "point", "sit"];
+let emoteWheelOpen = false;
+let emoteHoldTimer = null;
+let bKeyStartedInLobby = false;
+
+function isLobbyVisible() {
+  return lobby && !lobby.classList.contains("hidden") && (!room || room.phase !== "game");
+}
+
+function localLobbyPlayerId() {
+  return selfId || "local";
+}
+
+function avatarForPlayerId(playerId = localLobbyPlayerId()) {
+  if (playerId === localLobbyPlayerId()) return document.querySelector("#stagePartyMembers .hero1 .v56Avatar") || document.querySelector("#stagePartyMembers .v56Avatar");
+  const heroes = Array.from(document.querySelectorAll("#stagePartyMembers .dynamicHero"));
+  for (const hero of heroes) {
+    const name = hero.querySelector(".nameTag b")?.textContent || "";
+    const player = room?.players?.find(p => p.id === playerId);
+    if (player && name === player.name) return hero.querySelector(".v56Avatar");
+  }
+  return document.querySelector("#stagePartyMembers .v56Avatar");
+}
+
+function clearAvatarEmotes(avatar) {
+  if (!avatar) return;
+  for (const emote of LOBBY_EMOTES) avatar.classList.remove(`emote-${emote}`);
+}
+
+function playLobbyEmote(emote, playerId = localLobbyPlayerId(), showText = true) {
+  if (!LOBBY_EMOTES.includes(emote)) return;
+  const avatar = avatarForPlayerId(playerId);
+  if (!avatar) return;
+
+  clearAvatarEmotes(avatar);
+  avatar.classList.add(`emote-${emote}`);
+
+  if (showText) toastMessage(`Emote: ${emote.toUpperCase()}`);
+
+  clearTimeout(avatar.__emoteTimer);
+  avatar.__emoteTimer = setTimeout(() => {
+    clearAvatarEmotes(avatar);
+  }, 4500);
+}
+
+function openEmoteWheel() {
+  if (!isLobbyVisible()) return;
+  emoteWheelOpen = true;
+  emoteWheelOverlay?.classList.remove("hidden");
+}
+
+function closeEmoteWheel() {
+  emoteWheelOpen = false;
+  emoteWheelOverlay?.classList.add("hidden");
+  document.querySelectorAll(".emoteOption").forEach(option => option.classList.remove("selected"));
+}
+
+function chooseEmote(emote) {
+  if (!isLobbyVisible()) {
+    closeEmoteWheel();
+    return;
+  }
+
+  playLobbyEmote(emote, localLobbyPlayerId(), true);
+
+  if (room && room.phase === "lobby") {
+    socket.emit("lobbyEmote", { emote }, response => {
+      if (!response?.ok) {
+        // still let local emote play
+      }
+    });
+  }
+
+  closeEmoteWheel();
+}
+
+document.querySelectorAll(".emoteOption").forEach(option => {
+  option.addEventListener("mouseenter", () => {
+    document.querySelectorAll(".emoteOption").forEach(btn => btn.classList.remove("selected"));
+    option.classList.add("selected");
+  });
+  option.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    chooseEmote(option.dataset.emote);
+  });
+});
+
+emoteWheelOverlay?.addEventListener("click", event => {
+  if (event.target === emoteWheelOverlay || event.target.classList.contains("emoteWheelBackdrop")) closeEmoteWheel();
+});
+
+socket.on("lobbyEmote", data => {
+  if (!data || data.playerId === selfId) return;
+  playLobbyEmote(data.emote, data.playerId, true);
+});
+
+window.addEventListener("keydown", event => {
+  const tag = document.activeElement?.tagName?.toLowerCase();
+  const typing = tag === "input" || tag === "textarea" || tag === "select";
+  if (typing) return;
+
+  if ((event.key.toLowerCase() === "b") && isLobbyVisible()) {
+    bKeyStartedInLobby = true;
+    clearTimeout(emoteHoldTimer);
+    emoteHoldTimer = setTimeout(() => {
+      if (bKeyStartedInLobby && isLobbyVisible()) openEmoteWheel();
+    }, 260);
+  }
+
+  if (event.key === "Escape" && emoteWheelOpen) {
+    event.preventDefault();
+    closeEmoteWheel();
+  }
+}, true);
+
+window.addEventListener("keyup", event => {
+  if (event.key.toLowerCase() !== "b") return;
+
+  clearTimeout(emoteHoldTimer);
+
+  if (bKeyStartedInLobby && emoteWheelOpen) {
+    // Let user click an emote; releasing B does not cancel the wheel instantly.
+  }
+
+  bKeyStartedInLobby = false;
+}, true);
+
+
 document.addEventListener("keydown", event => {
   if (document.activeElement?.id === "partyChatInput") return;
   keys[event.key.toLowerCase()] = true;
@@ -127,7 +258,7 @@ document.addEventListener("keydown", event => {
       return;
     }
     if (event.key.toLowerCase() === "e") socket.emit("interact");
-    if (event.key.toLowerCase() === "b") {
+    if (event.key.toLowerCase() === "b" && room?.phase === "game") {
       buildMode = !buildMode;
       toastMessage(buildMode ? "Build mode on" : "Build mode off");
     }
@@ -1156,12 +1287,8 @@ fillToggleBtn?.addEventListener("click", () => {
   setFillEverywhere(!currentFillEnabled(), true);
 });
 emoteBtn.addEventListener("click", () => {
-  const char = document.querySelector("#stagePartyMembers .v56Avatar") || document.querySelector("#stagePartyMembers .fortCharacter") || document.getElementById("lobbyCharacter");
-  if (!char) return toastMessage("No character on stage yet");
-  char.classList.add("dance");
-  toastMessage("Emote: Victory Bounce");
-  clearTimeout(window.__danceTimer);
-  window.__danceTimer = setTimeout(() => char.classList.remove("dance"), 2500);
+  if (!isLobbyVisible()) return toastMessage("Emotes only work in the lobby");
+  openEmoteWheel();
 });
 
 socket.on("connect", () => {

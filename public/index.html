@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V56</title>
+  <title>Island Royale Multiplayer V57 Emote Wheel</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -360,5 +360,26 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js"></script>
 
-  </body>
+  
+  <div id="emoteWheelOverlay" class="emoteWheelOverlay hidden">
+    <div class="emoteWheelBackdrop"></div>
+    <div class="emoteWheel">
+      <div class="emoteWheelCenter">
+        <b>EMOTES</b>
+        <span>Lobby Only</span>
+      </div>
+      <button class="emoteOption emotePos1" data-emote="dance">Dance</button>
+      <button class="emoteOption emotePos2" data-emote="wave">Wave</button>
+      <button class="emoteOption emotePos3" data-emote="laugh">Laugh</button>
+      <button class="emoteOption emotePos4" data-emote="clap">Clap</button>
+      <button class="emoteOption emotePos5" data-emote="dab">Dab</button>
+      <button class="emoteOption emotePos6" data-emote="salute">Salute</button>
+      <button class="emoteOption emotePos7" data-emote="floss">Floss</button>
+      <button class="emoteOption emotePos8" data-emote="heart">Heart</button>
+      <button class="emoteOption emotePos9" data-emote="point">Point</button>
+      <button class="emoteOption emotePos10" data-emote="sit">Sit</button>
+    </div>
+  </div>
+
+</body>
 </html>

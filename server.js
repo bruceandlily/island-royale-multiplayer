@@ -1734,6 +1734,28 @@ io.on("connection", socket => {
     callback?.({ ok: true });
   });
 
+
+  socket.on("lobbyEmote", ({ emote } = {}, callback) => {
+    const room = rooms.get(socket.data.roomCode);
+    if (!room) return callback?.({ ok: false, error: "Not in a room" });
+    if (room.phase !== "lobby") return callback?.({ ok: false, error: "Emotes only work in the lobby" });
+
+    const player = room.players.get(socket.id);
+    if (!player || player.isBot) return callback?.({ ok: false, error: "Player not found" });
+
+    const allowed = new Set(["dance", "wave", "laugh", "clap", "dab", "salute", "floss", "heart", "point", "sit"]);
+    if (!allowed.has(emote)) return callback?.({ ok: false, error: "Invalid emote" });
+
+    io.to(room.code).emit("lobbyEmote", {
+      playerId: player.id,
+      name: player.name || "Player",
+      emote,
+      time: Date.now()
+    });
+
+    callback?.({ ok: true });
+  });
+
   socket.on("disconnect", () => {
     const queuedRoom = rooms.get(socket.data.roomCode);
     if (queuedRoom) removeFromMatchmaking(queuedRoom);

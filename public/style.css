@@ -3082,3 +3082,191 @@ input[type="range"] {
   .dynamicHero.hero2 { left: 70%; top: 24%; }
   .dynamicHero.hero3 { left: 18%; top: 24%; }
 }
+
+
+
+/* ===== V57 Lobby-only Fortnite-style emote wheel ===== */
+.emoteWheelOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+.emoteWheelOverlay.hidden {
+  display: none;
+}
+
+.emoteWheelBackdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0,0,0,.12), rgba(0,0,0,.58));
+  backdrop-filter: blur(2px);
+}
+
+.emoteWheel {
+  position: relative;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(11,25,55,.96) 0 21%, transparent 22%),
+    conic-gradient(
+      rgba(255,232,34,.95) 0 36deg,
+      rgba(42,85,145,.92) 36deg 72deg,
+      rgba(53,99,166,.92) 72deg 108deg,
+      rgba(42,85,145,.92) 108deg 144deg,
+      rgba(53,99,166,.92) 144deg 180deg,
+      rgba(42,85,145,.92) 180deg 216deg,
+      rgba(53,99,166,.92) 216deg 252deg,
+      rgba(42,85,145,.92) 252deg 288deg,
+      rgba(53,99,166,.92) 288deg 324deg,
+      rgba(42,85,145,.92) 324deg 360deg
+    );
+  border: 6px solid rgba(255,255,255,.82);
+  box-shadow: 0 22px 80px rgba(0,0,0,.48), inset 0 0 0 5px rgba(255,255,255,.1);
+  animation: wheelPop .16s ease-out;
+}
+
+@keyframes wheelPop {
+  from { transform: scale(.82); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.emoteWheelCenter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 154px;
+  height: 154px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(10,21,45,.98), rgba(18,44,89,.98));
+  border: 4px solid rgba(255,255,255,.72);
+  color: white;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  text-align: center;
+  box-shadow: inset 0 0 28px rgba(255,255,255,.08);
+}
+
+.emoteWheelCenter b {
+  color: #ffe822;
+  font-size: 24px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+}
+
+.emoteWheelCenter span {
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.emoteOption {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 116px;
+  height: 50px;
+  margin-left: -58px;
+  margin-top: -25px;
+  border-radius: 999px;
+  background: rgba(8,18,40,.88);
+  border: 3px solid rgba(255,255,255,.72);
+  color: white;
+  font-size: 13px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  box-shadow: 0 8px 22px rgba(0,0,0,.22);
+  cursor: pointer;
+  transition: background .12s ease, color .12s ease, filter .12s ease;
+}
+
+.emoteOption:hover,
+.emoteOption.selected {
+  background: #ffe822;
+  color: #061126;
+  border-color: white;
+  filter: drop-shadow(0 0 14px rgba(255,232,34,.7));
+}
+
+.emotePos1 { transform: rotate(0deg) translateY(-182px) rotate(0deg); }
+.emotePos2 { transform: rotate(36deg) translateY(-182px) rotate(-36deg); }
+.emotePos3 { transform: rotate(72deg) translateY(-182px) rotate(-72deg); }
+.emotePos4 { transform: rotate(108deg) translateY(-182px) rotate(-108deg); }
+.emotePos5 { transform: rotate(144deg) translateY(-182px) rotate(-144deg); }
+.emotePos6 { transform: rotate(180deg) translateY(-182px) rotate(-180deg); }
+.emotePos7 { transform: rotate(216deg) translateY(-182px) rotate(-216deg); }
+.emotePos8 { transform: rotate(252deg) translateY(-182px) rotate(-252deg); }
+.emotePos9 { transform: rotate(288deg) translateY(-182px) rotate(-288deg); }
+.emotePos10 { transform: rotate(324deg) translateY(-182px) rotate(-324deg); }
+
+.v56Avatar.emote-dance { animation: dance .45s ease-in-out infinite !important; }
+.v56Avatar.emote-wave .arm.right.fore { animation: emoteWave .35s ease-in-out infinite alternate; transform-origin: 50% 0; }
+.v56Avatar.emote-clap .arm.left.fore { animation: emoteClapL .28s ease-in-out infinite alternate; }
+.v56Avatar.emote-clap .arm.right.fore { animation: emoteClapR .28s ease-in-out infinite alternate; }
+.v56Avatar.emote-dab { animation: emoteDab .7s ease-in-out infinite alternate !important; }
+.v56Avatar.emote-floss { animation: emoteFloss .32s ease-in-out infinite alternate !important; }
+.v56Avatar.emote-salute .arm.right.fore { animation: emoteSalute .35s ease-in-out infinite alternate; }
+.v56Avatar.emote-heart:after {
+  content: "♥";
+  position: absolute;
+  left: 69px;
+  top: -22px;
+  color: #ff5b8f;
+  font-size: 34px;
+  text-shadow: 0 0 18px rgba(255,91,143,.8);
+  animation: heartFloat .9s ease-in-out infinite alternate;
+}
+.v56Avatar.emote-laugh:after {
+  content: "😂";
+  position: absolute;
+  left: 65px;
+  top: -25px;
+  font-size: 30px;
+  animation: heartFloat .8s ease-in-out infinite alternate;
+}
+.v56Avatar.emote-point .arm.right.fore { animation: emotePoint .35s ease-in-out infinite alternate; }
+.v56Avatar.emote-sit { transform: translateX(-50%) scale(1.02) translateY(30px) !important; }
+.v56Avatar.emote-sit .thigh,
+.v56Avatar.emote-sit .shin { transform: rotate(78deg); }
+
+@keyframes emoteWave { from { transform: rotate(-28deg); } to { transform: rotate(-96deg); } }
+@keyframes emoteClapL { from { transform: rotate(20deg); } to { transform: rotate(-40deg); } }
+@keyframes emoteClapR { from { transform: rotate(-28deg); } to { transform: rotate(38deg); } }
+@keyframes emoteDab { from { transform: translateX(-50%) rotate(-4deg); } to { transform: translateX(-50%) rotate(9deg); } }
+@keyframes emoteFloss { from { transform: translateX(-50%) translateX(-12px) rotate(-3deg); } to { transform: translateX(-50%) translateX(12px) rotate(3deg); } }
+@keyframes emoteSalute { from { transform: rotate(-28deg); } to { transform: rotate(-115deg) translateY(-12px); } }
+@keyframes emotePoint { from { transform: rotate(-28deg); } to { transform: rotate(-82deg) translateX(12px); } }
+@keyframes heartFloat { from { transform: translateY(0) scale(.92); } to { transform: translateY(-14px) scale(1.08); } }
+
+@media (max-width: 650px) {
+  .emoteWheel {
+    width: 330px;
+    height: 330px;
+  }
+
+  .emoteOption {
+    width: 88px;
+    height: 38px;
+    margin-left: -44px;
+    margin-top: -19px;
+    font-size: 10px;
+  }
+
+  .emotePos1 { transform: rotate(0deg) translateY(-132px) rotate(0deg); }
+  .emotePos2 { transform: rotate(36deg) translateY(-132px) rotate(-36deg); }
+  .emotePos3 { transform: rotate(72deg) translateY(-132px) rotate(-72deg); }
+  .emotePos4 { transform: rotate(108deg) translateY(-132px) rotate(-108deg); }
+  .emotePos5 { transform: rotate(144deg) translateY(-132px) rotate(-144deg); }
+  .emotePos6 { transform: rotate(180deg) translateY(-132px) rotate(-180deg); }
+  .emotePos7 { transform: rotate(216deg) translateY(-132px) rotate(-216deg); }
+  .emotePos8 { transform: rotate(252deg) translateY(-132px) rotate(-252deg); }
+  .emotePos9 { transform: rotate(288deg) translateY(-132px) rotate(-288deg); }
+  .emotePos10 { transform: rotate(324deg) translateY(-132px) rotate(-324deg); }
+}

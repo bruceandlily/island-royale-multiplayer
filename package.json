@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v56-trios-realistic-players",
-  "version": "56.0.0",
-  "description": "Island Royale multiplayer with Trios mode and upgraded realistic lobby player visuals.",
+  "name": "island-royale-multiplayer-v57-lobby-only-emote-wheel",
+  "version": "57.0.0",
+  "description": "Island Royale multiplayer with a lobby-only Fortnite-style hold-B emote wheel.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
