@@ -1529,31 +1529,41 @@ document.querySelectorAll(".modePickButton").forEach(button => {
 
 
 
-// V52 party chat: fixed send, fixed minimize, better placement.
-const partyChatBox = document.getElementById("partyChatBox");
-const partyChatHeader = document.getElementById("partyChatHeader");
-const partyChatInput = document.getElementById("partyChatInput");
-const partyChatMessages = document.getElementById("partyChatMessages");
-const partyChatSendBtn = document.getElementById("partyChatSendBtn");
-const partyChatStatus = document.getElementById("partyChatStatus");
-const partyChatMinBtn = document.getElementById("partyChatMinBtn");
+
+
+// V53 PARTY CHAT - fixed because chat HTML now loads before this file,
+// and this code also fetches elements lazily so it cannot miss them.
+function chatEl(id) {
+  return document.getElementById(id);
+}
+
+function partyChatBoxEl() { return chatEl("partyChatBox"); }
+function partyChatHeaderEl() { return chatEl("partyChatHeader"); }
+function partyChatInputEl() { return chatEl("partyChatInput"); }
+function partyChatMessagesEl() { return chatEl("partyChatMessages"); }
+function partyChatSendBtnEl() { return chatEl("partyChatSendBtn"); }
+function partyChatStatusEl() { return chatEl("partyChatStatus"); }
+function partyChatMinBtnEl() { return chatEl("partyChatMinBtn"); }
 
 function setPartyChatOpen(open, focusInput = false) {
-  if (!partyChatBox) return;
+  const box = partyChatBoxEl();
+  const input = partyChatInputEl();
+  const status = partyChatStatusEl();
 
-  partyChatBox.classList.toggle("collapsed", !open);
+  if (!box) return;
 
-  if (partyChatStatus) {
-    partyChatStatus.textContent = open ? "Enter sends • Esc closes" : "Click or press /";
-  }
+  box.classList.toggle("collapsed", !open);
 
-  if (open && focusInput && partyChatInput) {
-    setTimeout(() => partyChatInput.focus(), 25);
+  if (status) status.textContent = open ? "Enter sends • Esc closes" : "Click or press /";
+
+  if (open && focusInput && input) {
+    setTimeout(() => input.focus(), 20);
   }
 }
 
 function addPartyChatLine(chat, system = false, important = false) {
-  if (!partyChatMessages) return;
+  const messages = partyChatMessagesEl();
+  if (!messages) return;
 
   const line = document.createElement("div");
 
@@ -1574,13 +1584,9 @@ function addPartyChatLine(chat, system = false, important = false) {
     line.appendChild(msg);
   }
 
-  partyChatMessages.appendChild(line);
-
-  while (partyChatMessages.children.length > 80) {
-    partyChatMessages.removeChild(partyChatMessages.firstChild);
-  }
-
-  partyChatMessages.scrollTop = partyChatMessages.scrollHeight;
+  messages.appendChild(line);
+  while (messages.children.length > 80) messages.removeChild(messages.firstChild);
+  messages.scrollTop = messages.scrollHeight;
 }
 
 function sendPartyChatCore(event) {
@@ -1589,9 +1595,13 @@ function sendPartyChatCore(event) {
     event.stopPropagation();
   }
 
-  if (!partyChatInput) return;
+  const input = partyChatInputEl();
+  if (!input) {
+    toastMessage("Chat input not found");
+    return;
+  }
 
-  const message = partyChatInput.value.trim();
+  const message = input.value.trim();
 
   if (!message) {
     setPartyChatOpen(true, true);
@@ -1599,23 +1609,14 @@ function sendPartyChatCore(event) {
   }
 
   if (!room) {
-    addPartyChatLine("Create or join a room first. Party chat only sends to players in your room.", true, true);
+    addPartyChatLine("Create or join a room first. Party chat sends only to players in your room.", true, true);
     toastMessage("Create or join a room first");
-    partyChatInput.value = "";
+    input.value = "";
     setPartyChatOpen(true, true);
     return;
   }
 
-  // Show a sending line only if server does not answer fast, so the button never feels dead.
-  let answered = false;
-  const slowTimer = setTimeout(() => {
-    if (!answered) addPartyChatLine("Sending...", true, false);
-  }, 450);
-
   socket.emit("partyChat", { message }, response => {
-    answered = true;
-    clearTimeout(slowTimer);
-
     if (!response?.ok) {
       addPartyChatLine(response?.error || "Could not send chat.", true, true);
       toastMessage(response?.error || "Could not send chat");
@@ -1623,7 +1624,7 @@ function sendPartyChatCore(event) {
       return;
     }
 
-    partyChatInput.value = "";
+    input.value = "";
     setPartyChatOpen(true, true);
   });
 }
@@ -1633,53 +1634,64 @@ function togglePartyChatCore(event) {
     event.preventDefault();
     event.stopPropagation();
   }
-
-  const isCollapsed = partyChatBox?.classList.contains("collapsed");
+  const box = partyChatBoxEl();
+  const isCollapsed = box?.classList.contains("collapsed");
   setPartyChatOpen(!!isCollapsed, !!isCollapsed);
 }
 
 window.sendPartyChatNow = sendPartyChatCore;
 window.togglePartyChatBox = togglePartyChatCore;
 
-if (partyChatSendBtn) {
-  partyChatSendBtn.onclick = sendPartyChatCore;
-  partyChatSendBtn.addEventListener("click", sendPartyChatCore);
-}
+function installPartyChatHandlers() {
+  const sendBtn = partyChatSendBtnEl();
+  const minBtn = partyChatMinBtnEl();
+  const header = partyChatHeaderEl();
+  const box = partyChatBoxEl();
+  const input = partyChatInputEl();
 
-if (partyChatMinBtn) {
-  partyChatMinBtn.onclick = togglePartyChatCore;
-  partyChatMinBtn.addEventListener("click", togglePartyChatCore);
-}
+  if (sendBtn && !sendBtn.dataset.chatInstalled) {
+    sendBtn.dataset.chatInstalled = "1";
+    sendBtn.onclick = sendPartyChatCore;
+    sendBtn.addEventListener("click", sendPartyChatCore);
+  }
 
-if (partyChatHeader) {
-  partyChatHeader.addEventListener("click", event => {
-    if (event.target === partyChatMinBtn) return;
-    setPartyChatOpen(true, true);
-  });
-}
+  if (minBtn && !minBtn.dataset.chatInstalled) {
+    minBtn.dataset.chatInstalled = "1";
+    minBtn.onclick = togglePartyChatCore;
+    minBtn.addEventListener("click", togglePartyChatCore);
+  }
 
-if (partyChatBox) {
-  partyChatBox.addEventListener("click", event => {
-    if (event.target === partyChatMinBtn || event.target === partyChatSendBtn || event.target === partyChatInput) return;
-    if (partyChatBox.classList.contains("collapsed")) setPartyChatOpen(true, true);
-  });
-}
+  if (header && !header.dataset.chatInstalled) {
+    header.dataset.chatInstalled = "1";
+    header.addEventListener("click", event => {
+      if (event.target === minBtn) return;
+      setPartyChatOpen(true, true);
+    });
+  }
 
-if (partyChatInput) {
-  partyChatInput.addEventListener("keydown", event => {
-    event.stopPropagation();
+  if (box && !box.dataset.chatInstalled) {
+    box.dataset.chatInstalled = "1";
+    box.addEventListener("click", event => {
+      if (event.target === minBtn || event.target === sendBtn || event.target === input) return;
+      if (box.classList.contains("collapsed")) setPartyChatOpen(true, true);
+    });
+  }
 
-    if (event.key === "Enter") {
-      sendPartyChatCore(event);
-    }
-
-    if (event.key === "Escape") {
-      event.preventDefault();
+  if (input && !input.dataset.chatInstalled) {
+    input.dataset.chatInstalled = "1";
+    input.addEventListener("keydown", event => {
       event.stopPropagation();
-      partyChatInput.blur();
-      setPartyChatOpen(false, false);
-    }
-  });
+
+      if (event.key === "Enter") sendPartyChatCore(event);
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        input.blur();
+        setPartyChatOpen(false, false);
+      }
+    });
+  }
 }
 
 function openChatShortcut(event) {
@@ -1689,6 +1701,7 @@ function openChatShortcut(event) {
   if (!typingSomewhere && (event.key === "/" || event.code === "Slash" || event.key.toLowerCase() === "t")) {
     event.preventDefault();
     event.stopPropagation();
+    installPartyChatHandlers();
     setPartyChatOpen(true, true);
   }
 }
@@ -1697,11 +1710,11 @@ window.addEventListener("keydown", openChatShortcut, true);
 document.addEventListener("keydown", openChatShortcut, true);
 
 socket.on("partyChat", chat => {
+  installPartyChatHandlers();
   addPartyChatLine(chat);
   setPartyChatOpen(true, false);
 });
 
-// Start minimized so it does not block Daily Challenges.
-// Click PARTY CHAT, press /, or press T to open it.
+installPartyChatHandlers();
 setPartyChatOpen(false, false);
-addPartyChatLine("Press / or T to chat. Create/join a room before sending to friends.", true, true);
+addPartyChatLine("Chat fixed. Press / or T to open, then Enter or SEND.", true, true);

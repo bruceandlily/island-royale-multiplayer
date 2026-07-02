@@ -2646,3 +2646,55 @@ input[type="range"] {
     height: 210px !important;
   }
 }
+
+
+
+/* === V53 chat load order fixed === */
+.partyChatBox {
+  left: 24px !important;
+  bottom: 18px !important;
+  width: 390px !important;
+  height: 255px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+.partyChatBox.collapsed {
+  height: 44px !important;
+  width: 245px !important;
+}
+
+.partyChatBox.collapsed .partyChatMessages,
+.partyChatBox.collapsed .partyChatInputRow {
+  display: none !important;
+}
+
+.partyChatBox:not(.collapsed) .partyChatMessages {
+  display: flex !important;
+}
+
+.partyChatBox:not(.collapsed) .partyChatInputRow {
+  display: grid !important;
+}
+
+#partyChatInput,
+#partyChatSendBtn,
+#partyChatMinBtn,
+#partyChatHeader {
+  pointer-events: auto !important;
+}
+
+#partyChatSendBtn,
+#partyChatMinBtn,
+#partyChatHeader {
+  cursor: pointer !important;
+}
+
+#partyChatInput {
+  cursor: text !important;
+  user-select: text !important;
+}
+
+.chatSystem.important {
+  color: #ffe822 !important;
+}

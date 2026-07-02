@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V52 Chat Actually Fixed
+# Island Royale Multiplayer V53 Chat Load Order Fixed
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -314,3 +314,18 @@ Fixed:
 - Esc minimizes
 - If you are not in a room, it now shows a clear message instead of doing nothing
 - Messages still only go to players in your room/party
+
+
+## V53 Chat Load Order Fix
+
+This fixes the real cause of the chat bug:
+- The chat HTML was loading after client.js
+- client.js could not find the SEND/minimize/input elements
+- Now the chat HTML loads before client.js
+- The chat code also grabs elements safely/lazily
+- SEND works
+- Minimize works
+- `/` and `T` open chat
+- Enter sends
+- Esc minimizes
+- Chat stays room/party-only
