@@ -31,6 +31,19 @@ const volumeSlider = document.getElementById("volumeSlider");
 const controlsSelect = document.getElementById("controlsSelect");
 const selectedModeTitle = document.getElementById("selectedModeTitle");
 const fillToggleBtn = document.getElementById("fillToggleBtn");
+const volumeValue = document.getElementById("volumeValue");
+const musicVolumeSlider = document.getElementById("musicVolumeSlider");
+const musicVolumeValue = document.getElementById("musicVolumeValue");
+const sfxVolumeSlider = document.getElementById("sfxVolumeSlider");
+const sfxVolumeValue = document.getElementById("sfxVolumeValue");
+const lobbyMusicSelect = document.getElementById("lobbyMusicSelect");
+const uiSoundsSelect = document.getElementById("uiSoundsSelect");
+const emoteSoundsSelect = document.getElementById("emoteSoundsSelect");
+const chatVisibilitySelect = document.getElementById("chatVisibilitySelect");
+const damageNumbersSelect = document.getElementById("damageNumbersSelect");
+const autoOpenChatSelect = document.getElementById("autoOpenChatSelect");
+const resetSettingsBtn = document.getElementById("resetSettingsBtn");
+const settingsSavedText = document.getElementById("settingsSavedText");
 
 const playersLeftText = document.getElementById("playersLeft");
 const killsText = document.getElementById("kills");
@@ -82,7 +95,21 @@ let buildType = "wall";
 let buildMaterial = "wood";
 let lastShootAt = 0;
 let selectedCosmetic = loadLocal("selectedCosmetic", { outfit: "Raider", color: "#2fb4ff", banner: "Blue" });
-let settings = loadLocal("settings", { graphics: "high", volume: 60, controls: "on", mode: "Solo", fill: false });
+let settings = loadLocal("settings", {
+  graphics: "high",
+  volume: 60,
+  musicVolume: 35,
+  sfxVolume: 70,
+  controls: "on",
+  lobbyMusic: "on",
+  uiSounds: "on",
+  emoteSounds: "on",
+  chatVisibility: "minimized",
+  damageNumbers: "on",
+  autoOpenChat: "on",
+  mode: "Solo",
+  fill: false
+});
 if (settings.fill === undefined) settings.fill = false;
 let quests = loadLocal("quests", { eliminations: 0, matches: 0, party: 0 });
 let progression = loadLocal("progression", {
@@ -981,13 +1008,130 @@ function renderFunctionalPanels() {
   renderBattlePass();
 }
 
+
+function normalizeSettings() {
+  settings.graphics = settings.graphics || "high";
+  settings.volume = Number(settings.volume ?? 60);
+  settings.musicVolume = Number(settings.musicVolume ?? 35);
+  settings.sfxVolume = Number(settings.sfxVolume ?? 70);
+  settings.controls = settings.controls || "on";
+  settings.lobbyMusic = settings.lobbyMusic || "on";
+  settings.uiSounds = settings.uiSounds || "on";
+  settings.emoteSounds = settings.emoteSounds || "on";
+  settings.chatVisibility = settings.chatVisibility || "minimized";
+  settings.damageNumbers = settings.damageNumbers || "on";
+  settings.autoOpenChat = settings.autoOpenChat || "on";
+  settings.mode = settings.mode || "Solo";
+  settings.fill = !!settings.fill;
+}
+
+function defaultSettings() {
+  return {
+    graphics: "high",
+    volume: 60,
+    musicVolume: 35,
+    sfxVolume: 70,
+    controls: "on",
+    lobbyMusic: "on",
+    uiSounds: "on",
+    emoteSounds: "on",
+    chatVisibility: "minimized",
+    damageNumbers: "on",
+    autoOpenChat: "on",
+    mode: settings.mode || "Solo",
+    fill: !!settings.fill
+  };
+}
+
+function updateSettingsSavedText(text = "Settings saved") {
+  if (!settingsSavedText) return;
+  settingsSavedText.textContent = text;
+  clearTimeout(settingsSavedText.__timer);
+  settingsSavedText.__timer = setTimeout(() => {
+    settingsSavedText.textContent = "Settings auto-save when changed.";
+  }, 1600);
+}
+
+function applySettingsEffects() {
+  normalizeSettings();
+
+  document.body.classList.toggle("graphics-low", settings.graphics === "low");
+  document.body.classList.toggle("graphics-medium", settings.graphics === "medium");
+  document.body.classList.toggle("graphics-high", settings.graphics === "high");
+
+  document.body.classList.toggle("hide-controls", settings.controls === "off");
+  document.body.classList.toggle("hide-damage", settings.damageNumbers === "off");
+  document.body.classList.toggle("chat-hidden", settings.chatVisibility === "off");
+  document.body.classList.toggle("chat-minimized", settings.chatVisibility === "minimized");
+
+  if (window.setIslandAudioSettings) {
+    window.setIslandAudioSettings({
+      enabled: Number(settings.volume) > 0,
+      master: Number(settings.volume) / 100,
+      music: settings.lobbyMusic === "on" ? Number(settings.musicVolume) / 100 : 0,
+      sfx: Number(settings.sfxVolume) / 100,
+      uiSounds: settings.uiSounds === "on",
+      emoteSounds: settings.emoteSounds === "on"
+    });
+  }
+
+  if (window.setIslandAudioEnabled) {
+    window.setIslandAudioEnabled(Number(settings.volume) > 0);
+  }
+}
+
+function readSettingsFromUI() {
+  if (graphicsSelect) settings.graphics = graphicsSelect.value;
+  if (volumeSlider) settings.volume = Number(volumeSlider.value);
+  if (musicVolumeSlider) settings.musicVolume = Number(musicVolumeSlider.value);
+  if (sfxVolumeSlider) settings.sfxVolume = Number(sfxVolumeSlider.value);
+  if (controlsSelect) settings.controls = controlsSelect.value;
+  if (lobbyMusicSelect) settings.lobbyMusic = lobbyMusicSelect.value;
+  if (uiSoundsSelect) settings.uiSounds = uiSoundsSelect.value;
+  if (emoteSoundsSelect) settings.emoteSounds = emoteSoundsSelect.value;
+  if (chatVisibilitySelect) settings.chatVisibility = chatVisibilitySelect.value;
+  if (damageNumbersSelect) settings.damageNumbers = damageNumbersSelect.value;
+  if (autoOpenChatSelect) settings.autoOpenChat = autoOpenChatSelect.value;
+}
+
+function writeSettingsToUI() {
+  normalizeSettings();
+
+  if (graphicsSelect) graphicsSelect.value = settings.graphics;
+  if (volumeSlider) volumeSlider.value = settings.volume;
+  if (volumeValue) volumeValue.textContent = `${settings.volume}%`;
+  if (musicVolumeSlider) musicVolumeSlider.value = settings.musicVolume;
+  if (musicVolumeValue) musicVolumeValue.textContent = `${settings.musicVolume}%`;
+  if (sfxVolumeSlider) sfxVolumeSlider.value = settings.sfxVolume;
+  if (sfxVolumeValue) sfxVolumeValue.textContent = `${settings.sfxVolume}%`;
+  if (controlsSelect) controlsSelect.value = settings.controls;
+  if (lobbyMusicSelect) lobbyMusicSelect.value = settings.lobbyMusic;
+  if (uiSoundsSelect) uiSoundsSelect.value = settings.uiSounds;
+  if (emoteSoundsSelect) emoteSoundsSelect.value = settings.emoteSounds;
+  if (chatVisibilitySelect) chatVisibilitySelect.value = settings.chatVisibility;
+  if (damageNumbersSelect) damageNumbersSelect.value = settings.damageNumbers;
+  if (autoOpenChatSelect) autoOpenChatSelect.value = settings.autoOpenChat;
+}
+
+function saveSettingsFromUI(text = "Settings saved") {
+  readSettingsFromUI();
+  normalizeSettings();
+  saveLocal("settings", settings);
+  writeSettingsToUI();
+  applySettingsEffects();
+  updateSettingsSavedText(text);
+}
+
+normalizeSettings();
+
 function applySettingsToUI() {
-  graphicsSelect.value = settings.graphics || "high";
-  volumeSlider.value = settings.volume ?? 60;
-  controlsSelect.value = settings.controls || "on";
-  modeSelect.value = settings.mode || "Solo";
-  controlsHud?.classList.toggle("hidden", settings.controls === "off");
+  normalizeSettings();
+  writeSettingsToUI();
+
+  if (modeSelect) modeSelect.value = settings.mode || "Solo";
+  syncFillButton(!!settings.fill);
   syncModeButtons(settings.mode || "Solo");
+  applySettingsEffects();
 }
 function applyCosmeticPreview() {
   const body = document.querySelector(".bigCharacter .body");
@@ -1140,14 +1284,8 @@ resetQuestsBtn.addEventListener("click", () => {
   saveLocal("quests", quests); updateQuestUI(); toastMessage("Quests reset");
 });
 saveSettingsBtn.addEventListener("click", () => {
-  settings.graphics = graphicsSelect.value;
-  settings.volume = Number(volumeSlider.value);
-  settings.controls = controlsSelect.value;
-  settings.mode = modeSelect.value || settings.mode || "Solo";
-  settings.fill = currentFillEnabled();
-  saveLocal("settings", settings);
-  applySettingsToUI();
-  setModeEverywhere(settings.mode, true);
+  saveSettingsFromUI("Settings saved");
+  setModeEverywhere(settings.mode, false);
 });
 modeSelect.addEventListener("change", () => {
   setModeEverywhere(modeSelect.value, true);
@@ -1685,6 +1823,39 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 applySettingsToUI();
+
+// V63: every settings control auto-saves and actually applies.
+[
+  graphicsSelect,
+  volumeSlider,
+  musicVolumeSlider,
+  sfxVolumeSlider,
+  controlsSelect,
+  lobbyMusicSelect,
+  uiSoundsSelect,
+  emoteSoundsSelect,
+  chatVisibilitySelect,
+  damageNumbersSelect,
+  autoOpenChatSelect
+].forEach(control => {
+  if (!control || control.dataset.v63SettingsBound === "1") return;
+  control.dataset.v63SettingsBound = "1";
+  const eventName = control.type === "range" ? "input" : "change";
+  control.addEventListener(eventName, () => saveSettingsFromUI("Settings applied"));
+});
+
+if (resetSettingsBtn && resetSettingsBtn.dataset.v63SettingsBound !== "1") {
+  resetSettingsBtn.dataset.v63SettingsBound = "1";
+  resetSettingsBtn.addEventListener("click", () => {
+    settings = defaultSettings();
+    saveLocal("settings", settings);
+    writeSettingsToUI();
+    applySettingsEffects();
+    updateSettingsSavedText("Settings reset");
+    toastMessage("Settings reset");
+  });
+}
+
 applyCosmeticPreview();
 updateProgressionUI();
 updateQuestUI();
@@ -1939,9 +2110,9 @@ document.querySelectorAll(".modePickButton").forEach(button => {
       musicGain = ctx.createGain();
       sfxGain = ctx.createGain();
 
-      masterGain.gain.value = audioEnabled ? 0.75 : 0.0;
-      musicGain.gain.value = 0.16;
-      sfxGain.gain.value = 0.35;
+      masterGain.gain.value = audioEnabled ? ((window.__islandAudioSettings?.master ?? (Number(settings?.volume ?? 60) / 100)) * 0.95) : 0.0;
+      musicGain.gain.value = 0.16 * (window.__islandAudioSettings?.music ?? (Number(settings?.musicVolume ?? 35) / 100));
+      sfxGain.gain.value = 0.35 * (window.__islandAudioSettings?.sfx ?? (Number(settings?.sfxVolume ?? 70) / 100));
 
       musicGain.connect(masterGain);
       sfxGain.connect(masterGain);
@@ -1963,7 +2134,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
     const c = getCtx();
     if (masterGain && c) {
       masterGain.gain.cancelScheduledValues(c.currentTime);
-      masterGain.gain.linearRampToValueAtTime(audioEnabled ? 0.75 : 0.0, c.currentTime + 0.12);
+      masterGain.gain.linearRampToValueAtTime(audioEnabled ? ((window.__islandAudioSettings?.master ?? (Number(settings?.volume ?? 60) / 100)) * 0.95) : 0.0, c.currentTime + 0.12);
     }
 
     const btn = document.getElementById("audioToggleBtn");
@@ -1975,7 +2146,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
 
   function tone(freq, duration = 0.12, options = {}) {
     const c = getCtx();
-    if (!c || !audioEnabled) return;
+    if (!c || !audioEnabled || (window.__islandAudioSettings && !window.__islandAudioSettings.enabled)) return;
 
     const now = c.currentTime + (options.delay || 0);
     const osc = c.createOscillator();
@@ -2001,7 +2172,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
 
   function noise(duration = 0.06, options = {}) {
     const c = getCtx();
-    if (!c || !audioEnabled) return;
+    if (!c || !audioEnabled || (window.__islandAudioSettings && !window.__islandAudioSettings.enabled)) return;
 
     const now = c.currentTime + (options.delay || 0);
     const bufferSize = Math.max(1, Math.floor(c.sampleRate * duration));
@@ -2031,6 +2202,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
   }
 
   function playHover() {
+    const audioSettings = window.__islandAudioSettings || {}; if (audioSettings.uiSounds === false || audioSettings.sfx <= 0) return;
     const nowMs = performance.now();
     if (nowMs - lastHoverAt < 42) return;
     lastHoverAt = nowMs;
@@ -2038,6 +2210,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
   }
 
   function playClick() {
+    const audioSettings = window.__islandAudioSettings || {}; if (audioSettings.uiSounds === false || audioSettings.sfx <= 0) return;
     tone(520, 0.05, { type: "square", volume: 0.08 });
     tone(760, 0.075, { type: "triangle", volume: 0.055, delay: 0.025 });
   }
@@ -2047,6 +2220,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
   }
 
   function playEmoteMusic(emote) {
+    const audioSettings = window.__islandAudioSettings || {}; if (audioSettings.emoteSounds === false || audioSettings.sfx <= 0) return;
     const pattern = emotePatterns[emote] || emotePatterns.dance;
     let t = 0;
 
@@ -2063,7 +2237,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
     if (!c || musicTimer) return;
 
     musicTimer = setInterval(() => {
-      if (!audioEnabled || !isLobbyAudioState()) return;
+      const audioSettings = window.__islandAudioSettings || {}; if (!audioEnabled || !isLobbyAudioState() || audioSettings.music <= 0) return;
 
       const chord = lobbyChords[musicStep % lobbyChords.length];
       const root = chord[0];
@@ -2143,6 +2317,51 @@ document.querySelectorAll(".modePickButton").forEach(button => {
 
   installAudioEvents();
 })();
+
+// V63 audio settings bridge.
+// This replaces/overrides V62 volume behavior so the settings sliders work.
+(function setupV63AudioSettingsBridge() {
+  window.__islandAudioSettings = {
+    enabled: Number(settings?.volume ?? 60) > 0,
+    master: Number(settings?.volume ?? 60) / 100,
+    music: settings?.lobbyMusic === "off" ? 0 : Number(settings?.musicVolume ?? 35) / 100,
+    sfx: Number(settings?.sfxVolume ?? 70) / 100,
+    uiSounds: settings?.uiSounds !== "off",
+    emoteSounds: settings?.emoteSounds !== "off"
+  };
+
+  window.setIslandAudioSettings = function(next = {}) {
+    window.__islandAudioSettings = { ...window.__islandAudioSettings, ...next };
+    localStorage.setItem("island_audio_enabled", String(!!window.__islandAudioSettings.enabled));
+  };
+
+  window.getIslandAudioSettings = function() {
+    return window.__islandAudioSettings || {};
+  };
+
+  const oldHover = window.playIslandHoverSound;
+  const oldClick = window.playIslandUISound;
+  const oldEmote = window.playIslandEmoteMusic;
+
+  window.playIslandHoverSound = function(...args) {
+    const s = window.getIslandAudioSettings();
+    if (!s.enabled || !s.uiSounds || s.sfx <= 0) return;
+    return oldHover?.(...args);
+  };
+
+  window.playIslandUISound = function(...args) {
+    const s = window.getIslandAudioSettings();
+    if (!s.enabled || !s.uiSounds || s.sfx <= 0) return;
+    return oldClick?.(...args);
+  };
+
+  window.playIslandEmoteMusic = function(...args) {
+    const s = window.getIslandAudioSettings();
+    if (!s.enabled || !s.emoteSounds || s.sfx <= 0) return;
+    return oldEmote?.(...args);
+  };
+})();
+
 
 // V53 PARTY CHAT - fixed because chat HTML now loads before this file,
 // and this code also fetches elements lazily so it cannot miss them.
@@ -2325,7 +2544,7 @@ document.addEventListener("keydown", openChatShortcut, true);
 socket.on("partyChat", chat => {
   installPartyChatHandlers();
   addPartyChatLine(chat);
-  setPartyChatOpen(true, false);
+  if (!settings || settings.autoOpenChat !== "off") setPartyChatOpen(true, false);
 });
 
 installPartyChatHandlers();
@@ -2401,3 +2620,5 @@ addPartyChatLine("Chat fixed. Press / or T to open, then Enter or SEND.", true, 
     }, true);
   }, 300);
 })();
+
+setTimeout(() => { try { applySettingsToUI(); applySettingsEffects(); } catch (e) {} }, 300);
