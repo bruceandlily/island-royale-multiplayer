@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V45 Functional Lobby
+# Island Royale Multiplayer V46 Mode Lock
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -196,3 +196,20 @@ Changed:
 - Leaderboards tab now shows real current room/match players sorted by kills
 - Lobby stage updates player names, ready status, cosmetics, and party count
 - Existing gameplay from V42/V44 is kept
+
+
+## V46 Mode Lock
+
+This fixes mode/player-count rules.
+
+Rules:
+- Solo requires exactly 1 real player
+- Duos requires exactly 2 real players
+- Squads requires exactly 4 real players
+
+Examples:
+- If you are alone and select Duos/Squads, Quick Test will not start
+- If 2 people are in the room but mode is Solo, the match will not start
+- If 4 people are in the room but mode is Duos, the match will not start
+- If 4 people are in the room and mode is Squads, the match starts
+- Bots still fill the actual match after the real player count is correct

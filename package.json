@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v45-functional-lobby",
+  "name": "island-royale-multiplayer-v46-mode-lock",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with a functional lobby stage, shop, profile, leaderboard, and working party slots.",
+  "description": "Host-ready multiplayer battle royale with strict Solo/Duos/Squads real-player mode validation.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

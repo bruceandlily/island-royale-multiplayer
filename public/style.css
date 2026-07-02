@@ -2276,3 +2276,17 @@ input[type="range"] {
     display: none;
   }
 }
+
+
+
+/* === V46 mode lock feedback === */
+.readyButton.disabled,
+#startMatchBtn.disabled {
+  opacity: .5 !important;
+  filter: grayscale(.35);
+  cursor: not-allowed;
+}
+
+#roomSub {
+  font-weight: 900;
+}

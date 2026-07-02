@@ -165,6 +165,33 @@ function modeTeamSize(mode) {
   return 1;
 }
 
+function modeRequiredPlayers(mode) {
+  if (mode === "Squads") return 4;
+  if (mode === "Duos") return 2;
+  return 1;
+}
+
+function humanPlayers(room) {
+  return Array.from(room.players.values()).filter(p => !p.isBot);
+}
+
+function validateModePlayerCount(room) {
+  const mode = room.mode || "Solo";
+  const required = modeRequiredPlayers(mode);
+  const humans = humanPlayers(room).length;
+
+  if (humans !== required) {
+    const label = required === 1 ? "player" : "players";
+    const currentLabel = humans === 1 ? "player" : "players";
+    return {
+      ok: false,
+      message: `${mode} requires exactly ${required} real ${label}. You currently have ${humans} real ${currentLabel}.`
+    };
+  }
+
+  return { ok: true };
+}
+
 function getAliveTeamIds(room) {
   const teams = new Set();
   for (const player of room.players.values()) {
@@ -350,6 +377,7 @@ function publicRoom(room) {
     winner: room.winner,
     mode: room.mode || "Solo",
     maxPlayers: room.maxPlayers || 16,
+    requiredPlayers: modeRequiredPlayers(room.mode || "Solo"),
     loot: room.loot,
     chests: room.chests,
     builds: room.builds.map(publicBuild),
@@ -366,6 +394,7 @@ function publicRoomList() {
     hostName: room.players.get(room.hostId)?.name || "Host",
     players: Array.from(room.players.values()).filter(p => !p.isBot).length,
     maxPlayers: room.maxPlayers || 16,
+    requiredPlayers: modeRequiredPlayers(room.mode || "Solo"),
     phase: room.phase,
     mode: room.mode || "Solo"
   }));
@@ -1346,7 +1375,8 @@ io.on("connection", socket => {
     const room = rooms.get(socket.data.roomCode);
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
     if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can start" });
-    if (Array.from(room.players.values()).filter(p => !p.isBot).length < 1) return callback?.({ ok: false, error: "Need at least 1 player" });
+    const modeCheck = validateModePlayerCount(room);
+    if (!modeCheck.ok) return callback?.({ ok: false, error: modeCheck.message });
     resetRoomForMatch(room);
     callback?.({ ok: true });
     io.to(room.code).emit("matchStarted", publicRoom(room));

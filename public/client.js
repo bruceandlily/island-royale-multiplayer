@@ -254,6 +254,33 @@ function clientSideJumpFromBus() {
   toastMessage("Dropping — use WASD to steer");
   socket.emit("jumpFromBus");
 }
+
+function modeRequiredPlayers(mode) {
+  if (mode === "Squads") return 4;
+  if (mode === "Duos") return 2;
+  return 1;
+}
+
+function realPlayerCount() {
+  if (!room) return 1;
+  return room.players.filter(p => !p.isBot).length;
+}
+
+function currentModeName() {
+  return room?.mode || settings.mode || "Solo";
+}
+
+function modeRequirementMessage(mode = currentModeName(), count = realPlayerCount()) {
+  const required = modeRequiredPlayers(mode);
+  const label = required === 1 ? "player" : "players";
+  const currentLabel = count === 1 ? "player" : "players";
+  return `${mode} needs exactly ${required} real ${label}. You have ${count} real ${currentLabel}.`;
+}
+
+function canStartForMode(mode = currentModeName(), count = realPlayerCount()) {
+  return count === modeRequiredPlayers(mode);
+}
+
 function playerPayload() {
   const safeName = nameInput && nameInput.value ? nameInput.value : "Player";
   return {
@@ -294,29 +321,37 @@ function updateLobbyUI() {
     roomCodeDisplay.textContent = "No Room";
     roomSub.textContent = "Pick Solo, Duos, or Squads in Settings, then click Quick Test to instantly start with bots.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
-    startMatchBtn.textContent = "QUICK TEST";
-    startMatchBtn.classList.remove("disabled");
+    const soloOk = (settings.mode || "Solo") === "Solo";
+    startMatchBtn.textContent = soloOk ? "QUICK TEST" : "SOLO ONLY";
+    startMatchBtn.classList.toggle("disabled", !soloOk);
     const mainReadyText = document.getElementById("mainReadyText");
     if (mainReadyText) {
       mainReadyText.textContent = "Not Ready";
       mainReadyText.style.color = "#ff5667";
     }
     if (topPartyCount) topPartyCount.textContent = "1";
-    if (stageRoomText) stageRoomText.textContent = "Pick a mode, then Quick Test or Create Room.";
+    if (stageRoomText) stageRoomText.textContent = (settings.mode || "Solo") === "Solo"
+      ? "Solo selected. Quick Test can start with 1 player."
+      : `${settings.mode} selected. Create a room and invite exactly ${modeRequiredPlayers(settings.mode)} players.`;
     renderFunctionalPanels();
     return;
   }
   const humans = room.players.filter(p => !p.isBot);
   roomCodeDisplay.textContent = room.code;
-  roomSub.textContent = `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • Bots fill the match`;
+  const requiredForMode = modeRequiredPlayers(room.mode || "Solo");
+  const modeOkForRoom = humans.length === requiredForMode;
+  roomSub.textContent = modeOkForRoom
+    ? `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • Ready to start`
+    : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
   hudRoom.textContent = room.code;
   modeSelect.value = room.mode || settings.mode || "Solo";
 
   const me = getMe();
   const isHost = room.hostId === selfId;
   readyBtn.textContent = me?.ready ? "Unready" : "Ready";
-  startMatchBtn.textContent = room ? (isHost ? "START MATCH" : "WAITING HOST") : "QUICK TEST";
-  startMatchBtn.classList.toggle("disabled", room ? (!isHost || humans.length < 1) : false);
+  const modeOk = canStartForMode(room.mode || "Solo", humans.length);
+  startMatchBtn.textContent = room ? (isHost ? (modeOk ? "START MATCH" : "WRONG MODE") : "WAITING HOST") : "QUICK TEST";
+  startMatchBtn.classList.toggle("disabled", room ? (!isHost || !modeOk) : false);
 
   partyList.innerHTML = humans.map(player => {
     const isMe = player.id === selfId;
@@ -632,10 +667,16 @@ if (stageInviteRight) stageInviteRight.addEventListener("click", inviteFromStage
 readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => { if (!response?.ok) toastMessage(response?.error || "Could not ready"); }));
 
 function startQuickTestMatch() {
+  if ((settings.mode || "Solo") !== "Solo") {
+    toastMessage(`${settings.mode} needs ${modeRequiredPlayers(settings.mode)} real players. Use Solo for testing alone.`);
+    switchTab("play");
+    return;
+  }
+
   eliminatedReturning = false;
   eliminatedReturnedToLobby = false;
   clearTimeout(eliminationReturnTimer);
-  toastMessage(`Starting ${settings.mode || "Solo"} test match...`);
+  toastMessage("Starting Solo test match...");
   socket.emit("createRoom", playerPayload(), response => {
     if (!response.ok) return toastMessage(response.error);
     room = response.room;
@@ -651,6 +692,14 @@ function startQuickTestMatch() {
 
 startMatchBtn.addEventListener("click", () => {
   if (!room) return startQuickTestMatch();
+
+  const humans = room.players.filter(p => !p.isBot).length;
+  const mode = room.mode || settings.mode || "Solo";
+  if (!canStartForMode(mode, humans)) {
+    toastMessage(modeRequirementMessage(mode, humans));
+    return;
+  }
+
   eliminatedReturning = false;
   eliminatedReturnedToLobby = false;
   clearTimeout(eliminationReturnTimer);
@@ -678,7 +727,7 @@ saveSettingsBtn.addEventListener("click", () => {
     if (!response?.ok) toastMessage(response?.error || "Settings saved locally");
     else toastMessage("Settings saved and mode updated");
   });
-  else toastMessage(`${settings.mode} saved — click Quick Test`);
+  else toastMessage(settings.mode === "Solo" ? "Solo saved — Quick Test is available" : `${settings.mode} saved — invite exactly ${modeRequiredPlayers(settings.mode)} players`);
 });
 modeSelect.addEventListener("change", () => { settings.mode = modeSelect.value; applySettingsToUI(); });
 emoteBtn.addEventListener("click", () => {
