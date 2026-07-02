@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V47 Ready + Mode Lock Fix
+# Island Royale Multiplayer V48 Mode Picker Fix
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -234,3 +234,15 @@ Examples:
 - 4 players in Duos will not start
 - 2 players in Duos still will not start unless both are ready
 - 4 players in Squads still will not start unless all 4 are ready
+
+
+## V48 Mode Picker Fix
+
+Fixed:
+- Solo / Duos / Squads dropdown no longer gets stuck
+- Added big SOLO / DUOS / SQUADS buttons under the dropdown
+- Mode changes save immediately
+- If you are in a room, only the host can change the mode
+- The mode no longer snaps back because of server room updates
+- The mode title updates instantly
+- Mode lock from V47 still works

@@ -292,6 +292,58 @@ function notReadyNames() {
   return room.players.filter(p => !p.isBot && !p.ready).map(p => p.name || "Player");
 }
 
+
+function isRoomHost() {
+  return !!room && room.hostId === selfId;
+}
+
+function syncModeButtons(mode = currentModeName()) {
+  document.querySelectorAll(".modePickButton").forEach(button => {
+    button.classList.toggle("active", button.dataset.mode === mode);
+    button.classList.toggle("locked", !!room && !isRoomHost());
+  });
+
+  if (selectedModeTitle) selectedModeTitle.textContent = `${String(mode).toUpperCase()} BATTLE ROYALE`;
+}
+
+function setModeEverywhere(mode, showToast = true) {
+  if (!["Solo", "Duos", "Squads"].includes(mode)) mode = "Solo";
+
+  // If you are in someone else's room, only the host can change it.
+  if (room && !isRoomHost()) {
+    const oldMode = room.mode || settings.mode || "Solo";
+    modeSelect.value = oldMode;
+    syncModeButtons(oldMode);
+    if (showToast) toastMessage("Only the host can change mode");
+    return;
+  }
+
+  settings.mode = mode;
+  saveLocal("settings", settings);
+
+  if (modeSelect && modeSelect.value !== mode) modeSelect.value = mode;
+  syncModeButtons(mode);
+
+  if (room && isRoomHost()) {
+    // Optimistic local update so the dropdown/buttons do not snap back.
+    room.mode = mode;
+    updateLobbyUI();
+
+    socket.emit("setMode", { mode }, response => {
+      if (!response?.ok) {
+        toastMessage(response?.error || "Could not change mode");
+        return;
+      }
+      if (showToast) toastMessage(`${mode} selected`);
+    });
+  } else {
+    updateLobbyUI();
+    if (showToast) {
+      toastMessage(mode === "Solo" ? "Solo selected" : `${mode} selected — invite exactly ${modeRequiredPlayers(mode)} players`);
+    }
+  }
+}
+
 function playerPayload() {
   const safeName = nameInput && nameInput.value ? nameInput.value : "Player";
   return {
@@ -358,7 +410,10 @@ function updateLobbyUI() {
       : `Correct mode, but everyone must ready up first. Waiting on: ${notReadyNames().join(", ")}`)
     : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
   hudRoom.textContent = room.code;
-  modeSelect.value = room.mode || settings.mode || "Solo";
+  if (document.activeElement !== modeSelect) {
+    modeSelect.value = room.mode || settings.mode || "Solo";
+  }
+  syncModeButtons(room.mode || settings.mode || "Solo");
 
   const me = getMe();
   const isHost = room.hostId === selfId;
@@ -619,7 +674,7 @@ function applySettingsToUI() {
   controlsSelect.value = settings.controls || "on";
   modeSelect.value = settings.mode || "Solo";
   controlsHud?.classList.toggle("hidden", settings.controls === "off");
-  if (selectedModeTitle) selectedModeTitle.textContent = `${(settings.mode || "Solo").toUpperCase()} BATTLE ROYALE`;
+  syncModeButtons(settings.mode || "Solo");
 }
 function applyCosmeticPreview() {
   const body = document.querySelector(".bigCharacter .body");
@@ -747,15 +802,17 @@ resetQuestsBtn.addEventListener("click", () => {
   saveLocal("quests", quests); updateQuestUI(); toastMessage("Quests reset");
 });
 saveSettingsBtn.addEventListener("click", () => {
-  settings = { graphics: graphicsSelect.value, volume: Number(volumeSlider.value), controls: controlsSelect.value, mode: modeSelect.value };
-  saveLocal("settings", settings); applySettingsToUI();
-  if (room) socket.emit("setMode", { mode: settings.mode }, response => {
-    if (!response?.ok) toastMessage(response?.error || "Settings saved locally");
-    else toastMessage("Settings saved and mode updated");
-  });
-  else toastMessage(settings.mode === "Solo" ? "Solo saved — Quick Test is available" : `${settings.mode} saved — invite exactly ${modeRequiredPlayers(settings.mode)} players`);
+  settings.graphics = graphicsSelect.value;
+  settings.volume = Number(volumeSlider.value);
+  settings.controls = controlsSelect.value;
+  settings.mode = modeSelect.value || settings.mode || "Solo";
+  saveLocal("settings", settings);
+  applySettingsToUI();
+  setModeEverywhere(settings.mode, true);
 });
-modeSelect.addEventListener("change", () => { settings.mode = modeSelect.value; applySettingsToUI(); });
+modeSelect.addEventListener("change", () => {
+  setModeEverywhere(modeSelect.value, true);
+});
 emoteBtn.addEventListener("click", () => {
   const char = document.querySelector("#stagePartyMembers .fortCharacter") || document.getElementById("lobbyCharacter");
   if (!char) return toastMessage("No character on stage yet");
@@ -1319,4 +1376,12 @@ document.addEventListener("DOMContentLoaded", () => {
       tag.textContent = nameBox.value || "Player";
     });
   }
+});
+
+
+// V48 mode picker buttons.
+document.querySelectorAll(".modePickButton").forEach(button => {
+  button.addEventListener("click", () => {
+    setModeEverywhere(button.dataset.mode, true);
+  });
 });

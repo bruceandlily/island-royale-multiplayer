@@ -2302,3 +2302,39 @@ input[type="range"] {
 #roomSub {
   line-height: 1.35;
 }
+
+
+
+/* === V48 fixed mode picker === */
+.modeButtonGroup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.modePickButton {
+  height: 34px;
+  border-radius: 0;
+  background: rgba(3,12,33,.55);
+  border: 2px solid rgba(255,255,255,.25);
+  color: rgba(255,255,255,.85);
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.modePickButton.active {
+  background: #ffe822;
+  color: #061126;
+  border-color: white;
+}
+
+.modePickButton.locked {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.modeSelect {
+  cursor: pointer;
+  pointer-events: auto;
+}
