@@ -707,8 +707,8 @@ function requestMatchmaking(socket, data = {}, callback) {
         room,
         fill
           ? `Solo Fill: searching for real solo players, then bots fill to 100...`
-          : `Solo No Fill: searching briefly for real enemies, then bots fill to 100...`,
-        fill ? MATCHMAKING_SEARCH_MS : 2500
+          : `Solo No Fill: searching for real solo enemies, then bots fill to 100...`,
+        MATCHMAKING_SEARCH_MS
       );
       return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
     }
@@ -729,7 +729,7 @@ function requestMatchmaking(socket, data = {}, callback) {
 
     if (!fill) {
       // No Fill waits a short moment so another real No Fill party can become an enemy team.
-      queueRoomForMatchmaking(room, `${mode} No Fill: searching for real enemies, then bots fill to 100...`, MATCHMAKING_SEARCH_MS);
+      queueRoomForMatchmaking(room, `${mode} No Fill: keeping your party alone, searching for real enemy teams, then bots fill to 100...`, MATCHMAKING_SEARCH_MS);
       return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
     }
 
@@ -1714,27 +1714,25 @@ io.on("connection", socket => {
     const quickTest = !!payload?.quickTest;
 
     if (quickTest) {
-      // Quick Test is allowed for No Fill modes.
-      // If Fill is ON, use matchmaking so Solo Fill can find real solo enemies
-      // and Duos/Trios/Squads Fill can find real teammates first.
-      if (room.fill) {
-        return requestMatchmaking(socket, { mode: room.mode, fill: true }, callback);
-      }
+      // V67: Quick Test also uses matchmaking.
+      // Fill searches teammates/enemies.
+      // No Fill searches enemies only, then bots fill to 100.
       markHumansReady(room);
+      return requestMatchmaking(socket, { mode: room.mode, fill: !!room.fill }, callback);
     } else {
       const readyCheck = validateReadyPlayers(room);
       if (!readyCheck.ok) return callback?.({ ok: false, error: readyCheck.message });
 
-      // V66 FIX:
-      // If Fill is ON, Start Match must search matchmaking first for ALL modes,
-      // including Solo Fill and full Duos/Trios/Squads teams.
-      // Before this fix, Solo Fill and full teams could start instantly after readying up.
-      if (room.fill) {
-        return requestMatchmaking(socket, { mode: room.mode, fill: true }, callback);
-      }
+      // V67 FIX:
+      // Start Match always goes through matchmaking first.
+      // Fill = searches teammates/enemy teams.
+      // No Fill = keeps your party alone but searches real enemy players/teams.
+      return requestMatchmaking(socket, { mode: room.mode, fill: !!room.fill }, callback);
     }
 
-    resetRoomForMatch(room);
+    // Quick Test / fallback path. Even No Fill quick tests should briefly search
+    // for real enemy players before bots fill the match to 100.
+    return requestMatchmaking(socket, { mode: room.mode, fill: !!room.fill }, callback);
     callback?.({ ok: true });
     io.to(room.code).emit("matchStarted", publicRoom(room));
     broadcastRoom(room);

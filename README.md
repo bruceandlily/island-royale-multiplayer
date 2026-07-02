@@ -1,24 +1,44 @@
-# Island Royale Multiplayer V66 — Fill Start Fix
+# Island Royale Multiplayer V67 — No Fill Enemy Matchmaking
 
-This fixes the issue where Fill matchmaking searched briefly, then after readying up Start Match could instantly start without searching again.
+This fixes No Fill behavior.
 
-## Fixed
-- Solo Fill now searches after everyone is ready
-- Duos Fill now searches after everyone is ready
-- Trios Fill now searches after everyone is ready
-- Squads Fill now searches after everyone is ready
-- Full teams also search for real enemy teams before bots fill to 100
-- No Fill can still start faster
+## What No Fill means now
+No Fill means:
+- you do **not** get random teammates
+- your party/team stays by itself
+- the server still searches for real enemy players/teams
+- bots fill the rest to 100
 
-## Correct behavior
-1. Pick a mode
-2. Turn Fill ON
-3. Create Room or Find Match
-4. Everyone readies up
-5. Host clicks Start / Find Match
-6. Server searches for real players first
-7. Bots fill the rest to 100
-8. Match starts
+## Solo No Fill
+- Searches for other real Solo players as enemies
+- Bots fill the rest to 100
+
+## Duos No Fill
+- If you are alone, you can solo-duo
+- If your friend is invited, both of you stay on the same team
+- Other Duos players/parties can join as enemy teams
+- Bots fill the rest to 100
+
+Example:
+- You are solo in Duos No Fill
+- Another real team of 2 is searching Duos
+- Match can become: you vs 2 real teammates vs 97 bots
+
+## Trios No Fill
+- Your party stays alone
+- Other Trios players/parties can join as enemy teams
+- Bots fill to 100
+
+## Squads No Fill
+- Your party stays alone
+- Other Squads players/parties can join as enemy teams
+- Bots fill to 100
+
+## Fill still works
+Fill still means:
+- tries to find real teammates for your team
+- also searches for real enemy teams
+- bots fill the rest to 100
 
 ## Upload these files
 Replace these in GitHub:

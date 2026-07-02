@@ -492,7 +492,7 @@ function updateLobbyUI() {
     roomCodeDisplay.textContent = "No Room";
     roomSub.textContent = settings.fill && (settings.mode || "Solo") !== "Solo"
       ? "Fill is ON. Click FIND MATCH to search for real teammates."
-      : "Fill searches for real players first. No Fill starts faster. Bots fill every match to 100 players.";
+      : "Fill searches for real players first. No Fill keeps your party alone, still searches for real enemies, then bots fill to 100 players.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
     const mode = settings.mode || "Solo";
     startMatchBtn.textContent = settings.fill && mode !== "Solo" ? "FIND MATCH" : "QUICK TEST";
@@ -1220,7 +1220,7 @@ function startQuickTestMatch() {
     return;
   }
 
-  toastMessage(settings.fill && mode === 'Solo' ? 'Solo Fill: searching for real enemies, then bots fill to 100...' : `Starting ${mode} No Fill 100-player match...`);
+  toastMessage(settings.fill ? `${mode} Fill: searching for real players, then bots fill to 100...` : `${mode} No Fill: searching for real enemies, then bots fill to 100...`);
   socket.emit("createRoom", playerPayload(), response => {
     if (!response.ok) return toastMessage(response.error);
     room = response.room;
@@ -1256,7 +1256,7 @@ startMatchBtn.addEventListener("click", () => {
   clearTimeout(eliminationReturnTimer);
 
   if (room.fill) {
-    toastMessage(`${mode} Fill: searching for real players, then bots fill to 100...`);
+    toastMessage(room.fill ? `${mode} Fill: searching for real players, then bots fill to 100...` : `${mode} No Fill: searching for real enemies, then bots fill to 100...`);
   }
 
   socket.emit("startMatch", response => {

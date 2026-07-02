@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v66-fill-start-fix",
-  "version": "66.0.0",
-  "description": "Island Royale multiplayer with Fill start correctly using matchmaking after ready up.",
+  "name": "island-royale-multiplayer-v67-no-fill-enemy-matchmaking",
+  "version": "67.0.0",
+  "description": "Island Royale multiplayer where No Fill still searches for real enemy players before bots fill to 100.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
