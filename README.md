@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V49 Leveling + Battle Pass
+# Island Royale Multiplayer V50 Party Chat
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -271,3 +271,17 @@ XP rewards:
 Battle Pass:
 - 1 level = 1 Battle Pass tier
 - Max displayed system supports 50 tiers
+
+
+## V50 Party Chat
+
+Added real party chat:
+- Press `/` to open chat
+- Type your message
+- Press `Enter` to send
+- Press `Esc` to close
+- Click SEND also works
+- Only players in the same room/party see the messages
+- Chat works in the lobby and while in-game
+- Bots cannot send chat
+- Messages are limited to 140 characters

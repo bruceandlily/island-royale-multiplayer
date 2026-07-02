@@ -110,6 +110,7 @@ window.addEventListener("resize", () => {
 });
 
 document.addEventListener("keydown", event => {
+  if (document.activeElement?.id === "partyChatInput") return;
   keys[event.key.toLowerCase()] = true;
 
   if (event.key === "Escape" && room?.phase === "game") {
@@ -293,6 +294,7 @@ function canStartForMode(mode = currentModeName(), count = realPlayerCount()) {
 
 function allRealPlayersReady() {
   if (!room) return false;
+  if (partyChatStatus) partyChatStatus.textContent = "Press / to chat";
   const humans = room.players.filter(p => !p.isBot);
   return humans.length > 0 && humans.every(p => p.ready);
 }
@@ -403,6 +405,7 @@ function updateLobbyUI() {
       mainReadyText.style.color = "#ff5667";
     }
     if (topPartyCount) topPartyCount.textContent = "1";
+    if (partyChatStatus) partyChatStatus.textContent = "Create/join a room to chat";
     if (stageRoomText) stageRoomText.textContent = (settings.mode || "Solo") === "Solo"
       ? "Solo selected. Quick Test can start with 1 player."
       : `${settings.mode} selected. Create a room and invite exactly ${modeRequiredPlayers(settings.mode)} players.`;
@@ -1519,4 +1522,108 @@ document.querySelectorAll(".modePickButton").forEach(button => {
   button.addEventListener("click", () => {
     setModeEverywhere(button.dataset.mode, true);
   });
+});
+
+
+// V50 real party chat.
+const partyChatBox = document.getElementById("partyChatBox");
+const partyChatInput = document.getElementById("partyChatInput");
+const partyChatMessages = document.getElementById("partyChatMessages");
+const partyChatSendBtn = document.getElementById("partyChatSendBtn");
+const partyChatStatus = document.getElementById("partyChatStatus");
+
+function setPartyChatOpen(open) {
+  if (!partyChatBox) return;
+  partyChatBox.classList.toggle("collapsed", !open);
+  if (partyChatStatus) partyChatStatus.textContent = open ? "Enter to send • Esc to close" : "Press / to chat";
+  if (open && partyChatInput) {
+    setTimeout(() => partyChatInput.focus(), 0);
+  }
+}
+
+function addPartyChatLine(chat, system = false) {
+  if (!partyChatMessages) return;
+
+  const line = document.createElement("div");
+  if (system) {
+    line.className = "chatSystem";
+    line.textContent = chat;
+  } else {
+    line.className = `chatLine ${chat.fromId === selfId ? "mine" : ""}`;
+    const name = document.createElement("b");
+    name.textContent = chat.name || "Player";
+    name.style.color = chat.fromId === selfId ? "#ffe822" : (chat.color || "#55d66b");
+
+    const msg = document.createElement("span");
+    msg.textContent = `: ${chat.message || ""}`;
+
+    line.appendChild(name);
+    line.appendChild(msg);
+  }
+
+  partyChatMessages.appendChild(line);
+
+  while (partyChatMessages.children.length > 80) {
+    partyChatMessages.removeChild(partyChatMessages.firstChild);
+  }
+
+  partyChatMessages.scrollTop = partyChatMessages.scrollHeight;
+}
+
+function sendPartyChat() {
+  if (!partyChatInput) return;
+  const message = partyChatInput.value.trim();
+
+  if (!message) return;
+  if (!room) {
+    toastMessage("Create or join a room first");
+    addPartyChatLine("Create or join a room first.", true);
+    return;
+  }
+
+  socket.emit("partyChat", { message }, response => {
+    if (!response?.ok) {
+      toastMessage(response?.error || "Could not send chat");
+      addPartyChatLine(response?.error || "Could not send chat.", true);
+      return;
+    }
+
+    partyChatInput.value = "";
+  });
+}
+
+if (partyChatSendBtn) {
+  partyChatSendBtn.addEventListener("click", sendPartyChat);
+}
+
+if (partyChatInput) {
+  partyChatInput.addEventListener("keydown", event => {
+    event.stopPropagation();
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendPartyChat();
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      partyChatInput.blur();
+      setPartyChatOpen(false);
+    }
+  });
+}
+
+document.addEventListener("keydown", event => {
+  const tag = document.activeElement?.tagName?.toLowerCase();
+  const typingSomewhere = tag === "input" || tag === "textarea" || tag === "select";
+
+  if (event.key === "/" && !typingSomewhere) {
+    event.preventDefault();
+    setPartyChatOpen(true);
+  }
+}, true);
+
+socket.on("partyChat", chat => {
+  addPartyChatLine(chat);
+  setPartyChatOpen(true);
 });

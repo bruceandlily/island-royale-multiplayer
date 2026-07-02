@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v49-leveling-battlepass",
+  "name": "island-royale-multiplayer-v50-party-chat",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with real XP leveling and functional Battle Pass tiers.",
+  "description": "Host-ready multiplayer battle royale with real party chat.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

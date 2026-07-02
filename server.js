@@ -1,3 +1,12 @@
+
+function sanitizeChatMessage(text) {
+  return String(text || "")
+    .replace(/[<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 140);
+}
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -1452,6 +1461,30 @@ io.on("connection", socket => {
     }
     callback?.({ ok: true });
     broadcastRoom(room);
+  });
+
+
+  socket.on("partyChat", (payload, callback) => {
+    const room = rooms.get(socket.data.roomCode);
+    if (!room) return callback?.({ ok: false, error: "Create or join a room first" });
+
+    const player = room.players.get(socket.id);
+    if (!player || player.isBot) return callback?.({ ok: false, error: "Only real players can chat" });
+
+    const message = sanitizeChatMessage(payload?.message);
+    if (!message) return callback?.({ ok: false, error: "Type a message first" });
+
+    const chat = {
+      id: makeId("chat"),
+      fromId: player.id,
+      name: player.name || "Player",
+      color: player.color || "#55d66b",
+      message,
+      time: Date.now()
+    };
+
+    io.to(room.code).emit("partyChat", chat);
+    callback?.({ ok: true });
   });
 
   socket.on("disconnect", () => {
