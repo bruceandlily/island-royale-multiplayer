@@ -83,6 +83,15 @@ let lastShootAt = 0;
 let selectedCosmetic = loadLocal("selectedCosmetic", { outfit: "Raider", color: "#2fb4ff", banner: "Blue" });
 let settings = loadLocal("settings", { graphics: "high", volume: 60, controls: "on", mode: "Solo" });
 let quests = loadLocal("quests", { eliminations: 0, matches: 0, party: 0 });
+let progression = loadLocal("progression", {
+  xp: 0,
+  matches: 0,
+  wins: 0,
+  eliminations: 0,
+  highestTier: 1
+});
+let activeMatchKey = null;
+let matchAwarded = false;
 
 const WEAPONS = {
   pistol:  { name: "Pistol",  fireMs: 230, ammoType: "light" },
@@ -181,6 +190,7 @@ function beginEliminationReturn() {
 
   eliminatedReturning = true;
   centerMessage.innerHTML = "You are eliminated<br><span style='font-size:28px;color:#ffcf4a;'>Returning to lobby...</span>";
+  awardMatchXP("Eliminated");
   toastMessage("Returning to lobby...");
 
   clearTimeout(eliminationReturnTimer);
@@ -477,6 +487,108 @@ function updateQuestUI() {
   document.getElementById("questElimsBar").style.width = `${q1 / 5 * 100}%`;
   document.getElementById("questMatchesBar").style.width = `${q2 / 3 * 100}%`;
   document.getElementById("questPartyBar").style.width = `${q3 / 1 * 100}%`;
+  updateProgressionUI();
+}
+
+
+const XP_PER_LEVEL = 1000;
+const MAX_BATTLEPASS_TIERS = 50;
+
+const BATTLE_PASS_REWARDS = [
+  "Banner", "100 XP", "Raider Blue", "Emote", "V-Bucks",
+  "Scout Green", "Spray", "Music", "Striker Red", "Glider",
+  "Pickaxe", "Shadow Purple", "Loading Screen", "Wrap", "Gold Banner",
+  "Neon Outfit", "Back Bling", "Contrail", "Inferno", "Legendary Style"
+];
+
+function getPlayerLevel() {
+  return Math.floor((progression.xp || 0) / XP_PER_LEVEL) + 1;
+}
+
+function getXpIntoLevel() {
+  return (progression.xp || 0) % XP_PER_LEVEL;
+}
+
+function getUnlockedTier() {
+  return Math.min(MAX_BATTLEPASS_TIERS, getPlayerLevel());
+}
+
+function saveProgression() {
+  progression.highestTier = Math.max(progression.highestTier || 1, getUnlockedTier());
+  saveLocal("progression", progression);
+}
+
+function showLevelUpToast(oldLevel, newLevel) {
+  if (newLevel <= oldLevel) return;
+  const el = document.createElement("div");
+  el.className = "levelUpToast";
+  el.textContent = `Level Up! ${oldLevel} → ${newLevel}`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2300);
+}
+
+function addXP(amount, reason = "XP earned") {
+  amount = Math.max(0, Math.round(amount || 0));
+  if (!amount) return;
+
+  const oldLevel = getPlayerLevel();
+  progression.xp = (progression.xp || 0) + amount;
+  const newLevel = getPlayerLevel();
+
+  saveProgression();
+  updateProgressionUI();
+  renderBattlePass();
+  renderProfile();
+
+  toastMessage(`+${amount} XP — ${reason}`);
+  showLevelUpToast(oldLevel, newLevel);
+}
+
+function currentMatchKey() {
+  if (!room) return null;
+  return `${room.code || "room"}_${room.startedAt || "match"}`;
+}
+
+function awardMatchXP(reason = "Match Complete") {
+  const key = currentMatchKey();
+  if (!key || matchAwarded) return;
+  matchAwarded = true;
+
+  const me = getMe();
+  const kills = me?.kills || 0;
+  const won = room?.winner && me && room.winner.teamId && me.teamId && room.winner.teamId === me.teamId;
+  const aliveBonus = me?.alive ? 50 : 0;
+
+  let xp = 120;
+  xp += kills * 140;
+  xp += aliveBonus;
+  if (won) xp += 500;
+
+  progression.matches = (progression.matches || 0) + 1;
+  progression.eliminations = Math.max(progression.eliminations || 0, kills);
+  if (won) progression.wins = (progression.wins || 0) + 1;
+
+  addXP(xp, reason);
+}
+
+function updateProgressionUI() {
+  const level = getPlayerLevel();
+  const xp = getXpIntoLevel();
+  const tier = getUnlockedTier();
+
+  const seasonLevelText = document.getElementById("seasonLevelText");
+  const seasonXpText = document.getElementById("seasonXpText");
+  const seasonXpFill = document.getElementById("seasonXpFill");
+  const battlePassSummary = document.getElementById("battlePassSummary");
+  const freePassTierText = document.getElementById("freePassTierText");
+  const tierProgressText = document.getElementById("tierProgressText");
+
+  if (seasonLevelText) seasonLevelText.textContent = level;
+  if (seasonXpText) seasonXpText.textContent = `${xp} / ${XP_PER_LEVEL} XP`;
+  if (seasonXpFill) seasonXpFill.style.width = `${Math.min(100, (xp / XP_PER_LEVEL) * 100)}%`;
+  if (battlePassSummary) battlePassSummary.textContent = `Level ${level} • Tier ${tier} unlocked`;
+  if (freePassTierText) freePassTierText.textContent = `TIER ${tier}`;
+  if (tierProgressText) tierProgressText.textContent = `${tier} / ${MAX_BATTLEPASS_TIERS}`;
 }
 
 const SHOP_ITEMS = [
@@ -602,20 +714,27 @@ window.equipShopItem = function(outfit) {
 function renderProfile() {
   const box = document.getElementById("profileStats");
   if (!box) return;
+
   const me = getMe();
   const name = (nameInput && nameInput.value) ? nameInput.value : me?.name || "Player";
   const roomPlayers = room ? room.players.filter(p => !p.isBot).length : 0;
-  const kills = me?.kills || quests.eliminations || 0;
+  const kills = Math.max(me?.kills || 0, progression.eliminations || 0);
+  const level = getPlayerLevel();
+  const tier = getUnlockedTier();
 
   box.innerHTML = `
     <div class="profileCard"><span>Name</span><b style="font-size:26px">${escapeHtml(name)}</b></div>
-    <div class="profileCard"><span>Level</span><b>18</b></div>
-    <div class="profileCard"><span>Matches</span><b>${quests.matches || 0}</b></div>
+    <div class="profileCard"><span>Level</span><b>${level}</b></div>
+    <div class="profileCard"><span>Battle Pass Tier</span><b>${tier}</b></div>
+    <div class="profileCard"><span>Total XP</span><b style="font-size:30px">${progression.xp || 0}</b></div>
+    <div class="profileCard"><span>Matches</span><b>${progression.matches || quests.matches || 0}</b></div>
+    <div class="profileCard"><span>Wins</span><b>${progression.wins || 0}</b></div>
     <div class="profileCard"><span>Eliminations</span><b>${kills}</b></div>
     <div class="profileCard"><span>Current Party</span><b>${roomPlayers || 1}</b></div>
     <div class="profileCard"><span>Mode</span><b style="font-size:28px">${escapeHtml(settings.mode || "Solo")}</b></div>
     <div class="profileCard"><span>Outfit</span><b style="font-size:26px">${escapeHtml(selectedCosmetic.outfit || "Raider")}</b></div>
     <div class="profileCard"><span>Status</span><b style="font-size:28px">${room ? "In Room" : "Lobby"}</b></div>
+    <div class="profileCard"><span>Next Level</span><b style="font-size:26px">${getXpIntoLevel()} / ${XP_PER_LEVEL}</b></div>
   `;
 }
 
@@ -649,15 +768,27 @@ function renderLeaderboard() {
 function renderBattlePass() {
   const box = document.getElementById("battlePassRoad");
   if (!box) return;
-  const progress = Math.min(6, 1 + Math.floor(((quests.matches || 0) + (quests.eliminations || 0)) / 2));
 
-  box.innerHTML = Array.from({ length: 6 }).map((_, i) => `
-    <div class="bpTier ${i < progress ? "unlocked" : ""}">
-      <b>Tier ${i + 1}</b>
-      <span>${i < progress ? "Unlocked" : "Locked"}</span>
-      <small>${i % 2 === 0 ? "Banner" : "XP Boost"}</small>
-    </div>
-  `).join("");
+  const unlockedTier = getUnlockedTier();
+  const startTier = Math.max(1, Math.min(MAX_BATTLEPASS_TIERS - 11, Math.floor((unlockedTier - 1) / 12) * 12 + 1));
+  const tiers = Array.from({ length: 12 }, (_, i) => startTier + i).filter(t => t <= MAX_BATTLEPASS_TIERS);
+
+  box.innerHTML = tiers.map(tier => {
+    const unlocked = tier <= unlockedTier;
+    const current = tier === unlockedTier;
+    const reward = BATTLE_PASS_REWARDS[(tier - 1) % BATTLE_PASS_REWARDS.length];
+
+    return `
+      <div class="bpTier ${unlocked ? "unlocked" : "locked"} ${current ? "current" : ""}">
+        <div class="tierRewardIcon">${unlocked ? "★" : "🔒"}</div>
+        <b>Tier ${tier}</b>
+        <span>${escapeHtml(reward)}</span>
+        <small class="${unlocked ? "claimText" : ""}">${unlocked ? "Unlocked" : `Reach Level ${tier}`}</small>
+      </div>
+    `;
+  }).join("");
+
+  updateProgressionUI();
 }
 
 function renderFunctionalPanels() {
@@ -880,6 +1011,8 @@ socket.on("matchStarted", state => {
   lastKnownPhase = "bus";
   clearTimeout(eliminationReturnTimer);
   room = state;
+  activeMatchKey = currentMatchKey();
+  matchAwarded = false;
   quests.matches += 1; saveLocal("quests", quests);
   const me = getMe();
   if (me) {
@@ -892,6 +1025,7 @@ socket.on("matchStarted", state => {
 socket.on("matchEnded", state => {
   room = state;
   const winner = state.winner;
+  awardMatchXP(winner && getMe() && winner.teamId === getMe().teamId ? "Victory Royale" : "Match Complete");
   centerMessage.textContent = winner ? `${winner.name} wins!` : "Match ended";
   updateLobbyUI(); updateQuestUI();
 });
@@ -1348,6 +1482,7 @@ function gameLoop() {
 }
 applySettingsToUI();
 applyCosmeticPreview();
+updateProgressionUI();
 updateQuestUI();
 requestRoomList();
 renderFunctionalPanels();

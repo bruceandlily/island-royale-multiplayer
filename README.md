@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V48 Mode Picker Fix
+# Island Royale Multiplayer V49 Leveling + Battle Pass
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -246,3 +246,28 @@ Fixed:
 - The mode no longer snaps back because of server room updates
 - The mode title updates instantly
 - Mode lock from V47 still works
+
+
+## V49 Real Leveling + Battle Pass
+
+Fixed:
+- Level is no longer fake/hard-coded at 18
+- XP is saved in browser localStorage
+- Playing matches gives XP
+- Eliminations give XP
+- Winning gives bonus XP
+- Your level updates automatically
+- XP bar updates automatically
+- Battle Pass tier equals your real level progress
+- Battle Pass tiers unlock as you level up
+- Profile tab shows real level, XP, tier, wins, matches, and eliminations
+
+XP rewards:
+- Match played: 120 XP
+- Each elimination: 140 XP
+- Survival bonus: 50 XP
+- Victory bonus: 500 XP
+
+Battle Pass:
+- 1 level = 1 Battle Pass tier
+- Max displayed system supports 50 tiers

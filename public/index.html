@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V48 Mode Picker</title>
+  <title>Island Royale Multiplayer V49 Leveling</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -49,9 +49,9 @@
                 <div class="shieldWave"></div>
               </div>
               <div>
-                <div class="levelText">LEVEL <span>18</span></div>
-                <div class="xpText">740 / 1000</div>
-                <div class="xpLine"><div></div></div>
+                <div class="levelText">LEVEL <span id="seasonLevelText">1</span></div>
+                <div class="xpText" id="seasonXpText">0 / 1000 XP</div>
+                <div class="xpLine"><div id="seasonXpFill"></div></div>
               </div>
             </div>
           </div>
@@ -60,7 +60,7 @@
             <div class="rewardIcon">★</div>
             <div>
               <b>BATTLE PASS</b>
-              <span>Unlock rewards and level up</span>
+              <span id="battlePassSummary">Reach higher levels to unlock tiers</span>
             </div>
             <div class="lockDot">🔒</div>
           </div>
@@ -69,9 +69,9 @@
             <div class="tierIcon">✦</div>
             <div>
               <b>FREE PASS</b>
-              <span>TIER 2</span>
+              <span id="freePassTierText">TIER 1</span>
             </div>
-            <div class="tierProgress">6 / 10</div>
+            <div class="tierProgress" id="tierProgressText">1 / 50</div>
           </div>
 
           <div class="dailyHeader">DAILY CHALLENGES</div>
