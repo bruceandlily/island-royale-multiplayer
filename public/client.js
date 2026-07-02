@@ -1525,28 +1525,41 @@ document.querySelectorAll(".modePickButton").forEach(button => {
 });
 
 
-// V50 real party chat.
+
+
+// V51 fixed real party chat.
 const partyChatBox = document.getElementById("partyChatBox");
+const partyChatHeader = document.getElementById("partyChatHeader");
 const partyChatInput = document.getElementById("partyChatInput");
 const partyChatMessages = document.getElementById("partyChatMessages");
 const partyChatSendBtn = document.getElementById("partyChatSendBtn");
 const partyChatStatus = document.getElementById("partyChatStatus");
+const partyChatMinBtn = document.getElementById("partyChatMinBtn");
 
-function setPartyChatOpen(open) {
+function setPartyChatOpen(open, focusInput = false) {
   if (!partyChatBox) return;
   partyChatBox.classList.toggle("collapsed", !open);
-  if (partyChatStatus) partyChatStatus.textContent = open ? "Enter to send • Esc to close" : "Press / to chat";
-  if (open && partyChatInput) {
-    setTimeout(() => partyChatInput.focus(), 0);
+
+  if (partyChatStatus) {
+    partyChatStatus.textContent = open ? "Enter sends • Esc closes" : "Click box or press /";
+  }
+
+  if (open) {
+    partyChatBox.classList.add("chatAttention");
+    setTimeout(() => partyChatBox.classList.remove("chatAttention"), 500);
+  }
+
+  if (open && focusInput && partyChatInput) {
+    setTimeout(() => partyChatInput.focus(), 20);
   }
 }
 
-function addPartyChatLine(chat, system = false) {
+function addPartyChatLine(chat, system = false, important = false) {
   if (!partyChatMessages) return;
 
   const line = document.createElement("div");
   if (system) {
-    line.className = "chatSystem";
+    line.className = `chatSystem ${important ? "important" : ""}`;
     line.textContent = chat;
   } else {
     line.className = `chatLine ${chat.fromId === selfId ? "mine" : ""}`;
@@ -1574,29 +1587,62 @@ function sendPartyChat() {
   if (!partyChatInput) return;
   const message = partyChatInput.value.trim();
 
-  if (!message) return;
+  if (!message) {
+    setPartyChatOpen(true, true);
+    return;
+  }
+
   if (!room) {
     toastMessage("Create or join a room first");
-    addPartyChatLine("Create or join a room first.", true);
+    addPartyChatLine("Create or join a room first. Party chat only works when you are in a room with your party.", true, true);
+    setPartyChatOpen(true, true);
     return;
   }
 
   socket.emit("partyChat", { message }, response => {
     if (!response?.ok) {
       toastMessage(response?.error || "Could not send chat");
-      addPartyChatLine(response?.error || "Could not send chat.", true);
+      addPartyChatLine(response?.error || "Could not send chat.", true, true);
+      setPartyChatOpen(true, true);
       return;
     }
 
     partyChatInput.value = "";
+    setPartyChatOpen(true, true);
+  });
+}
+
+if (partyChatHeader) {
+  partyChatHeader.addEventListener("click", event => {
+    if (event.target === partyChatMinBtn) return;
+    setPartyChatOpen(true, true);
+  });
+}
+
+if (partyChatBox) {
+  partyChatBox.addEventListener("click", event => {
+    if (event.target === partyChatMinBtn) return;
+    if (partyChatBox.classList.contains("collapsed")) setPartyChatOpen(true, true);
+  });
+}
+
+if (partyChatMinBtn) {
+  partyChatMinBtn.addEventListener("click", event => {
+    event.stopPropagation();
+    setPartyChatOpen(partyChatBox?.classList.contains("collapsed"), false);
   });
 }
 
 if (partyChatSendBtn) {
-  partyChatSendBtn.addEventListener("click", sendPartyChat);
+  partyChatSendBtn.addEventListener("click", event => {
+    event.preventDefault();
+    sendPartyChat();
+  });
 }
 
 if (partyChatInput) {
+  partyChatInput.addEventListener("focus", () => setPartyChatOpen(true, false));
+
   partyChatInput.addEventListener("keydown", event => {
     event.stopPropagation();
 
@@ -1608,22 +1654,31 @@ if (partyChatInput) {
     if (event.key === "Escape") {
       event.preventDefault();
       partyChatInput.blur();
-      setPartyChatOpen(false);
+      setPartyChatOpen(false, false);
     }
   });
 }
 
-document.addEventListener("keydown", event => {
+// Keyboard shortcut: / opens the chat. T also works as a backup.
+function openChatShortcut(event) {
   const tag = document.activeElement?.tagName?.toLowerCase();
   const typingSomewhere = tag === "input" || tag === "textarea" || tag === "select";
 
-  if (event.key === "/" && !typingSomewhere) {
+  if (!typingSomewhere && (event.key === "/" || event.code === "Slash" || event.key.toLowerCase() === "t")) {
     event.preventDefault();
-    setPartyChatOpen(true);
+    event.stopPropagation();
+    setPartyChatOpen(true, true);
   }
-}, true);
+}
+
+window.addEventListener("keydown", openChatShortcut, true);
+document.addEventListener("keydown", openChatShortcut, true);
 
 socket.on("partyChat", chat => {
   addPartyChatLine(chat);
-  setPartyChatOpen(true);
+  setPartyChatOpen(true, false);
 });
+
+// Start open so it is obvious and clickable.
+setPartyChatOpen(true, false);
+addPartyChatLine("Click the input box, or press /, then press Enter to send.", true, true);

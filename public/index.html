@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V50 Party Chat</title>
+  <title>Island Royale Multiplayer V51 Chat Fix</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -342,17 +342,18 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js"></script>
 
-  <div id="partyChatBox" class="partyChatBox collapsed">
-    <div class="partyChatHeader">
+  <div id="partyChatBox" class="partyChatBox">
+    <div class="partyChatHeader" id="partyChatHeader">
       <b>PARTY CHAT</b>
-      <span id="partyChatStatus">Press / to chat</span>
+      <span id="partyChatStatus">Click box or press /</span>
+      <button id="partyChatMinBtn" type="button">—</button>
     </div>
     <div id="partyChatMessages" class="partyChatMessages">
       <div class="chatSystem">Party chat ready. Press / to type.</div>
     </div>
     <div class="partyChatInputRow">
       <span>/</span>
-      <input id="partyChatInput" maxlength="140" placeholder="Type to party..." autocomplete="off" />
+      <input id="partyChatInput" maxlength="140" placeholder="Click here or press / to type..." autocomplete="off" />
       <button id="partyChatSendBtn" type="button">SEND</button>
     </div>
   </div>

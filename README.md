@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V50 Party Chat
+# Island Royale Multiplayer V51 Chat Fix
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -285,3 +285,17 @@ Added real party chat:
 - Chat works in the lobby and while in-game
 - Bots cannot send chat
 - Messages are limited to 140 characters
+
+
+## V51 Chat Fix
+
+Fixed party chat not opening:
+- Chat is open by default now
+- You can click the chat box
+- You can click the input directly
+- `/` still opens chat
+- `T` also opens chat as a backup
+- Enter sends
+- Esc closes/minimizes
+- Header can be clicked to reopen it
+- Only players in the same room/party see the messages

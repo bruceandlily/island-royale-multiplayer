@@ -2525,3 +2525,58 @@ input[type="range"] {
     bottom: 54px;
   }
 }
+
+
+
+/* === V51 chat fix === */
+.partyChatBox {
+  height: 310px !important;
+  opacity: 1 !important;
+}
+
+.partyChatBox.collapsed {
+  height: 44px !important;
+}
+
+.partyChatHeader {
+  cursor: pointer;
+  grid-template-columns: auto 1fr 34px;
+  gap: 8px;
+}
+
+.partyChatHeader span {
+  text-align: right;
+}
+
+#partyChatMinBtn {
+  width: 30px;
+  height: 24px;
+  border-radius: 0;
+  background: rgba(3,12,33,.6);
+  border: 1px solid rgba(255,255,255,.25);
+  color: white;
+  font-weight: 1000;
+}
+
+.partyChatBox:not(.collapsed) .partyChatMessages,
+.partyChatBox:not(.collapsed) .partyChatInputRow {
+  display: flex;
+}
+
+.partyChatBox:not(.collapsed) .partyChatInputRow {
+  display: grid;
+}
+
+#partyChatInput {
+  pointer-events: auto !important;
+  user-select: text !important;
+}
+
+.partyChatBox.chatAttention {
+  outline: 4px solid #ffe822;
+  box-shadow: 0 0 0 6px rgba(255,232,34,.18), 0 18px 48px rgba(0,0,0,.38);
+}
+
+.chatSystem.important {
+  color: #ffe822;
+}
