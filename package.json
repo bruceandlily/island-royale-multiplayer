@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v38-modes-quicktest",
+  "name": "island-royale-multiplayer-v39-auto-lobby",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with working Solo/Duos/Squads and quick test matches.",
+  "description": "Host-ready multiplayer battle royale with auto return to lobby after elimination.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

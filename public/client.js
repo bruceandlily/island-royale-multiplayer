@@ -69,6 +69,9 @@ let mouse = { x: 0, y: 0 };
 let camera = { x: 0, y: 0 };
 let localPlayer = { x: 2100, y: 2100, angle: 0, speed: 4.8, gliderOpen: false, dropHeight: 0 };
 let shots = [];
+let eliminatedReturning = false;
+let eliminatedReturnedToLobby = false;
+let eliminationReturnTimer = null;
 let particles = [];
 let buildMode = false;
 let buildType = "wall";
@@ -168,6 +171,29 @@ function toastMessage(text) {
   toast.classList.add("show");
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => toast.classList.remove("show"), 1500);
+}
+
+function beginEliminationReturn() {
+  if (eliminatedReturning || eliminatedReturnedToLobby) return;
+
+  eliminatedReturning = true;
+  centerMessage.innerHTML = "You are eliminated<br><span style='font-size:28px;color:#ffcf4a;'>Returning to lobby...</span>";
+  toastMessage("Returning to lobby...");
+
+  clearTimeout(eliminationReturnTimer);
+  eliminationReturnTimer = setTimeout(() => {
+    eliminatedReturnedToLobby = true;
+    eliminatedReturning = false;
+
+    hud.classList.add("hidden");
+    lobby.classList.remove("hidden");
+    switchTab("play");
+
+    centerMessage.textContent = "";
+    toastMessage("Returned to lobby");
+
+    updateLobbyUI();
+  }, 2600);
 }
 function escapeHtml(text) {
   return String(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
@@ -352,6 +378,9 @@ partyCopyInviteBtn.addEventListener("click", copyInvite);
 readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => { if (!response?.ok) toastMessage(response?.error || "Could not ready"); }));
 
 function startQuickTestMatch() {
+  eliminatedReturning = false;
+  eliminatedReturnedToLobby = false;
+  clearTimeout(eliminationReturnTimer);
   toastMessage(`Starting ${settings.mode || "Solo"} test match...`);
   socket.emit("createRoom", playerPayload(), response => {
     if (!response.ok) return toastMessage(response.error);
@@ -368,6 +397,9 @@ function startQuickTestMatch() {
 
 startMatchBtn.addEventListener("click", () => {
   if (!room) return startQuickTestMatch();
+  eliminatedReturning = false;
+  eliminatedReturnedToLobby = false;
+  clearTimeout(eliminationReturnTimer);
   socket.emit("startMatch", response => {
     if (!response?.ok) toastMessage(response?.error || "Could not start");
   });
@@ -416,18 +448,41 @@ socket.on("connect", () => {
 socket.on("disconnect", () => { serverStatus.textContent = "Offline"; serverStatus.style.color = "#ff5b67"; });
 socket.on("roomState", state => {
   const previousMe = getMe();
+  const wasAlive = previousMe ? previousMe.alive : true;
+
   room = state;
-  updateLobbyUI(); updateHud(); updatePrompt(); updateMinimap();
+  const me = getMe();
+
+  updateLobbyUI();
+  updateHud();
+  updatePrompt();
+  updateMinimap();
+
   if (room.phase === "game") {
-    lobby.classList.add("hidden"); hud.classList.remove("hidden");
-    if (previousMe && getMe() && getMe().kills > previousMe.kills) {
-      quests.eliminations = Math.max(quests.eliminations, getMe().kills);
-      saveLocal("quests", quests); updateQuestUI();
+    if (me && wasAlive && !me.alive) {
+      beginEliminationReturn();
+    }
+
+    if (!eliminatedReturnedToLobby) {
+      lobby.classList.add("hidden");
+      hud.classList.remove("hidden");
+    } else {
+      hud.classList.add("hidden");
+      lobby.classList.remove("hidden");
+    }
+
+    if (previousMe && me && me.kills > previousMe.kills) {
+      quests.eliminations = Math.max(quests.eliminations, me.kills);
+      saveLocal("quests", quests);
+      updateQuestUI();
     }
   }
 });
 socket.on("roomList", list => updateRoomsUI(list));
 socket.on("matchStarted", state => {
+  eliminatedReturning = false;
+  eliminatedReturnedToLobby = false;
+  clearTimeout(eliminationReturnTimer);
   room = state;
   quests.matches += 1; saveLocal("quests", quests);
   const me = getMe();
@@ -557,7 +612,9 @@ function updateHud() {
   }).join("");
 
   feedBox.innerHTML = (room.feed || []).slice(-5).reverse().map(item => `<div class="feedItem">${escapeHtml(item.text)}</div>`).join("");
-  if (me && !me.alive && room.phase === "game") centerMessage.textContent = "You are eliminated";
+  if (me && !me.alive && room.phase === "game" && !eliminatedReturning && !eliminatedReturnedToLobby) {
+    centerMessage.textContent = "You are eliminated";
+  }
 }
 function updatePrompt() {
   const me = getMe();

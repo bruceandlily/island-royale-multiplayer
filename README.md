@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V38 Modes + Quick Test
+# Island Royale Multiplayer V39 Auto Lobby
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -101,3 +101,13 @@ Squads:
 - Bots are split into teams of 4.
 - Friendly fire is disabled.
 - Last team alive wins.
+
+
+## V39 Auto Lobby Change
+
+When you die:
+1. The game shows `You are eliminated`
+2. It shows `Returning to lobby...`
+3. After about 2.6 seconds, it automatically brings you back to the lobby
+
+You do not have to press Esc after dying anymore.
