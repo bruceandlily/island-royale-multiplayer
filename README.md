@@ -1,33 +1,24 @@
-# Island Royale Multiplayer V65 — Better 100 Player Matchmaking
+# Island Royale Multiplayer V66 — Fill Start Fix
 
-This improves V64 matchmaking.
+This fixes the issue where Fill matchmaking searched briefly, then after readying up Start Match could instantly start without searching again.
 
-## Fixed / Improved
-- Solo Fill now waits before starting
-- Solo Fill searches for real solo players as enemies
-- Solo No Fill starts faster but still briefly checks for real enemies
-- Duos/Trios/Squads Fill still searches for real teammates
-- Full teams also briefly search for real enemy teams before bots fill the rest
-- Every match still fills to 100 total players with bots
+## Fixed
+- Solo Fill now searches after everyone is ready
+- Duos Fill now searches after everyone is ready
+- Trios Fill now searches after everyone is ready
+- Squads Fill now searches after everyone is ready
+- Full teams also search for real enemy teams before bots fill to 100
+- No Fill can still start faster
 
-## What should happen
-
-### Solo Fill
-1. You click Solo + Fill
-2. It waits about 7 seconds
-3. Any real Solo Fill players searching at the same time get pulled in as enemies
-4. Bots fill the rest to 100
-5. Match starts
-
-### Solo No Fill
-- Starts faster
-- Bots fill to 100
-- Can still catch real solo enemies if they are searching at the same time
-
-### Duos / Trios / Squads Fill
-- Searches for real teammates
-- Searches for real enemy teams
-- Bots fill to 100 if not enough real people are online
+## Correct behavior
+1. Pick a mode
+2. Turn Fill ON
+3. Create Room or Find Match
+4. Everyone readies up
+5. Host clicks Start / Find Match
+6. Server searches for real players first
+7. Bots fill the rest to 100
+8. Match starts
 
 ## Upload these files
 Replace these in GitHub:

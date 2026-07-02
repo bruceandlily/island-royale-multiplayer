@@ -1725,7 +1725,11 @@ io.on("connection", socket => {
       const readyCheck = validateReadyPlayers(room);
       if (!readyCheck.ok) return callback?.({ ok: false, error: readyCheck.message });
 
-      if (room.fill && (room.mode || "Solo") !== "Solo" && partySize(room, room.code) < modeTeamSize(room.mode)) {
+      // V66 FIX:
+      // If Fill is ON, Start Match must search matchmaking first for ALL modes,
+      // including Solo Fill and full Duos/Trios/Squads teams.
+      // Before this fix, Solo Fill and full teams could start instantly after readying up.
+      if (room.fill) {
         return requestMatchmaking(socket, { mode: room.mode, fill: true }, callback);
       }
     }

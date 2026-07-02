@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v65-better-100-matchmaking",
-  "version": "65.0.0",
-  "description": "Island Royale multiplayer with better Solo Fill and 100-player matchmaking.",
+  "name": "island-royale-multiplayer-v66-fill-start-fix",
+  "version": "66.0.0",
+  "description": "Island Royale multiplayer with Fill start correctly using matchmaking after ready up.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

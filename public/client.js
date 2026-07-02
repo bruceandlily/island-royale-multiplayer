@@ -538,7 +538,7 @@ function updateLobbyUI() {
   const readyOk = allRealPlayersReady();
   startMatchBtn.textContent = room
     ? (isHost
-      ? (room.matchmakingQueued ? "SEARCHING..." : (modeOk ? (readyOk ? ((room.fill && room.mode !== "Solo" && humans.length < modeTeamSize(room.mode)) ? "FIND FILL" : "START MATCH") : "READY UP") : "WRONG MODE"))
+      ? (room.matchmakingQueued ? "SEARCHING..." : (modeOk ? (readyOk ? (room.fill ? "FIND MATCH" : "START MATCH") : "READY UP") : "WRONG MODE"))
       : "WAITING HOST")
     : "QUICK TEST";
   startMatchBtn.classList.toggle("disabled", room ? (!isHost || !modeOk || !readyOk || room.matchmakingQueued) : false);
@@ -1255,16 +1255,8 @@ startMatchBtn.addEventListener("click", () => {
   eliminatedReturnedToLobby = false;
   clearTimeout(eliminationReturnTimer);
 
-  if (room.fill && mode !== "Solo" && humans < modeTeamSize(mode)) {
-    toastMessage(`${mode} Fill: searching for teammates, then bots fill to 100...`);
-    socket.emit("findMatch", { ...playerPayload(), mode, fill: true }, response => {
-      if (!response?.ok) return toastMessage(response?.error || "Could not find match");
-      room = response.room;
-      selfId = response.selfId || selfId;
-      updateLobbyUI();
-      toastMessage(response.message || "Searching for players...");
-    });
-    return;
+  if (room.fill) {
+    toastMessage(`${mode} Fill: searching for real players, then bots fill to 100...`);
   }
 
   socket.emit("startMatch", response => {
