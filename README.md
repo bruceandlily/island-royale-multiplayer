@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V44 Lobby Buttons Fixed
+# Island Royale Multiplayer V45 Functional Lobby
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -179,3 +179,20 @@ Fixed the V43 lobby buttons:
 - Quick Test works again
 - Added the missing player name input back into the classic lobby
 - Added safety code so the buttons do not break if the name field is missing
+
+
+## V45 Functional Lobby
+
+This version fixes the fake lobby elements.
+
+Changed:
+- The fake teammate on the lobby stage is removed
+- Real players now show on the lobby stage when they join your room
+- Party slots update based on the real room player count
+- Plus/invite slots now copy your real invite link when you have a room
+- Battle Pass tab now uses your actual local progress
+- Item Shop tab now actually equips outfits/colors
+- Profile tab now shows real local/player stats
+- Leaderboards tab now shows real current room/match players sorted by kills
+- Lobby stage updates player names, ready status, cosmetics, and party count
+- Existing gameplay from V42/V44 is kept

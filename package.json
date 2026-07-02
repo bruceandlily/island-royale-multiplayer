@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v44-lobby-buttons-fixed",
+  "name": "island-royale-multiplayer-v45-functional-lobby",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with fixed V43 lobby buttons.",
+  "description": "Host-ready multiplayer battle royale with a functional lobby stage, shop, profile, leaderboard, and working party slots.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -2048,3 +2048,231 @@ input[type="range"] {
 #readyBtn {
   pointer-events: auto;
 }
+
+
+
+/* === V45 functional lobby systems === */
+.stagePartyMembers {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.dynamicHero {
+  position: absolute;
+  width: 220px;
+  height: 500px;
+  pointer-events: none;
+}
+
+.dynamicHero.hero1 {
+  left: 42%;
+  top: 16%;
+  transform: translateX(-50%);
+}
+
+.dynamicHero.hero2 {
+  left: 60%;
+  top: 21%;
+  transform: translateX(-50%) scale(.84);
+}
+
+.dynamicHero.hero3 {
+  left: 25%;
+  top: 24%;
+  transform: translateX(-50%) scale(.76);
+}
+
+.dynamicHero.hero4 {
+  left: 76%;
+  top: 25%;
+  transform: translateX(-50%) scale(.72);
+}
+
+.dynamicHero .nameTag small.ready {
+  color: #55d66b;
+}
+
+.dynamicHero .nameTag small.notReady {
+  color: #ff5667;
+}
+
+.dynamicHero .fortCharacter {
+  position: absolute;
+  left: 50%;
+  top: 116px;
+  transform: translateX(-50%) scale(1.35);
+}
+
+.dynamicHero.hero2 .fortCharacter,
+.dynamicHero.hero3 .fortCharacter,
+.dynamicHero.hero4 .fortCharacter {
+  transform: translateX(-50%) scale(1.12);
+}
+
+.partySlot {
+  z-index: 5;
+  background: rgba(4,10,25,.34);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.partySlot:hover {
+  background: rgba(255,232,34,.22);
+  border-color: #ffe822;
+}
+
+.functionalNote {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: rgba(7,18,42,.78);
+  border: 2px solid rgba(130,170,222,.25);
+  color: rgba(255,255,255,.78);
+  font-weight: 900;
+}
+
+.shopGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.shopItem {
+  min-height: 210px;
+  background: rgba(7,18,42,.82);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+  padding: 14px;
+  text-align: left;
+}
+
+.shopItem.equipped {
+  outline: 4px solid #ffe822;
+}
+
+.shopPreview {
+  height: 110px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #2fb4ff, #1958ff);
+  box-shadow: inset 0 -18px 0 rgba(0,0,0,.16);
+}
+
+.shopItem b {
+  display: block;
+  font-size: 18px;
+}
+
+.shopItem span {
+  display: block;
+  color: rgba(255,255,255,.66);
+  margin: 4px 0 12px;
+}
+
+.shopItem button {
+  width: 100%;
+  height: 38px;
+  background: #ffe822;
+  color: #061126;
+  font-weight: 1000;
+}
+
+.profileStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.profileCard {
+  min-height: 145px;
+  padding: 18px;
+  background: rgba(7,18,42,.82);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+}
+
+.profileCard span {
+  display: block;
+  color: rgba(255,255,255,.62);
+  font-weight: 1000;
+  letter-spacing: 1px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.profileCard b {
+  display: block;
+  font-size: 38px;
+  margin-top: 10px;
+}
+
+.leaderboardList {
+  display: grid;
+  gap: 8px;
+}
+
+.leaderRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 100px 100px 120px;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(7,18,42,.82);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+}
+
+.leaderRow.header {
+  background: rgba(87,130,180,.68);
+  font-weight: 1000;
+}
+
+.leaderRank {
+  font-size: 22px;
+  font-weight: 1000;
+  color: #ffe822;
+}
+
+.battlePassRoad {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.bpTier {
+  min-height: 160px;
+  padding: 14px;
+  background: rgba(7,18,42,.82);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+  display: grid;
+  align-content: space-between;
+}
+
+.bpTier.unlocked {
+  border-color: #ffe822;
+  background: linear-gradient(135deg, rgba(255,232,34,.22), rgba(7,18,42,.82));
+}
+
+.bpTier b {
+  font-size: 20px;
+}
+
+.bpTier span {
+  color: rgba(255,255,255,.68);
+}
+
+@media (max-width: 1000px) {
+  .shopGrid,
+  .profileStats,
+  .battlePassRoad {
+    grid-template-columns: 1fr 1fr;
+  }
+  .leaderRow {
+    grid-template-columns: 40px 1fr 70px;
+  }
+  .leaderRow span:nth-child(4),
+  .leaderRow span:nth-child(5) {
+    display: none;
+  }
+}

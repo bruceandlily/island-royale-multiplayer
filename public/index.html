@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V44 Lobby Fixed</title>
+  <title>Island Royale Multiplayer V45 Functional Lobby</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,12 +18,12 @@
 
         <nav class="fortTabs tabs">
           <button class="tab active fortTab lobbyTab" data-tab="play">LOBBY</button>
-          <button class="tab fortTab" data-tab="quests">BATTLE PASS</button>
+          <button class="tab fortTab" data-tab="battlepass">BATTLE PASS</button>
           <button class="tab fortTab" data-tab="quests">CHALLENGES</button>
           <button class="tab fortTab" data-tab="locker">LOCKER</button>
-          <button class="tab fortTab" data-tab="rooms">ITEM SHOP</button>
-          <button class="tab fortTab" data-tab="party">PROFILE</button>
-          <button class="tab fortTab" data-tab="rooms">LEADERBOARDS</button>
+          <button class="tab fortTab" data-tab="itemshop">ITEM SHOP</button>
+          <button class="tab fortTab" data-tab="profile">PROFILE</button>
+          <button class="tab fortTab" data-tab="leaderboards">LEADERBOARDS</button>
           <button class="tab fortTab" data-tab="settings">STORE</button>
         </nav>
 
@@ -98,46 +98,9 @@
           <section id="playPanel" class="tabPanel activePanel fortPlayPanel">
             <div class="partyStage">
               <div class="gridBg"></div>
-              <div class="partySlot plus leftSlot">+</div>
-              <div class="partySlot plus rightSlot">+</div>
-
-              <div class="heroStand mainHero">
-                <div class="nameTag">
-                  <span class="controllerBubble">A</span>
-                  <b id="mainNameTag">Player</b>
-                  <small id="mainReadyText">Not Ready</small>
-                </div>
-                <div class="lightBeam"></div>
-                <div class="glowDisc"></div>
-                <div class="fortCharacter bigCharacter" id="lobbyCharacter">
-                  <div class="cape"></div>
-                  <div class="head"></div>
-                  <div class="hair"></div>
-                  <div class="body"></div>
-                  <div class="arm left"></div>
-                  <div class="arm right"></div>
-                  <div class="leg left"></div>
-                  <div class="leg right"></div>
-                  <div class="gun"></div>
-                </div>
-              </div>
-
-              <div class="heroStand partyHero">
-                <div class="nameTag teammateName">
-                  <span class="chatBubble">💬</span>
-                  <b>Squad Slot</b>
-                  <small>Invite Friend</small>
-                </div>
-                <div class="lightBeam smallBeam"></div>
-                <div class="glowDisc smallDisc"></div>
-                <div class="miniCharacter">
-                  <div class="miniHead"></div>
-                  <div class="miniBody"></div>
-                  <div class="miniLeg l"></div>
-                  <div class="miniLeg r"></div>
-                </div>
-              </div>
-
+              <div id="stagePartyMembers" class="stagePartyMembers"></div>
+              <button id="stageInviteLeft" class="partySlot plus leftSlot" type="button">+</button>
+              <button id="stageInviteRight" class="partySlot plus rightSlot" type="button">+</button>
               <div class="stageFooterMsg">Party: <span id="stageRoomText">Create a room or quick test to start.</span></div>
             </div>
 
@@ -195,6 +158,42 @@
               <button class="bannerChoice" data-banner="Purple">Purple Banner</button>
               <button class="bannerChoice" data-banner="Gold">Gold Banner</button>
             </div>
+          </section>
+
+
+          <section id="battlepassPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>BATTLE PASS</h2>
+              <button class="smallFortBtn yellow" onclick="document.querySelector('[data-tab=play]').click()">BACK TO LOBBY</button>
+            </div>
+            <div class="functionalNote">This panel uses your actual local challenge progress.</div>
+            <div class="battlePassRoad" id="battlePassRoad"></div>
+          </section>
+
+          <section id="itemshopPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>ITEM SHOP</h2>
+              <button id="refreshShopBtn" class="smallFortBtn">REFRESH SHOP</button>
+            </div>
+            <div class="functionalNote">No fake payments. Click an item to equip it instantly in your locker.</div>
+            <div id="shopGrid" class="shopGrid"></div>
+          </section>
+
+          <section id="profilePanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>PROFILE</h2>
+              <button class="smallFortBtn yellow" onclick="document.querySelector('[data-tab=play]').click()">BACK TO LOBBY</button>
+            </div>
+            <div id="profileStats" class="profileStats"></div>
+          </section>
+
+          <section id="leaderboardsPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>LEADERBOARDS</h2>
+              <button id="refreshLeaderboardBtn" class="smallFortBtn">REFRESH</button>
+            </div>
+            <div class="functionalNote">Shows real players/bots from your current room or match, sorted by eliminations.</div>
+            <div id="leaderboardList" class="leaderboardList"></div>
           </section>
 
           <section id="questsPanel" class="tabPanel fortMenuPanel">

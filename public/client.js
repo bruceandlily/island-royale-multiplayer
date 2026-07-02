@@ -270,6 +270,11 @@ function switchTab(tabName) {
   document.getElementById(`${tabName}Panel`)?.classList.add("activePanel");
   if (tabName === "rooms") requestRoomList();
   if (tabName === "quests") updateQuestUI();
+  if (tabName === "itemshop") renderShop();
+  if (tabName === "profile") renderProfile();
+  if (tabName === "leaderboards") renderLeaderboard();
+  if (tabName === "battlepass") renderBattlePass();
+  renderStageParty();
 }
 document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
 
@@ -298,6 +303,7 @@ function updateLobbyUI() {
     }
     if (topPartyCount) topPartyCount.textContent = "1";
     if (stageRoomText) stageRoomText.textContent = "Pick a mode, then Quick Test or Create Room.";
+    renderFunctionalPanels();
     return;
   }
   const humans = room.players.filter(p => !p.isBot);
@@ -365,6 +371,196 @@ function updateQuestUI() {
   document.getElementById("questMatchesBar").style.width = `${q2 / 3 * 100}%`;
   document.getElementById("questPartyBar").style.width = `${q3 / 1 * 100}%`;
 }
+
+const SHOP_ITEMS = [
+  { outfit: "Raider", color: "#2fb4ff", banner: "Blue", rarity: "Default" },
+  { outfit: "Striker", color: "#ff5b67", banner: "Gold", rarity: "Rare" },
+  { outfit: "Scout", color: "#55d66b", banner: "Blue", rarity: "Uncommon" },
+  { outfit: "Shadow", color: "#b65cff", banner: "Purple", rarity: "Epic" },
+  { outfit: "Sunburst", color: "#ffcf4a", banner: "Gold", rarity: "Legendary" },
+  { outfit: "Neon", color: "#00e5ff", banner: "Purple", rarity: "Epic" },
+  { outfit: "Inferno", color: "#ff7a00", banner: "Gold", rarity: "Rare" },
+  { outfit: "Tactical", color: "#8dff55", banner: "Blue", rarity: "Uncommon" }
+];
+
+function renderCharacterHtml(player, index) {
+  const ready = player.ready ? "Ready" : "Not Ready";
+  const readyClass = player.ready ? "ready" : "notReady";
+  const color = player.color || selectedCosmetic.color || "#2fb4ff";
+  const banner = player.banner || "Blue";
+  const cape = banner === "Gold"
+    ? "linear-gradient(180deg,#ffcf4a,#a16207)"
+    : banner === "Purple"
+      ? "linear-gradient(180deg,#8d4dff,#371b9a)"
+      : "linear-gradient(180deg,#2fb4ff,#1958ff)";
+
+  return `
+    <div class="dynamicHero hero${index + 1}">
+      <div class="nameTag">
+        <span class="controllerBubble">${index === 0 ? "A" : "✓"}</span>
+        <b>${escapeHtml(player.name || "Player")}</b>
+        <small class="${readyClass}">${ready}</small>
+      </div>
+      <div class="lightBeam ${index > 0 ? "smallBeam" : ""}"></div>
+      <div class="glowDisc ${index > 0 ? "smallDisc" : ""}"></div>
+      <div class="fortCharacter bigCharacter">
+        <div class="cape" style="background:${cape}"></div>
+        <div class="head"></div>
+        <div class="hair"></div>
+        <div class="body" style="background:linear-gradient(180deg, ${color}, #132d82)"></div>
+        <div class="arm left"></div>
+        <div class="arm right"></div>
+        <div class="leg left"></div>
+        <div class="leg right"></div>
+        <div class="gun"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStageParty() {
+  const stage = document.getElementById("stagePartyMembers");
+  if (!stage) return;
+
+  let players = room ? room.players.filter(p => !p.isBot).slice(0, 4) : [];
+  if (!players.length) {
+    players = [{
+      id: selfId || "local",
+      name: (nameInput && nameInput.value) ? nameInput.value : "Player",
+      ready: false,
+      color: selectedCosmetic.color,
+      banner: selectedCosmetic.banner,
+      outfit: selectedCosmetic.outfit
+    }];
+  }
+
+  stage.innerHTML = players.map((player, index) => renderCharacterHtml(player, index)).join("");
+
+  const leftInvite = document.getElementById("stageInviteLeft");
+  const rightInvite = document.getElementById("stageInviteRight");
+  const openSlots = Math.max(0, 4 - players.length);
+
+  if (leftInvite) leftInvite.style.display = openSlots >= 1 ? "grid" : "none";
+  if (rightInvite) rightInvite.style.display = openSlots >= 2 ? "grid" : "none";
+}
+
+async function inviteFromStage() {
+  if (!room) {
+    toastMessage("Create a room first, then invite friends");
+    switchTab("play");
+    return;
+  }
+  await copyInvite();
+}
+
+function renderShop() {
+  const grid = document.getElementById("shopGrid");
+  if (!grid) return;
+
+  grid.innerHTML = SHOP_ITEMS.map(item => {
+    const equipped = selectedCosmetic.outfit === item.outfit;
+    return `
+      <div class="shopItem ${equipped ? "equipped" : ""}">
+        <div class="shopPreview" style="background:linear-gradient(135deg, ${item.color}, #111827);"></div>
+        <b>${escapeHtml(item.outfit)}</b>
+        <span>${escapeHtml(item.rarity)} Outfit • Free test item</span>
+        <button onclick="equipShopItem('${escapeHtml(item.outfit)}')">${equipped ? "EQUIPPED" : "EQUIP"}</button>
+      </div>
+    `;
+  }).join("");
+}
+
+window.equipShopItem = function(outfit) {
+  const item = SHOP_ITEMS.find(x => x.outfit === outfit);
+  if (!item) return;
+
+  selectedCosmetic = {
+    outfit: item.outfit,
+    color: item.color,
+    banner: item.banner
+  };
+
+  saveLocal("selectedCosmetic", selectedCosmetic);
+  applyCosmeticPreview();
+  renderShop();
+  renderStageParty();
+
+  if (room) {
+    socket.emit("updateCosmetics", playerPayload(), () => {});
+  }
+
+  toastMessage(`${item.outfit} equipped`);
+};
+
+function renderProfile() {
+  const box = document.getElementById("profileStats");
+  if (!box) return;
+  const me = getMe();
+  const name = (nameInput && nameInput.value) ? nameInput.value : me?.name || "Player";
+  const roomPlayers = room ? room.players.filter(p => !p.isBot).length : 0;
+  const kills = me?.kills || quests.eliminations || 0;
+
+  box.innerHTML = `
+    <div class="profileCard"><span>Name</span><b style="font-size:26px">${escapeHtml(name)}</b></div>
+    <div class="profileCard"><span>Level</span><b>18</b></div>
+    <div class="profileCard"><span>Matches</span><b>${quests.matches || 0}</b></div>
+    <div class="profileCard"><span>Eliminations</span><b>${kills}</b></div>
+    <div class="profileCard"><span>Current Party</span><b>${roomPlayers || 1}</b></div>
+    <div class="profileCard"><span>Mode</span><b style="font-size:28px">${escapeHtml(settings.mode || "Solo")}</b></div>
+    <div class="profileCard"><span>Outfit</span><b style="font-size:26px">${escapeHtml(selectedCosmetic.outfit || "Raider")}</b></div>
+    <div class="profileCard"><span>Status</span><b style="font-size:28px">${room ? "In Room" : "Lobby"}</b></div>
+  `;
+}
+
+function renderLeaderboard() {
+  const box = document.getElementById("leaderboardList");
+  if (!box) return;
+
+  if (!room || !room.players?.length) {
+    box.innerHTML = '<div class="emptyParty">No room yet. Create a room or start Quick Test to see real leaderboard data.</div>';
+    return;
+  }
+
+  const sorted = [...room.players].sort((a, b) => (b.kills || 0) - (a.kills || 0) || (b.alive ? 1 : 0) - (a.alive ? 1 : 0));
+
+  box.innerHTML = `
+    <div class="leaderRow header">
+      <span>Rank</span><span>Player</span><span>Kills</span><span>Status</span><span>Type</span>
+    </div>
+    ${sorted.map((p, i) => `
+      <div class="leaderRow">
+        <span class="leaderRank">#${i + 1}</span>
+        <span style="color:${p.color || "#fff"}">${escapeHtml(p.name || "Player")}</span>
+        <span>${p.kills || 0}</span>
+        <span>${p.alive ? "Alive" : "Out"}</span>
+        <span>${p.isBot ? "Bot" : "Real"}</span>
+      </div>
+    `).join("")}
+  `;
+}
+
+function renderBattlePass() {
+  const box = document.getElementById("battlePassRoad");
+  if (!box) return;
+  const progress = Math.min(6, 1 + Math.floor(((quests.matches || 0) + (quests.eliminations || 0)) / 2));
+
+  box.innerHTML = Array.from({ length: 6 }).map((_, i) => `
+    <div class="bpTier ${i < progress ? "unlocked" : ""}">
+      <b>Tier ${i + 1}</b>
+      <span>${i < progress ? "Unlocked" : "Locked"}</span>
+      <small>${i % 2 === 0 ? "Banner" : "XP Boost"}</small>
+    </div>
+  `).join("");
+}
+
+function renderFunctionalPanels() {
+  renderStageParty();
+  renderShop();
+  renderProfile();
+  renderLeaderboard();
+  renderBattlePass();
+}
+
 function applySettingsToUI() {
   graphicsSelect.value = settings.graphics || "high";
   volumeSlider.value = settings.volume ?? 60;
@@ -428,6 +624,11 @@ async function copyInvite() {
 }
 copyInviteBtn.addEventListener("click", copyInvite);
 partyCopyInviteBtn.addEventListener("click", copyInvite);
+
+const stageInviteLeft = document.getElementById("stageInviteLeft");
+const stageInviteRight = document.getElementById("stageInviteRight");
+if (stageInviteLeft) stageInviteLeft.addEventListener("click", inviteFromStage);
+if (stageInviteRight) stageInviteRight.addEventListener("click", inviteFromStage);
 readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => { if (!response?.ok) toastMessage(response?.error || "Could not ready"); }));
 
 function startQuickTestMatch() {
@@ -481,7 +682,8 @@ saveSettingsBtn.addEventListener("click", () => {
 });
 modeSelect.addEventListener("change", () => { settings.mode = modeSelect.value; applySettingsToUI(); });
 emoteBtn.addEventListener("click", () => {
-  const char = document.getElementById("lobbyCharacter");
+  const char = document.querySelector("#stagePartyMembers .fortCharacter") || document.getElementById("lobbyCharacter");
+  if (!char) return toastMessage("No character on stage yet");
   char.classList.add("dance");
   toastMessage("Emote: Victory Bounce");
   clearTimeout(window.__danceTimer);
@@ -513,6 +715,7 @@ socket.on("roomState", state => {
   }
 
   updateLobbyUI();
+  renderFunctionalPanels();
   updateHud();
   updatePrompt();
   updateMinimap();
@@ -1015,6 +1218,7 @@ applySettingsToUI();
 applyCosmeticPreview();
 updateQuestUI();
 requestRoomList();
+renderFunctionalPanels();
 gameLoop();
 
 
@@ -1035,6 +1239,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tag = document.getElementById("mainNameTag");
   if (nameBox && tag) {
     tag.textContent = nameBox.value || "Player";
+    renderFunctionalPanels();
     nameBox.addEventListener("input", () => {
       tag.textContent = nameBox.value || "Player";
     });
