@@ -1,15 +1,16 @@
-# Island Royale Multiplayer V57 — Lobby-Only Emote Wheel
+# Island Royale Multiplayer V58 — Emote Wheel Fixed
 
-This version adds a Fortnite-style emote wheel that only works in the lobby.
+This fixes the lobby-only emote wheel not opening.
 
-## New
-- Hold **B** in the lobby to open the emote wheel
-- Click one of 10 emotes
-- The emote plays on your lobby character
-- In a party room, other players can see your lobby emote
-- The old EMOTE button also opens the wheel
+## Fixed
+- Hold **B** in the lobby now opens the emote wheel
+- The **EMOTE** button also opens the wheel as a backup
+- Emote wheel HTML loads before client.js
+- The JS uses safe/lazy lookup, so it does not miss the wheel
+- Emotes still only work in the lobby
+- **B still works as build mode in the actual game**
 
-## 10 emotes
+## Emotes
 - Dance
 - Wave
 - Laugh
@@ -21,13 +22,8 @@ This version adds a Fortnite-style emote wheel that only works in the lobby.
 - Point
 - Sit
 
-## Important
-- Emotes only work in the lobby
-- **B still works as build mode in the actual game**
-- This should not mess with build controls anymore
-
 ## Upload these files
-Replace these in GitHub / Render:
+Replace these in GitHub:
 - `package.json`
 - `server.js`
 - `render.yaml`
@@ -35,4 +31,4 @@ Replace these in GitHub / Render:
 - `public/style.css`
 - `public/client.js`
 
-After Render redeploys, open your site and press **Ctrl + F5**.
+Then wait for Render and press **Ctrl + F5**.
