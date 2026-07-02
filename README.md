@@ -1,24 +1,19 @@
-# Island Royale Multiplayer V61 — Detailed Emotes + Cool Idle
+# Island Royale Multiplayer V62 — Audio Update
 
-This version improves the lobby character animations.
+This version adds browser-generated audio.
 
-## New
-- More detailed emotes
-- Better body movement during emotes
-- Extra small effects for some emotes
-  - hearts
-  - clap spark
-  - laugh text / emoji
-  - salute star
-  - point arrow
-- Better lobby idle animation
-  - floating / sway
-  - breathing
-  - head movement
-  - cape motion
-  - gun bob
-  - glowing platform pulse
-  - beam pulse
+## New Audio
+- Quiet lobby background music
+- Different small music patterns for emotes
+- Hover sound effect for buttons / UI
+- Click sound effect for buttons / UI
+- Audio ON/OFF button
+
+## Notes
+- Browser audio starts after your first click or key press because browsers block autoplay.
+- No extra audio files are needed.
+- Sounds are made with Web Audio API inside the browser.
+- Lobby music only plays in the lobby and stays quiet.
 
 ## Upload these files
 Replace these in GitHub:

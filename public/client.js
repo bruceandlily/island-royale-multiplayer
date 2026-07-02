@@ -1892,6 +1892,258 @@ document.querySelectorAll(".modePickButton").forEach(button => {
   }, 250);
 })();
 
+
+
+// V62 audio system: quiet lobby music, emote music, and UI sounds.
+// Uses Web Audio API, so no extra sound files are needed.
+(function setupV62Audio() {
+  if (window.__v62AudioInstalled) return;
+  window.__v62AudioInstalled = true;
+
+  let ctx = null;
+  let masterGain = null;
+  let musicGain = null;
+  let sfxGain = null;
+  let musicTimer = null;
+  let musicStep = 0;
+  let audioEnabled = localStorage.getItem("island_audio_enabled") !== "false";
+  let lastHoverAt = 0;
+
+  const lobbyChords = [
+    [196.00, 246.94, 293.66],
+    [174.61, 220.00, 261.63],
+    [164.81, 207.65, 246.94],
+    [146.83, 196.00, 246.94]
+  ];
+
+  const emotePatterns = {
+    dance:  [[261.63,.10],[329.63,.10],[392.00,.12],[523.25,.16],[392.00,.10],[329.63,.10]],
+    wave:   [[392.00,.16],[440.00,.16],[493.88,.18]],
+    laugh:  [[523.25,.08],[659.25,.08],[783.99,.08],[659.25,.12],[783.99,.12]],
+    clap:   [[220.00,.06,"noise"],[220.00,.06,"noise"],[440.00,.08,"noise"],[220.00,.06,"noise"]],
+    dab:    [[110.00,.12],[220.00,.10],[440.00,.18],[330.00,.12]],
+    salute: [[261.63,.12],[329.63,.12],[392.00,.12],[523.25,.28]],
+    floss:  [[196.00,.08],[261.63,.08],[196.00,.08],[329.63,.08],[196.00,.08],[392.00,.12]],
+    heart:  [[329.63,.18],[392.00,.18],[523.25,.28],[659.25,.20]],
+    point:  [[440.00,.07],[554.37,.07],[659.25,.16]],
+    sit:    [[196.00,.18],[164.81,.18],[130.81,.28]]
+  };
+
+  function getCtx() {
+    if (!ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+
+      ctx = new AudioContext();
+      masterGain = ctx.createGain();
+      musicGain = ctx.createGain();
+      sfxGain = ctx.createGain();
+
+      masterGain.gain.value = audioEnabled ? 0.75 : 0.0;
+      musicGain.gain.value = 0.16;
+      sfxGain.gain.value = 0.35;
+
+      musicGain.connect(masterGain);
+      sfxGain.connect(masterGain);
+      masterGain.connect(ctx.destination);
+    }
+
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    return ctx;
+  }
+
+  function isLobbyAudioState() {
+    return typeof lobby !== "undefined" && lobby && !lobby.classList.contains("hidden") && (!room || room.phase !== "game");
+  }
+
+  function setAudioEnabled(value) {
+    audioEnabled = !!value;
+    localStorage.setItem("island_audio_enabled", String(audioEnabled));
+
+    const c = getCtx();
+    if (masterGain && c) {
+      masterGain.gain.cancelScheduledValues(c.currentTime);
+      masterGain.gain.linearRampToValueAtTime(audioEnabled ? 0.75 : 0.0, c.currentTime + 0.12);
+    }
+
+    const btn = document.getElementById("audioToggleBtn");
+    if (btn) {
+      btn.textContent = audioEnabled ? "AUDIO ON" : "AUDIO OFF";
+      btn.classList.toggle("muted", !audioEnabled);
+    }
+  }
+
+  function tone(freq, duration = 0.12, options = {}) {
+    const c = getCtx();
+    if (!c || !audioEnabled) return;
+
+    const now = c.currentTime + (options.delay || 0);
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+
+    osc.type = options.type || "sine";
+    osc.frequency.setValueAtTime(freq, now);
+
+    if (options.slideTo) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, options.slideTo), now + duration);
+    }
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(options.volume || 0.16, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(options.music ? musicGain : sfxGain);
+
+    osc.start(now);
+    osc.stop(now + duration + 0.03);
+  }
+
+  function noise(duration = 0.06, options = {}) {
+    const c = getCtx();
+    if (!c || !audioEnabled) return;
+
+    const now = c.currentTime + (options.delay || 0);
+    const bufferSize = Math.max(1, Math.floor(c.sampleRate * duration));
+    const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = c.createBufferSource();
+    const filter = c.createBiquadFilter();
+    const gain = c.createGain();
+
+    filter.type = "bandpass";
+    filter.frequency.value = options.frequency || 1200;
+    filter.Q.value = options.q || 0.9;
+
+    gain.gain.setValueAtTime(options.volume || 0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    source.buffer = buffer;
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(options.music ? musicGain : sfxGain);
+
+    source.start(now);
+    source.stop(now + duration + 0.02);
+  }
+
+  function playHover() {
+    const nowMs = performance.now();
+    if (nowMs - lastHoverAt < 42) return;
+    lastHoverAt = nowMs;
+    tone(880, 0.035, { type: "triangle", volume: 0.045 });
+  }
+
+  function playClick() {
+    tone(520, 0.05, { type: "square", volume: 0.08 });
+    tone(760, 0.075, { type: "triangle", volume: 0.055, delay: 0.025 });
+  }
+
+  function playError() {
+    tone(160, 0.12, { type: "sawtooth", volume: 0.08, slideTo: 90 });
+  }
+
+  function playEmoteMusic(emote) {
+    const pattern = emotePatterns[emote] || emotePatterns.dance;
+    let t = 0;
+
+    for (const step of pattern) {
+      const [freq, dur, kind] = step;
+      if (kind === "noise") noise(dur, { delay: t, volume: 0.13, frequency: 1500 });
+      else tone(freq, dur, { delay: t, type: "triangle", volume: 0.14 });
+      t += dur * 0.82;
+    }
+  }
+
+  function startLobbyMusic() {
+    const c = getCtx();
+    if (!c || musicTimer) return;
+
+    musicTimer = setInterval(() => {
+      if (!audioEnabled || !isLobbyAudioState()) return;
+
+      const chord = lobbyChords[musicStep % lobbyChords.length];
+      const root = chord[0];
+
+      tone(chord[0], 1.45, { music: true, type: "sine", volume: 0.035 });
+      tone(chord[1], 1.45, { music: true, type: "sine", volume: 0.026, delay: 0.025 });
+      tone(chord[2], 1.45, { music: true, type: "sine", volume: 0.026, delay: 0.05 });
+
+      tone(root * 2, 0.14, { music: true, type: "triangle", volume: 0.028, delay: 0.12 });
+      tone(chord[1] * 2, 0.14, { music: true, type: "triangle", volume: 0.022, delay: 0.5 });
+      tone(chord[2] * 2, 0.18, { music: true, type: "triangle", volume: 0.024, delay: 0.9 });
+
+      musicStep++;
+    }, 1500);
+  }
+
+  function installAudioEvents() {
+    // Any user input unlocks audio in the browser.
+    const unlock = () => {
+      getCtx();
+      startLobbyMusic();
+      setAudioEnabled(audioEnabled);
+    };
+
+    window.addEventListener("pointerdown", unlock, { once: true, capture: true });
+    window.addEventListener("keydown", unlock, { once: true, capture: true });
+
+    document.addEventListener("mouseover", event => {
+      if (event.target.closest?.("button, .tab, .modePickButton, .lockerItem, .bannerChoice, input, select")) {
+        playHover();
+      }
+    }, true);
+
+    document.addEventListener("click", event => {
+      if (event.target.closest?.("button, .tab, .modePickButton, .lockerItem, .bannerChoice, input, select")) {
+        playClick();
+      }
+    }, true);
+
+    document.addEventListener("click", event => {
+      const option = event.target.closest?.(".emoteOption");
+      if (option?.dataset?.emote) playEmoteMusic(option.dataset.emote);
+    }, true);
+
+    window.addEventListener("keydown", event => {
+      if (event.key === "Escape") playClick();
+    }, true);
+
+    const btn = document.getElementById("audioToggleBtn");
+    if (btn) {
+      btn.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        setAudioEnabled(!audioEnabled);
+      });
+      setAudioEnabled(audioEnabled);
+    }
+
+    // If a server/player emote arrives, play its matching music quietly too.
+    if (typeof socket !== "undefined" && socket?.on) {
+      socket.on("lobbyEmote", data => {
+        if (data?.emote) playEmoteMusic(data.emote);
+      });
+    }
+
+    // Start the music loop after first interaction, but keep it quiet and lobby-only.
+    setInterval(() => {
+      if (ctx && audioEnabled) startLobbyMusic();
+    }, 2000);
+  }
+
+  window.playIslandUISound = playClick;
+  window.playIslandHoverSound = playHover;
+  window.playIslandErrorSound = playError;
+  window.playIslandEmoteMusic = playEmoteMusic;
+  window.setIslandAudioEnabled = setAudioEnabled;
+
+  installAudioEvents();
+})();
+
 // V53 PARTY CHAT - fixed because chat HTML now loads before this file,
 // and this code also fetches elements lazily so it cannot miss them.
 function chatEl(id) {

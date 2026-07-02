@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v61-detailed-emotes-idle",
-  "version": "61.0.0",
-  "description": "Island Royale multiplayer with more detailed lobby emotes and a cool idle animation.",
+  "name": "island-royale-multiplayer-v62-audio-update",
+  "version": "62.0.0",
+  "description": "Island Royale multiplayer with lobby music, emote music, and UI sound effects.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

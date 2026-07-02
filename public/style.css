@@ -4004,3 +4004,36 @@ input[type="range"] {
   from { transform: rotate(0deg); }
   to { transform: rotate(-10deg); }
 }
+
+
+
+/* ===== V62 audio controls ===== */
+.audioToggleBtn {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 12000;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,.55);
+  background: linear-gradient(180deg, #ffe822, #ffc72e);
+  color: #061126;
+  font-weight: 1000;
+  font-size: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  cursor: pointer;
+}
+
+.audioToggleBtn.muted {
+  background: rgba(20,35,65,.92);
+  color: rgba(255,255,255,.72);
+}
+
+button, .tab, .modePickButton, .lockerItem, .bannerChoice {
+  transition: filter .08s ease, transform .08s ease;
+}
+
+button:hover, .tab:hover, .modePickButton:hover, .lockerItem:hover, .bannerChoice:hover {
+  filter: brightness(1.09);
+}
