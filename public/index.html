@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V36</title>
+  <title>Island Royale Multiplayer V37 Gameplay</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -280,14 +280,21 @@
     <div class="hudTopLeft glass">
       <div><span>Players</span><b id="playersLeft">0</b></div>
       <div><span>Kills</span><b id="kills">0</b></div>
+      <div><span>Storm</span><b id="stormPhase">1</b></div>
       <div><span>Room</span><b id="hudRoom">----</b></div>
     </div>
 
     <div id="controlsHud" class="hudTopCenter glass">
-      <span>WASD Move</span>
+      <span id="phasePrompt">WASD Move</span>
       <span>Mouse Aim</span>
       <span>Click Shoot</span>
-      <span>Esc Lobby</span>
+      <span>E Interact</span>
+      <span>B Build</span>
+    </div>
+
+    <div class="minimapCard glass">
+      <div class="mapTop"><span>Island Map</span><b id="miniZone">Zone 1</b></div>
+      <canvas id="minimap" width="220" height="220"></canvas>
     </div>
 
     <div class="hudBottomLeft glass">
@@ -295,16 +302,33 @@
       <div class="bar"><div id="healthFill" class="healthFill"></div></div>
       <div class="barLabel"><span>Shield</span><b id="shieldText">50</b></div>
       <div class="bar"><div id="shieldFill" class="shieldFill"></div></div>
+      <div class="materials">
+        <div>Wood <b id="woodText">0</b></div>
+        <div>Brick <b id="brickText">0</b></div>
+        <div>Metal <b id="metalText">0</b></div>
+      </div>
+    </div>
+
+    <div class="inventoryHud glass">
+      <div id="inventorySlots" class="inventorySlots"></div>
+      <div class="healRow">
+        <button id="medkitBtn">Medkit <b id="medkitCount">0</b></button>
+        <button id="miniBtn">Shield <b id="miniCount">0</b></button>
+      </div>
     </div>
 
     <div class="hudBottomRight glass">
-      <div class="weaponName">Rifle</div>
-      <div class="ammoText">∞</div>
-      <div class="smallText">Server-checked shots</div>
+      <div class="weaponName" id="weaponName">Pistol</div>
+      <div class="ammoText"><span id="ammoInMag">12</span><small>/ <span id="ammoReserve">48</span></small></div>
+      <div class="smallText" id="weaponHint">Server-checked shots</div>
     </div>
 
+    <div id="interactPrompt" class="interactPrompt hidden">Press E</div>
+    <div id="buildPrompt" class="buildPrompt hidden">Build Mode</div>
+    <div id="feedBox" class="feedBox"></div>
     <div id="centerMessage" class="centerMessage"></div>
   </div>
+
 
   <div id="toast" class="toast"></div>
 

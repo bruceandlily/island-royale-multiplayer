@@ -1,40 +1,33 @@
-# Island Royale Multiplayer V36
+# Island Royale Multiplayer V37 Gameplay Upgrade
 
-This is the new host-ready multiplayer version with a cleaner, functional lobby.
+This version keeps the lobby concept from V36 and focuses on gameplay.
 
-New lobby features:
-- Functional top tabs: Play, Party, Rooms, Locker, Quests, Settings
-- Create room
-- Join by room code
-- Browse open rooms
-- Copy invite link
-- Ready/unready
-- Host start match
-- Change mode as host
-- Locker cosmetics that sync to room
-- Quests saved in browser
-- Settings saved in browser
-- Cleaner Fortnite-style layout
+Gameplay added:
+- Battle bus phase
+- Player drop/glider phase
+- Bots fill the match
+- Bigger island
+- Towns, buildings, roads, trees, rocks
+- Chests
+- Ground loot
+- Weapon inventory
+- Pistol, SMG, rifle, shotgun, sniper
+- Ammo types
+- Reload-by-firing when mag is empty
+- Health and shield items
+- Materials
+- Harvesting trees/rocks
+- Building walls/ramps
+- Storm damage and shrinking zone
+- Minimap
+- Kill feed
+- Damage numbers
+- Server-side shooting and hit checks
+- Bot AI movement, shooting, looting, healing, storm rotation
 
-## Host on Render
+## Update Render
 
-Use the same setup as before.
-
-Build Command:
-
-```bash
-npm install
-```
-
-Start Command:
-
-```bash
-npm start
-```
-
-## Updating your existing Render game
-
-Upload/replace these files in your GitHub repo:
+Upload/replace:
 
 ```text
 package.json
@@ -45,10 +38,28 @@ public/client.js
 public/style.css
 ```
 
-Then commit changes. Render should redeploy automatically.
+Then commit to GitHub. Render should redeploy automatically.
 
-If it does not, go to Render and click:
+If not, in Render click:
 
 ```text
 Manual Deploy → Deploy latest commit
+```
+
+## Controls
+
+```text
+WASD = move / glide
+Mouse = aim
+Left click = shoot / place build
+Space = jump from bus / open glider
+E = chest / pickup
+B = build mode
+X = switch wall/ramp
+Q = switch material
+H = harvest nearby tree/rock
+1-5 = weapon slots
+5 = medkit
+6 = shield item
+Esc = show lobby overlay
 ```

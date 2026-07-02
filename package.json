@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v36",
+  "name": "island-royale-multiplayer-v37-gameplay",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with a cleaner functional Fortnite-style lobby.",
+  "description": "Host-ready multiplayer battle royale with upgraded gameplay systems.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

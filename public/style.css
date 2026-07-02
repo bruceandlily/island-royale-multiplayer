@@ -1020,3 +1020,185 @@ input[type="range"] {
   }
   .rightRail { display: none; }
 }
+
+
+
+/* === V37 gameplay-only HUD/gameplay polish === */
+.minimapCard {
+  position: absolute;
+  right: 18px;
+  top: 88px;
+  width: 260px;
+  padding: 14px;
+  border-radius: 18px;
+}
+.mapTop {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255,255,255,.68);
+  text-transform: uppercase;
+  font-weight: 1000;
+  letter-spacing: .8px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+#minimap {
+  width: 232px;
+  height: 232px;
+  border-radius: 16px;
+  border: 8px solid rgba(0,0,0,.28);
+  background: #55b947;
+  display: block;
+}
+.materials {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.materials div {
+  padding: 9px 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.78);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+.materials b {
+  color: white;
+  display: block;
+  font-size: 16px;
+  margin-top: 2px;
+}
+.inventoryHud {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 12px;
+  border-radius: 18px;
+  width: 560px;
+}
+.inventorySlots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.invSlot {
+  height: 68px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.08);
+  border: 2px solid rgba(255,255,255,.12);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  padding: 6px;
+  color: white;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+.invSlot.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(255,207,74,.25);
+}
+.invIcon {
+  width: 48px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #dbeafe, #94a3b8);
+  position: relative;
+}
+.invIcon::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 6px;
+  width: 14px;
+  height: 5px;
+  border-radius: 999px;
+  background: #ffcf4a;
+}
+.invSlot.rarity-common { box-shadow: inset 0 -5px 0 rgba(255,255,255,.35); }
+.invSlot.rarity-uncommon { box-shadow: inset 0 -5px 0 rgba(85,214,107,.8); }
+.invSlot.rarity-rare { box-shadow: inset 0 -5px 0 rgba(47,180,255,.9); }
+.invSlot.rarity-epic { box-shadow: inset 0 -5px 0 rgba(141,77,255,.9); }
+.healRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+.healRow button {
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: white;
+  font-size: 12px;
+}
+.hudBottomRight {
+  width: 210px;
+}
+.ammoText small {
+  font-size: 24px;
+  color: rgba(255,255,255,.65);
+}
+.interactPrompt, .buildPrompt {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(8,17,35,.86);
+  border: 1px solid rgba(255,255,255,.14);
+  color: white;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.buildPrompt {
+  top: auto;
+  bottom: 118px;
+  color: var(--gold);
+}
+.feedBox {
+  position: absolute;
+  left: 18px;
+  top: 112px;
+  width: 330px;
+  display: grid;
+  gap: 6px;
+  pointer-events: none;
+}
+.feedItem {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(8,17,35,.58);
+  border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.8);
+  font-size: 12px;
+  font-weight: 900;
+}
+.damageNumber {
+  position: fixed;
+  z-index: 15;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 1000;
+  text-shadow: 0 3px 8px rgba(0,0,0,.45);
+  pointer-events: none;
+  animation: dmgFloat .75s ease-out forwards;
+}
+.damageNumber.headshot { color: #ffcf4a; font-size: 28px; }
+@keyframes dmgFloat {
+  from { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+  to { opacity: 0; transform: translate(-50%, -50%) translateY(-42px); }
+}
+@media (max-width: 1100px) {
+  .minimapCard { display: none; }
+  .inventoryHud { width: 92vw; }
+  .feedBox { display: none; }
+}
