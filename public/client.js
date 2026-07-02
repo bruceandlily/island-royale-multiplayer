@@ -270,6 +270,7 @@ function clientSideJumpFromBus() {
 
 function modeRequiredPlayers(mode) {
   if (mode === "Squads") return 4;
+  if (mode === "Trios") return 3;
   if (mode === "Duos") return 2;
   return 1;
 }
@@ -285,6 +286,7 @@ function currentModeName() {
 
 function modeTeamSize(mode = currentModeName()) {
   if (mode === "Squads") return 4;
+  if (mode === "Trios") return 3;
   if (mode === "Duos") return 2;
   return 1;
 }
@@ -352,7 +354,7 @@ function syncModeButtons(mode = currentModeName()) {
 }
 
 function setModeEverywhere(mode, showToast = true) {
-  if (!["Solo", "Duos", "Squads"].includes(mode)) mode = "Solo";
+  if (!["Solo", "Duos", "Trios", "Squads"].includes(mode)) mode = "Solo";
 
   // If you are in someone else's room, only the host can change it.
   if (room && !isRoomHost()) {
@@ -520,9 +522,14 @@ function updateLobbyUI() {
     const readyText = player.ready ? "Ready" : "Not Ready";
     return `
       <div class="partyPlayer">
-        <div>
-          <div class="partyName" style="color:${player.color}">${escapeHtml(player.name)}${isMe ? " (You)" : ""}</div>
-          <div class="partyMeta">${host} • ${escapeHtml(player.outfit || "Raider")} • ${player.alive ? "Alive" : "Down"}</div>
+        <div class="partyIdentity">
+          <div class="partyAvatarWrap">
+            ${renderAvatarMarkup(player)}
+          </div>
+          <div class="partyInfo">
+            <div class="partyName" style="color:${player.color}">${escapeHtml(player.name)}${isMe ? " (You)" : ""}</div>
+            <div class="partyMeta">${host} • ${escapeHtml(player.outfit || "Raider")} • ${player.alive ? "Alive" : "Down"}</div>
+          </div>
         </div>
         <div class="readyBadge ${player.id === room.hostId ? "hostBadge" : readyClass}">${player.id === room.hostId ? "Host" : readyText}</div>
       </div>
@@ -680,16 +687,122 @@ const SHOP_ITEMS = [
   { outfit: "Tactical", color: "#8dff55", banner: "Blue", rarity: "Uncommon" }
 ];
 
+
+function colorFromName(input, fallback = "#2fb4ff") {
+  const text = String(input || "");
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) | 0;
+  const palette = ["#ffd9bb", "#efc09f", "#dca27f", "#b6795c"];
+  return palette[Math.abs(hash) % palette.length] || fallback;
+}
+
+function shadeHex(hex, amount = -18) {
+  const safe = String(hex || "#2fb4ff").replace("#", "");
+  const value = safe.length === 3 ? safe.split("").map(c => c + c).join("") : safe.padEnd(6, "0").slice(0, 6);
+  const num = parseInt(value, 16);
+  let r = (num >> 16) + amount;
+  let g = ((num >> 8) & 0xff) + amount;
+  let b = (num & 0xff) + amount;
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+  return "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("");
+}
+
+function getCharacterLook(player = {}) {
+  const accent = player.color || selectedCosmetic.color || "#2fb4ff";
+  const outfit = String(player.outfit || "Raider").toLowerCase();
+  const seed = `${player.id || ""}_${player.name || ""}_${player.outfit || ""}`;
+  const skin = colorFromName(seed + "_skin", "#ffd9bb");
+  const hairChoices = ["#23140e", "#6d4220", "#c08a43", "#0f172a"];
+  const hair = hairChoices[Math.abs((seed.length * 7) % hairChoices.length)];
+  const cape = (player.banner || "Blue") === "Gold"
+    ? "linear-gradient(180deg,#ffcf4a,#a16207)"
+    : (player.banner || "Blue") === "Purple"
+      ? "linear-gradient(180deg,#9f67ff,#371b9a)"
+      : "linear-gradient(180deg,#56c8ff,#1958ff)";
+
+  let vest = "#27364a";
+  let pants = "#1b2238";
+  let boots = "#09101b";
+  let glove = "#111827";
+
+  if (outfit.includes("striker")) {
+    vest = "#35203b";
+    pants = "#221631";
+  } else if (outfit.includes("scout")) {
+    vest = "#214034";
+    pants = "#17271f";
+  } else if (outfit.includes("shadow")) {
+    vest = "#2b213d";
+    pants = "#19152a";
+  }
+
+  return {
+    skin,
+    hair,
+    accent,
+    accentDark: shadeHex(accent, -34),
+    vest,
+    pants,
+    boots,
+    glove,
+    cape
+  };
+}
+
+function renderAvatarMarkup(player = {}) {
+  const look = getCharacterLook(player);
+  const style = [
+    `--skin:${look.skin}`,
+    `--hair:${look.hair}`,
+    `--accent:${look.accent}`,
+    `--accentDark:${look.accentDark}`,
+    `--vest:${look.vest}`,
+    `--pants:${look.pants}`,
+    `--boots:${look.boots}`,
+    `--glove:${look.glove}`,
+    `--cape:${look.cape}`
+  ].join(";");
+
+  return `
+    <div class="fortCharacter bigCharacter v56Avatar" style="${style}">
+      <div class="cape"></div>
+      <div class="neck"></div>
+      <div class="head">
+        <span class="brow left"></span>
+        <span class="brow right"></span>
+        <span class="eye left"></span>
+        <span class="eye right"></span>
+        <span class="mouth"></span>
+      </div>
+      <div class="hair"></div>
+      <div class="body"></div>
+      <div class="torsoVest"></div>
+      <div class="chestPlate"></div>
+      <div class="strap"></div>
+      <div class="belt"></div>
+      <div class="beltBuckle"></div>
+      <div class="arm left upper"></div>
+      <div class="arm left fore"></div>
+      <div class="arm right upper"></div>
+      <div class="arm right fore"></div>
+      <div class="glove left"></div>
+      <div class="glove right"></div>
+      <div class="thigh left"></div>
+      <div class="thigh right"></div>
+      <div class="shin left"></div>
+      <div class="shin right"></div>
+      <div class="boot left"></div>
+      <div class="boot right"></div>
+      <div class="gun"></div>
+    </div>
+  `;
+}
+
 function renderCharacterHtml(player, index) {
   const ready = player.ready ? "Ready" : "Not Ready";
   const readyClass = player.ready ? "ready" : "notReady";
-  const color = player.color || selectedCosmetic.color || "#2fb4ff";
-  const banner = player.banner || "Blue";
-  const cape = banner === "Gold"
-    ? "linear-gradient(180deg,#ffcf4a,#a16207)"
-    : banner === "Purple"
-      ? "linear-gradient(180deg,#8d4dff,#371b9a)"
-      : "linear-gradient(180deg,#2fb4ff,#1958ff)";
 
   return `
     <div class="dynamicHero hero${index + 1}">
@@ -700,20 +813,11 @@ function renderCharacterHtml(player, index) {
       </div>
       <div class="lightBeam ${index > 0 ? "smallBeam" : ""}"></div>
       <div class="glowDisc ${index > 0 ? "smallDisc" : ""}"></div>
-      <div class="fortCharacter bigCharacter">
-        <div class="cape" style="background:${cape}"></div>
-        <div class="head"></div>
-        <div class="hair"></div>
-        <div class="body" style="background:linear-gradient(180deg, ${color}, #132d82)"></div>
-        <div class="arm left"></div>
-        <div class="arm right"></div>
-        <div class="leg left"></div>
-        <div class="leg right"></div>
-        <div class="gun"></div>
-      </div>
+      ${renderAvatarMarkup(player)}
     </div>
   `;
 }
+
 
 function renderStageParty() {
   const stage = document.getElementById("stagePartyMembers");
@@ -1052,7 +1156,7 @@ fillToggleBtn?.addEventListener("click", () => {
   setFillEverywhere(!currentFillEnabled(), true);
 });
 emoteBtn.addEventListener("click", () => {
-  const char = document.querySelector("#stagePartyMembers .fortCharacter") || document.getElementById("lobbyCharacter");
+  const char = document.querySelector("#stagePartyMembers .v56Avatar") || document.querySelector("#stagePartyMembers .fortCharacter") || document.getElementById("lobbyCharacter");
   if (!char) return toastMessage("No character on stage yet");
   char.classList.add("dance");
   toastMessage("Emote: Victory Bounce");

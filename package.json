@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v54-fill-no-fill-matchmaking",
-  "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with working Fill / No Fill matchmaking.",
+  "name": "island-royale-multiplayer-v56-trios-realistic-players",
+  "version": "56.0.0",
+  "description": "Island Royale multiplayer with Trios mode and upgraded realistic lobby player visuals.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

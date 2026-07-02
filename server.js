@@ -169,14 +169,23 @@ function publicInventory(inv) {
 }
 
 
+function normalizeMode(mode) {
+  if (mode === "Squads") return "Squads";
+  if (mode === "Trios") return "Trios";
+  if (mode === "Duos") return "Duos";
+  return "Solo";
+}
+
 function modeTeamSize(mode) {
   if (mode === "Squads") return 4;
+  if (mode === "Trios") return 3;
   if (mode === "Duos") return 2;
   return 1;
 }
 
 function modeRequiredPlayers(mode) {
   if (mode === "Squads") return 4;
+  if (mode === "Trios") return 3;
   if (mode === "Duos") return 2;
   return 1;
 }
@@ -644,7 +653,7 @@ function mergeQueuedOpponents(room) {
 
 function requestMatchmaking(socket, data = {}, callback) {
   let room = rooms.get(socket.data.roomCode);
-  const mode = data.mode === "Squads" ? "Squads" : data.mode === "Duos" ? "Duos" : "Solo";
+  const mode = normalizeMode(data.mode);
   const fill = !!data.fill;
 
   try {
@@ -704,7 +713,7 @@ function createRoom(hostSocket, data = {}) {
     hostId: hostSocket.id,
     phase: "lobby",
     matchPhase: "lobby",
-    mode: data.mode === "Squads" ? "Squads" : data.mode === "Duos" ? "Duos" : "Solo",
+    mode: normalizeMode(data.mode),
     fill: !!data.fill,
     matchmakingQueued: false,
     matchmakingMessage: "",
@@ -1600,7 +1609,7 @@ io.on("connection", socket => {
     if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can change mode" });
     if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
     removeFromMatchmaking(room);
-    room.mode = mode === "Squads" ? "Squads" : mode === "Duos" ? "Duos" : "Solo";
+    room.mode = normalizeMode(mode);
     callback?.({ ok: true });
     broadcastRoom(room);
   });

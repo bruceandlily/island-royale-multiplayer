@@ -2732,3 +2732,353 @@ input[type="range"] {
   color: #ffe822 !important;
   font-weight: 1000 !important;
 }
+
+
+
+/* ===== V56 Trios + realistic lobby players ===== */
+.modeButtonGroup {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.modePickButton {
+  font-size: 11px;
+  letter-spacing: .7px;
+  padding: 0 4px;
+}
+
+.partyIdentity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.partyAvatarWrap {
+  width: 74px;
+  height: 82px;
+  position: relative;
+  flex: 0 0 74px;
+}
+
+.partyInfo {
+  min-width: 0;
+}
+
+.partyName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dynamicHero .fortCharacter.v56Avatar {
+  position: absolute;
+  left: 50%;
+  top: 112px;
+  transform: translateX(-50%) scale(1.06);
+}
+
+.dynamicHero.hero2 .fortCharacter.v56Avatar,
+.dynamicHero.hero3 .fortCharacter.v56Avatar,
+.dynamicHero.hero4 .fortCharacter.v56Avatar {
+  transform: translateX(-50%) scale(.9);
+}
+
+.fortCharacter.v56Avatar {
+  position: relative;
+  width: 164px;
+  height: 254px;
+  z-index: 2;
+  animation: idle 3s ease-in-out infinite;
+  filter: drop-shadow(0 16px 24px rgba(0,0,0,.26));
+}
+
+.partyAvatarWrap .fortCharacter.v56Avatar {
+  transform: scale(.44);
+  transform-origin: top center;
+  left: -16px;
+  top: -6px;
+  animation-duration: 3.4s;
+}
+
+.fortCharacter.v56Avatar .cape {
+  position: absolute;
+  top: 74px;
+  left: 42px;
+  width: 80px;
+  height: 126px;
+  background: var(--cape, linear-gradient(180deg,#2fb4ff,#1958ff));
+  border-radius: 26px 26px 38px 38px;
+  z-index: 0;
+  opacity: .92;
+  transform: rotate(-2deg);
+  box-shadow: inset 0 -14px 18px rgba(0,0,0,.18);
+}
+
+.fortCharacter.v56Avatar .cape:after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 12px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.22);
+}
+
+.fortCharacter.v56Avatar .neck {
+  position: absolute;
+  left: 73px;
+  top: 53px;
+  width: 19px;
+  height: 23px;
+  border-radius: 10px;
+  background: var(--skin, #f1c6a7);
+  z-index: 3;
+}
+
+.fortCharacter.v56Avatar .head {
+  position: absolute;
+  top: 18px;
+  left: 55px;
+  width: 56px;
+  height: 62px;
+  border-radius: 48% 48% 46% 46%;
+  background: linear-gradient(180deg, var(--skin,#f1c6a7), #dca17f);
+  z-index: 4;
+  box-shadow: inset 0 -10px 0 rgba(0,0,0,.05);
+}
+
+.fortCharacter.v56Avatar .eye {
+  position: absolute;
+  top: 26px;
+  width: 7px;
+  height: 4px;
+  border-radius: 999px;
+  background: #101827;
+}
+
+.fortCharacter.v56Avatar .eye.left { left: 15px; }
+.fortCharacter.v56Avatar .eye.right { right: 15px; }
+
+.fortCharacter.v56Avatar .brow {
+  position: absolute;
+  top: 20px;
+  width: 10px;
+  height: 2px;
+  background: rgba(0,0,0,.5);
+  border-radius: 999px;
+}
+
+.fortCharacter.v56Avatar .brow.left { left: 13px; transform: rotate(12deg); }
+.fortCharacter.v56Avatar .brow.right { right: 13px; transform: rotate(-12deg); }
+
+.fortCharacter.v56Avatar .mouth {
+  position: absolute;
+  left: 23px;
+  top: 39px;
+  width: 10px;
+  height: 4px;
+  border-bottom: 2px solid rgba(64,26,20,.45);
+  border-radius: 0 0 999px 999px;
+}
+
+.fortCharacter.v56Avatar .hair {
+  position: absolute;
+  top: 9px;
+  left: 49px;
+  width: 67px;
+  height: 33px;
+  background: var(--hair, #2b1c18);
+  border-radius: 999px 999px 18px 18px;
+  z-index: 5;
+  box-shadow: inset 0 -8px 0 rgba(255,255,255,.08);
+}
+
+.fortCharacter.v56Avatar .hair:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20px;
+  width: 22px;
+  height: 16px;
+  background: var(--hair, #2b1c18);
+  border-radius: 0 0 18px 18px;
+}
+
+.fortCharacter.v56Avatar .body {
+  position: absolute;
+  top: 72px;
+  left: 41px;
+  width: 84px;
+  height: 98px;
+  border-radius: 24px 24px 18px 18px;
+  background: linear-gradient(180deg, var(--accent,#2fb4ff), var(--accentDark,#1650d2));
+  z-index: 2;
+  box-shadow: inset 0 -18px 24px rgba(0,0,0,.22);
+}
+
+.fortCharacter.v56Avatar .torsoVest {
+  position: absolute;
+  top: 84px;
+  left: 53px;
+  width: 60px;
+  height: 72px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--vest,#27364a), #111827);
+  z-index: 3;
+  opacity: .95;
+}
+
+.fortCharacter.v56Avatar .chestPlate {
+  position: absolute;
+  top: 94px;
+  left: 65px;
+  width: 36px;
+  height: 22px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.18);
+  z-index: 4;
+}
+
+.fortCharacter.v56Avatar .strap {
+  position: absolute;
+  top: 89px;
+  left: 42px;
+  width: 80px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(14,24,39,.75);
+  transform: rotate(-18deg);
+  z-index: 4;
+}
+
+.fortCharacter.v56Avatar .belt {
+  position: absolute;
+  top: 147px;
+  left: 46px;
+  width: 72px;
+  height: 12px;
+  border-radius: 999px;
+  background: #19263d;
+  z-index: 4;
+}
+
+.fortCharacter.v56Avatar .beltBuckle {
+  position: absolute;
+  top: 148px;
+  left: 75px;
+  width: 14px;
+  height: 10px;
+  border-radius: 3px;
+  background: #ffcf4a;
+  z-index: 5;
+}
+
+.fortCharacter.v56Avatar .arm {
+  position: absolute;
+  width: 22px;
+  background: var(--skin,#f1c6a7);
+  border-radius: 999px;
+  z-index: 2;
+}
+
+.fortCharacter.v56Avatar .arm.left.upper { left: 28px; top: 84px; height: 54px; transform: rotate(13deg); }
+.fortCharacter.v56Avatar .arm.left.fore { left: 22px; top: 128px; height: 42px; transform: rotate(20deg); }
+.fortCharacter.v56Avatar .arm.right.upper { right: 28px; top: 86px; height: 52px; transform: rotate(-10deg); }
+.fortCharacter.v56Avatar .arm.right.fore { right: 34px; top: 126px; height: 38px; transform: rotate(-28deg); }
+
+.fortCharacter.v56Avatar .glove {
+  position: absolute;
+  width: 16px;
+  height: 18px;
+  border-radius: 8px;
+  background: var(--glove,#111827);
+  z-index: 6;
+}
+.fortCharacter.v56Avatar .glove.left { left: 20px; top: 163px; }
+.fortCharacter.v56Avatar .glove.right { right: 42px; top: 157px; }
+
+.fortCharacter.v56Avatar .thigh {
+  position: absolute;
+  top: 158px;
+  width: 26px;
+  height: 44px;
+  background: linear-gradient(180deg, var(--pants,#1b2238), #0f172a);
+  border-radius: 16px;
+  z-index: 2;
+}
+
+.fortCharacter.v56Avatar .thigh.left { left: 56px; transform: rotate(4deg); }
+.fortCharacter.v56Avatar .thigh.right { right: 56px; transform: rotate(-4deg); }
+
+.fortCharacter.v56Avatar .shin {
+  position: absolute;
+  top: 193px;
+  width: 20px;
+  height: 42px;
+  background: linear-gradient(180deg, var(--pants,#1b2238), #0b1020);
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.fortCharacter.v56Avatar .shin.left { left: 60px; }
+.fortCharacter.v56Avatar .shin.right { right: 60px; }
+
+.fortCharacter.v56Avatar .boot {
+  position: absolute;
+  top: 228px;
+  width: 29px;
+  height: 16px;
+  border-radius: 10px 10px 12px 12px;
+  background: linear-gradient(180deg, var(--boots,#09101b), #00050a);
+  z-index: 2;
+}
+
+.fortCharacter.v56Avatar .boot.left { left: 54px; }
+.fortCharacter.v56Avatar .boot.right { right: 54px; }
+
+.fortCharacter.v56Avatar .gun {
+  position: absolute;
+  right: 11px;
+  top: 133px;
+  width: 86px;
+  height: 16px;
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border-radius: 999px;
+  transform: rotate(-13deg);
+  z-index: 5;
+  box-shadow: inset 0 -4px 0 rgba(255,255,255,.08);
+}
+
+.fortCharacter.v56Avatar .gun:before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: -6px;
+  width: 10px;
+  height: 26px;
+  border-radius: 6px;
+  background: #111827;
+  transform: rotate(28deg);
+}
+
+.fortCharacter.v56Avatar .gun:after {
+  content: "";
+  position: absolute;
+  right: -12px;
+  top: 5px;
+  width: 18px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ffcf4a;
+}
+
+.fortCharacter.v56Avatar.dance {
+  animation: dance .55s ease-in-out infinite;
+}
+
+@media (max-width: 1180px) {
+  .dynamicHero.hero1 { left: 44%; }
+  .dynamicHero.hero2 { left: 70%; top: 24%; }
+  .dynamicHero.hero3 { left: 18%; top: 24%; }
+}
