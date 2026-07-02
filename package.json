@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v64-100-player-matches",
-  "version": "64.0.0",
-  "description": "Island Royale multiplayer with 100-player matches where bots fill missing players.",
+  "name": "island-royale-multiplayer-v65-better-100-matchmaking",
+  "version": "65.0.0",
+  "description": "Island Royale multiplayer with better Solo Fill and 100-player matchmaking.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

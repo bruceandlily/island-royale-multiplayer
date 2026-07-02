@@ -25,7 +25,7 @@ const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const rooms = new Map();
 const matchmakingQueue = new Set();
 const MATCH_TARGET_PLAYERS = 100;
-const MATCHMAKING_SEARCH_MS = 3500;
+const MATCHMAKING_SEARCH_MS = 7000;
 
 const COLOR_PRESETS = ["#2fb4ff", "#ff5b67", "#55d66b", "#b65cff", "#ffcf4a", "#ff7a00", "#00e5ff", "#8dff55"];
 
@@ -581,7 +581,28 @@ function findQueuedRoom(mode, predicate) {
   return null;
 }
 
+
+function mergeQueuedRealOpponentsBeforeStart(room) {
+  // Before starting, pull in any queued real players/parties in the same mode as enemies.
+  // This is important for Solo Fill, because every real solo player should become an enemy
+  // inside the same 100-player match instead of instantly starting separate 99-bot matches.
+  const mode = room.mode || "Solo";
+
+  for (const code of Array.from(matchmakingQueue)) {
+    const other = rooms.get(code);
+    if (!other || other.code === room.code) continue;
+    if (other.phase !== "lobby" || other.mode !== mode) continue;
+    if (humanCount(room) + humanCount(other) > MATCH_TARGET_PLAYERS) continue;
+
+    // For Fill team modes, don't steal unfinished teammate-searching parties as enemies.
+    if (mode !== "Solo" && other.fill && partySize(other, other.code) < modeTeamSize(mode)) continue;
+
+    moveHumansToRoom(other, room);
+  }
+}
+
 function startMatchmadeRoom(room, reason = "Matchmaking found a match") {
+  mergeQueuedRealOpponentsBeforeStart(room);
   removeFromMatchmaking(room);
   markHumansReady(room);
   addFeed(room, reason);
@@ -679,6 +700,19 @@ function requestMatchmaking(socket, data = {}, callback) {
 
     const teamSize = modeTeamSize(mode);
 
+    if (mode === "Solo") {
+      // Solo Fill waits to find other real solo players as enemies.
+      // Solo No Fill starts faster but still gives a short enemy-search window.
+      queueRoomForMatchmaking(
+        room,
+        fill
+          ? `Solo Fill: searching for real solo players, then bots fill to 100...`
+          : `Solo No Fill: searching briefly for real enemies, then bots fill to 100...`,
+        fill ? MATCHMAKING_SEARCH_MS : 2500
+      );
+      return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
+    }
+
     if (fill && mode !== "Solo") {
       const fullTeam = tryFillTeam(room);
       if (!fullTeam) {
@@ -699,8 +733,9 @@ function requestMatchmaking(socket, data = {}, callback) {
       return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
     }
 
-    startMatchmadeRoom(room, `${mode} Fill match found`);
-    return callback?.({ ok: true, started: true, room: publicRoom(room), selfId: socket.id });
+    // Fill team is already full. Still wait briefly so real enemy teams can join before bots fill.
+    queueRoomForMatchmaking(room, `${mode} Fill team ready: searching for real enemies, then bots fill to 100...`, 3500);
+    return callback?.({ ok: true, queued: true, room: publicRoom(room), selfId: socket.id, message: room.matchmakingMessage });
   } catch (error) {
     return callback?.({ ok: false, error: error.message });
   }
@@ -1679,8 +1714,10 @@ io.on("connection", socket => {
     const quickTest = !!payload?.quickTest;
 
     if (quickTest) {
-      // Quick Test is allowed for No Fill modes, including solo-duo/solo-squad testing.
-      if (room.fill && (room.mode || "Solo") !== "Solo") {
+      // Quick Test is allowed for No Fill modes.
+      // If Fill is ON, use matchmaking so Solo Fill can find real solo enemies
+      // and Duos/Trios/Squads Fill can find real teammates first.
+      if (room.fill) {
         return requestMatchmaking(socket, { mode: room.mode, fill: true }, callback);
       }
       markHumansReady(room);

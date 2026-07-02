@@ -1,33 +1,33 @@
-# Island Royale Multiplayer V64 — 100 Player Matches
+# Island Royale Multiplayer V65 — Better 100 Player Matchmaking
 
-Every match now targets **100 total players**.
+This improves V64 matchmaking.
 
-## How it works
-- Real players are added first
-- Bots fill every missing slot
-- 1 real player = 99 bots
-- 2 real players = 98 bots
-- 10 real players = 90 bots
+## Fixed / Improved
+- Solo Fill now waits before starting
+- Solo Fill searches for real solo players as enemies
+- Solo No Fill starts faster but still briefly checks for real enemies
+- Duos/Trios/Squads Fill still searches for real teammates
+- Full teams also briefly search for real enemy teams before bots fill the rest
+- Every match still fills to 100 total players with bots
 
-## Solo
-- Real solo players can match as enemies
-- Bots fill the rest to 100
+## What should happen
 
-## Duos
-- No Fill: 1 or 2 real players can start
-- Fill: tries to find real teammates first
-- If it cannot find them, bots fill the match to 100
-- Example: 2 real teammates = 98 bots
+### Solo Fill
+1. You click Solo + Fill
+2. It waits about 7 seconds
+3. Any real Solo Fill players searching at the same time get pulled in as enemies
+4. Bots fill the rest to 100
+5. Match starts
 
-## Trios
-- No Fill: 1, 2, or 3 real players can start
-- Fill: tries to find real teammates first
-- Bots fill the rest to 100
+### Solo No Fill
+- Starts faster
+- Bots fill to 100
+- Can still catch real solo enemies if they are searching at the same time
 
-## Squads
-- No Fill: 1 to 4 real players can start
-- Fill: tries to find real teammates first
-- Bots fill the rest to 100
+### Duos / Trios / Squads Fill
+- Searches for real teammates
+- Searches for real enemy teams
+- Bots fill to 100 if not enough real people are online
 
 ## Upload these files
 Replace these in GitHub:
