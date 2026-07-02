@@ -281,6 +281,17 @@ function canStartForMode(mode = currentModeName(), count = realPlayerCount()) {
   return count === modeRequiredPlayers(mode);
 }
 
+function allRealPlayersReady() {
+  if (!room) return false;
+  const humans = room.players.filter(p => !p.isBot);
+  return humans.length > 0 && humans.every(p => p.ready);
+}
+
+function notReadyNames() {
+  if (!room) return [];
+  return room.players.filter(p => !p.isBot && !p.ready).map(p => p.name || "Player");
+}
+
 function playerPayload() {
   const safeName = nameInput && nameInput.value ? nameInput.value : "Player";
   return {
@@ -340,8 +351,11 @@ function updateLobbyUI() {
   roomCodeDisplay.textContent = room.code;
   const requiredForMode = modeRequiredPlayers(room.mode || "Solo");
   const modeOkForRoom = humans.length === requiredForMode;
+  const readyOkForRoom = room.players.filter(p => !p.isBot).every(p => p.ready);
   roomSub.textContent = modeOkForRoom
-    ? `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • Ready to start`
+    ? (readyOkForRoom
+      ? `${humans.length}/${room.maxPlayers || 16} real player(s) • ${room.mode || "Solo"} • Ready to start`
+      : `Correct mode, but everyone must ready up first. Waiting on: ${notReadyNames().join(", ")}`)
     : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
   hudRoom.textContent = room.code;
   modeSelect.value = room.mode || settings.mode || "Solo";
@@ -350,8 +364,11 @@ function updateLobbyUI() {
   const isHost = room.hostId === selfId;
   readyBtn.textContent = me?.ready ? "Unready" : "Ready";
   const modeOk = canStartForMode(room.mode || "Solo", humans.length);
-  startMatchBtn.textContent = room ? (isHost ? (modeOk ? "START MATCH" : "WRONG MODE") : "WAITING HOST") : "QUICK TEST";
-  startMatchBtn.classList.toggle("disabled", room ? (!isHost || !modeOk) : false);
+  const readyOk = allRealPlayersReady();
+  startMatchBtn.textContent = room
+    ? (isHost ? (modeOk ? (readyOk ? "START MATCH" : "READY UP") : "WRONG MODE") : "WAITING HOST")
+    : "QUICK TEST";
+  startMatchBtn.classList.toggle("disabled", room ? (!isHost || !modeOk || !readyOk) : false);
 
   partyList.innerHTML = humans.map(player => {
     const isMe = player.id === selfId;
@@ -664,7 +681,10 @@ const stageInviteLeft = document.getElementById("stageInviteLeft");
 const stageInviteRight = document.getElementById("stageInviteRight");
 if (stageInviteLeft) stageInviteLeft.addEventListener("click", inviteFromStage);
 if (stageInviteRight) stageInviteRight.addEventListener("click", inviteFromStage);
-readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => { if (!response?.ok) toastMessage(response?.error || "Could not ready"); }));
+readyBtn.addEventListener("click", () => socket.emit("toggleReady", response => {
+  if (!response?.ok) return toastMessage(response?.error || "Could not ready");
+  toastMessage(response.ready ? "You are ready" : "You are not ready");
+}));
 
 function startQuickTestMatch() {
   if ((settings.mode || "Solo") !== "Solo") {
@@ -684,7 +704,7 @@ function startQuickTestMatch() {
     enableRoomButtons();
     updateLobbyUI();
 
-    socket.emit("startMatch", startResponse => {
+    socket.emit("startMatch", { quickTest: true }, startResponse => {
       if (!startResponse?.ok) toastMessage(startResponse?.error || "Could not start test");
     });
   });
@@ -697,6 +717,12 @@ startMatchBtn.addEventListener("click", () => {
   const mode = room.mode || settings.mode || "Solo";
   if (!canStartForMode(mode, humans)) {
     toastMessage(modeRequirementMessage(mode, humans));
+    return;
+  }
+
+  if (!allRealPlayersReady()) {
+    const names = notReadyNames().join(", ");
+    toastMessage(`Everyone must ready up first${names ? ": " + names : ""}`);
     return;
   }
 

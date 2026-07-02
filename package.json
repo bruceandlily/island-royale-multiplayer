@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v46-mode-lock",
+  "name": "island-royale-multiplayer-v47-ready-mode-lock",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with strict Solo/Duos/Squads real-player mode validation.",
+  "description": "Host-ready multiplayer battle royale with server-enforced mode counts and ready checks.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

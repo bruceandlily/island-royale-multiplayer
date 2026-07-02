@@ -2290,3 +2290,15 @@ input[type="range"] {
 #roomSub {
   font-weight: 900;
 }
+
+
+
+/* === V47 ready lock feedback === */
+#startMatchBtn.disabled {
+  opacity: .48 !important;
+  cursor: not-allowed;
+}
+
+#roomSub {
+  line-height: 1.35;
+}

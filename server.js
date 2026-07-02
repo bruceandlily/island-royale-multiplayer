@@ -192,6 +192,24 @@ function validateModePlayerCount(room) {
   return { ok: true };
 }
 
+function validateReadyPlayers(room) {
+  const humans = humanPlayers(room);
+  const notReady = humans.filter(p => !p.ready);
+
+  if (notReady.length > 0) {
+    return {
+      ok: false,
+      message: `Everyone must ready up first. Not ready: ${notReady.map(p => p.name).join(", ")}`
+    };
+  }
+
+  return { ok: true };
+}
+
+function markHumansReady(room) {
+  for (const player of humanPlayers(room)) player.ready = true;
+}
+
 function getAliveTeamIds(room) {
   const teams = new Set();
   for (const player of room.players.values()) {
@@ -1371,12 +1389,34 @@ io.on("connection", socket => {
     broadcastRoom(room);
   });
 
-  socket.on("startMatch", callback => {
+  socket.on("startMatch", (payload, callback) => {
+    if (typeof payload === "function") {
+      callback = payload;
+      payload = {};
+    }
+
     const room = rooms.get(socket.data.roomCode);
     if (!room) return callback?.({ ok: false, error: "Not in a room" });
     if (room.hostId !== socket.id) return callback?.({ ok: false, error: "Only host can start" });
+    if (room.phase !== "lobby") return callback?.({ ok: false, error: "Match already started" });
+
     const modeCheck = validateModePlayerCount(room);
     if (!modeCheck.ok) return callback?.({ ok: false, error: modeCheck.message });
+
+    // Quick Test is the only shortcut: it is allowed only for one-person Solo testing.
+    // Normal room starts always require every real player to be ready.
+    const quickTest = !!payload?.quickTest;
+    if (quickTest) {
+      const humans = humanPlayers(room);
+      if ((room.mode || "Solo") !== "Solo" || humans.length !== 1) {
+        return callback?.({ ok: false, error: "Quick Test only works in Solo by yourself." });
+      }
+      markHumansReady(room);
+    } else {
+      const readyCheck = validateReadyPlayers(room);
+      if (!readyCheck.ok) return callback?.({ ok: false, error: readyCheck.message });
+    }
+
     resetRoomForMatch(room);
     callback?.({ ok: true });
     io.to(room.code).emit("matchStarted", publicRoom(room));

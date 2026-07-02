@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V46 Mode Lock
+# Island Royale Multiplayer V47 Ready + Mode Lock Fix
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -213,3 +213,24 @@ Examples:
 - If 4 people are in the room but mode is Duos, the match will not start
 - If 4 people are in the room and mode is Squads, the match starts
 - Bots still fill the actual match after the real player count is correct
+
+
+## V47 Ready + Mode Lock Fix
+
+This fixes the issue where a friend could still start the wrong mode.
+
+Server-enforced rules:
+- Solo requires exactly 1 real player
+- Duos requires exactly 2 real players
+- Squads requires exactly 4 real players
+- Normal room starts require every real player to be ready
+- Host must be ready too
+- Friends must be ready too
+- Quick Test still works only when you are alone in Solo
+
+Examples:
+- 2 players in Solo will not start
+- 2 players in Squads will not start
+- 4 players in Duos will not start
+- 2 players in Duos still will not start unless both are ready
+- 4 players in Squads still will not start unless all 4 are ready
