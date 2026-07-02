@@ -1202,3 +1202,807 @@ input[type="range"] {
   .inventoryHud { width: 92vw; }
   .feedBox { display: none; }
 }
+
+
+
+/* === V43 classic battle royale lobby redesign === */
+.fortLobby {
+  padding: 0;
+  display: block;
+  background:
+    radial-gradient(circle at 48% 50%, rgba(26,115,209,.42), transparent 30%),
+    linear-gradient(180deg, #0b2a5b 0%, #061b3e 62%, #050b1c 100%);
+  overflow: hidden;
+}
+
+.fortLobby::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(60deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 90px 90px;
+  opacity: .55;
+}
+
+.fortShell {
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  display: grid;
+  grid-template-rows: 78px 1fr;
+}
+
+.fortTop {
+  height: 78px;
+  background: linear-gradient(180deg, rgba(5,18,44,.98), rgba(8,36,82,.98));
+  border-bottom: 3px solid rgba(99,153,221,.35);
+  display: grid;
+  grid-template-columns: 255px 1fr 360px;
+  align-items: end;
+  padding: 0 26px 0 32px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.28);
+}
+
+.fortLogoBlock {
+  height: 78px;
+  display: flex;
+  align-items: center;
+}
+
+.fortLogo {
+  color: white;
+  font-weight: 1000;
+  font-size: 28px;
+  line-height: .86;
+  letter-spacing: -2px;
+  text-shadow: 0 4px 0 rgba(0,0,0,.25);
+  transform: skew(-6deg);
+}
+
+.fortTabs {
+  display: flex;
+  align-items: end;
+  gap: 0;
+  justify-content: flex-start;
+  height: 38px;
+}
+
+.fortTab {
+  height: 34px;
+  border-radius: 0;
+  padding: 0 18px;
+  background: rgba(87,130,180,.68);
+  color: rgba(255,255,255,.86);
+  border-right: 1px solid rgba(255,255,255,.18);
+  border-left: 1px solid rgba(0,0,0,.12);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  font-size: 13px;
+  letter-spacing: .2px;
+}
+
+.fortTab.active {
+  background: #ffe822;
+  color: #061126;
+  box-shadow: none;
+}
+
+.fortCurrency {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  height: 62px;
+}
+
+.currencyPill, .fortStatus {
+  height: 36px;
+  min-width: 70px;
+  border-radius: 0;
+  background: rgba(3,12,33,.72);
+  border: 2px solid rgba(92,145,207,.55);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 1000;
+  font-size: 14px;
+}
+
+.fortStatus {
+  min-width: 100px;
+  color: #55d66b !important;
+  border-radius: 4px;
+}
+
+.fortMain {
+  display: grid;
+  grid-template-columns: 370px 1fr 350px;
+  height: calc(100vh - 78px);
+  min-height: 0;
+}
+
+.fortLeftPanel {
+  padding: 34px 0 0 76px;
+  background: linear-gradient(90deg, rgba(1,8,26,.42), rgba(1,8,26,0));
+}
+
+.seasonBox {
+  width: 290px;
+  background: rgba(97,139,185,.85);
+  color: white;
+  padding-bottom: 16px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.16);
+}
+
+.seasonTitle {
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: 1000;
+  background: rgba(255,255,255,.12);
+}
+
+.bannerRow {
+  display: grid;
+  grid-template-columns: 95px 1fr;
+  align-items: center;
+  padding: 18px 14px 0;
+  gap: 12px;
+}
+
+.shieldBanner {
+  width: 78px;
+  height: 104px;
+  background: #e8e0d8;
+  clip-path: polygon(50% 0, 100% 10%, 100% 70%, 50% 100%, 0 70%, 0 10%);
+  position: relative;
+  border: 4px solid rgba(0,0,0,.1);
+}
+
+.shieldTop {
+  position: absolute;
+  inset: 9px 12px 44px;
+  background: #83b9ff;
+  border-radius: 8px;
+}
+
+.shieldWave {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 24px;
+  height: 20px;
+  background: repeating-radial-gradient(circle at 10px 8px, #83b9ff 0 8px, transparent 9px 22px);
+}
+
+.levelText {
+  font-weight: 1000;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.levelText span {
+  font-size: 42px;
+}
+
+.xpText {
+  margin-top: 12px;
+  font-weight: 1000;
+}
+
+.xpLine, .challengeProgress {
+  height: 10px;
+  background: rgba(0,0,0,.42);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.xpLine div {
+  width: 74%;
+  height: 100%;
+  background: #dfff3c;
+}
+
+.passReward, .tierReward {
+  width: 290px;
+  height: 54px;
+  display: grid;
+  grid-template-columns: 50px 1fr 54px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 0 12px;
+  background: linear-gradient(90deg, rgba(185,116,35,.92), rgba(232,172,69,.78));
+  color: white;
+  transform: skew(-8deg);
+}
+
+.passReward > *, .tierReward > * {
+  transform: skew(8deg);
+}
+
+.passReward b, .tierReward b {
+  display: block;
+  font-size: 14px;
+}
+
+.passReward span, .tierReward span {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,.82);
+}
+
+.rewardIcon, .tierIcon {
+  font-size: 26px;
+  color: #ffd64d;
+}
+
+.lockDot {
+  opacity: .9;
+  text-align: right;
+}
+
+.tierReward {
+  margin-top: 6px;
+  background: linear-gradient(90deg, rgba(78,122,140,.92), rgba(140,174,180,.78));
+}
+
+.tierProgress {
+  text-align: right;
+  font-weight: 1000;
+  color: #ffd64d;
+}
+
+.dailyHeader {
+  width: 290px;
+  height: 30px;
+  margin-top: 12px;
+  padding-left: 12px;
+  display: flex;
+  align-items: center;
+  background: rgba(60,89,126,.9);
+  color: white;
+  font-weight: 1000;
+  font-size: 13px;
+}
+
+.dailyChallenge {
+  width: 290px;
+  padding: 10px 12px;
+  background: rgba(7,18,42,.76);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: white;
+}
+
+.dailyChallenge span {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.dailyChallenge small {
+  display: block;
+  text-align: right;
+  margin-top: -2px;
+  font-weight: 1000;
+  color: rgba(255,255,255,.85);
+}
+
+.challengeProgress div {
+  height: 100%;
+  background: #dfff3c;
+  width: 0;
+}
+
+.smallFortBtn {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 2px;
+  background: rgba(36,58,93,.95);
+  border: 2px solid rgba(130,170,222,.45);
+  color: white;
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.fortLeftPanel > .smallFortBtn {
+  width: 290px;
+  margin-top: 12px;
+}
+
+.smallFortBtn.yellow {
+  background: #ffe822;
+  color: #061126;
+  border-color: rgba(255,255,255,.55);
+}
+
+.fortCenter {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.fortPlayPanel.activePanel {
+  display: grid;
+  grid-template-rows: 1fr 54px;
+  height: 100%;
+}
+
+.partyStage {
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gridBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 58%, rgba(31,151,255,.27), transparent 28%),
+    linear-gradient(90deg, transparent 0 49%, rgba(64,160,255,.14) 49% 51%, transparent 51% 100%);
+}
+
+.gridBg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(30deg, rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(150deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 74px 74px;
+}
+
+.partySlot.plus {
+  position: absolute;
+  width: 58px;
+  height: 58px;
+  border: 3px dotted rgba(255,255,255,.82);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 40px;
+  font-weight: 300;
+  opacity: .88;
+}
+
+.leftSlot {
+  left: 12%;
+  top: 44%;
+}
+
+.rightSlot {
+  right: 10%;
+  top: 39%;
+}
+
+.heroStand {
+  position: absolute;
+  width: 240px;
+  height: 500px;
+}
+
+.mainHero {
+  left: 43%;
+  top: 16%;
+  transform: translateX(-50%);
+}
+
+.partyHero {
+  right: 18%;
+  top: 24%;
+  transform: scale(.82);
+  opacity: .95;
+}
+
+.nameTag {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 230px;
+  text-align: center;
+  color: white;
+  z-index: 5;
+  font-size: 14px;
+}
+
+.nameTag b {
+  display: inline-block;
+  max-width: 170px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameTag small {
+  display: block;
+  color: #ff5667;
+  margin-top: 2px;
+  font-weight: 1000;
+}
+
+.nameTag .controllerBubble {
+  display: inline-grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  background: #4ad36b;
+  color: #0d1a27;
+  border-radius: 50%;
+  margin-right: 5px;
+  font-weight: 1000;
+}
+
+.chatBubble {
+  margin-right: 5px;
+}
+
+.lightBeam {
+  position: absolute;
+  left: 50%;
+  top: 76px;
+  width: 150px;
+  height: 370px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(54,219,255,.34), rgba(54,219,255,.06), transparent);
+  clip-path: polygon(36% 0, 64% 0, 100% 100%, 0 100%);
+}
+
+.smallBeam {
+  opacity: .55;
+}
+
+.glowDisc {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  width: 230px;
+  height: 62px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #89ffff 0%, #13b7ff 50%, rgba(19,183,255,.12) 70%);
+  box-shadow: 0 0 38px rgba(58,224,255,.9), 0 0 85px rgba(58,224,255,.35);
+}
+
+.smallDisc {
+  width: 170px;
+  opacity: .75;
+}
+
+.fortCharacter {
+  position: absolute;
+  left: 50%;
+  top: 116px;
+  transform: translateX(-50%) scale(1.35);
+}
+
+.miniCharacter {
+  position: absolute;
+  left: 50%;
+  top: 150px;
+  transform: translateX(-50%) scale(1.65);
+  width: 70px;
+  height: 150px;
+}
+
+.miniHead {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffd7b6;
+  margin: 0 auto;
+}
+
+.miniBody {
+  width: 52px;
+  height: 70px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #374151, #1f2937);
+  margin: -2px auto 0;
+}
+
+.miniLeg {
+  width: 18px;
+  height: 46px;
+  border-radius: 999px;
+  background: #111827;
+  position: absolute;
+  top: 98px;
+}
+
+.miniLeg.l { left: 15px; }
+.miniLeg.r { right: 15px; }
+
+.stageFooterMsg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 38px;
+  padding-left: 76px;
+  color: #55d66b;
+  display: flex;
+  align-items: center;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(0,0,0,.45);
+}
+
+.stageFooterMsg span {
+  color: rgba(255,255,255,.78);
+  margin-left: 6px;
+}
+
+.fortChatBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(4,10,25,.92);
+  padding: 0 28px;
+  color: white;
+  border-top: 2px solid rgba(255,255,255,.08);
+}
+
+.partyChat b {
+  color: #55d66b;
+  margin-right: 18px;
+}
+
+.partyChat span {
+  color: rgba(255,255,255,.55);
+  font-weight: 800;
+}
+
+.fortRightPanel {
+  padding: 78px 78px 0 0;
+  position: relative;
+}
+
+.regionText {
+  position: absolute;
+  right: 76px;
+  top: 44px;
+  color: rgba(255,255,255,.58);
+  font-size: 11px;
+  text-align: right;
+  line-height: 1.35;
+}
+
+.newModeBanner {
+  margin-top: 260px;
+  margin-left: 20px;
+  width: 260px;
+  height: 42px;
+  background: #fff02e;
+  color: #071126;
+  font-weight: 1000;
+  display: grid;
+  place-items: center;
+  transform: skew(-14deg);
+}
+
+.modeCard {
+  width: 260px;
+  margin-left: 20px;
+  background: rgba(105,135,176,.92);
+  padding: 14px;
+  color: white;
+  box-shadow: 0 14px 28px rgba(0,0,0,.25);
+}
+
+.modeLabel {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 1000;
+  color: rgba(255,255,255,.75);
+}
+
+.modeCard h2 {
+  text-align: center;
+  font-size: 28px;
+  line-height: .95;
+  text-transform: capitalize;
+  margin: 2px 0 10px;
+  letter-spacing: -1px;
+}
+
+.modeSelect, .changeModeBtn {
+  width: 100%;
+  height: 40px;
+  border-radius: 0;
+  border: 2px solid rgba(255,255,255,.55);
+  margin-bottom: 8px;
+  background: rgba(48,85,130,.85);
+  color: white;
+  font-weight: 1000;
+  text-align: center;
+}
+
+.changeModeBtn {
+  background: rgba(62,101,155,.95);
+}
+
+.fillRow {
+  height: 38px;
+  background: rgba(0,0,0,.28);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  margin-bottom: 10px;
+  color: rgba(255,255,255,.78);
+  font-weight: 900;
+}
+
+.fillRow b {
+  color: rgba(255,255,255,.5);
+}
+
+.lobbyActions {
+  display: grid;
+  gap: 8px;
+}
+
+.readyButton, .smallReadyBtn {
+  height: 66px;
+  border-radius: 0;
+  background: #fff02e;
+  color: #071126;
+  border: 4px solid rgba(255,255,255,.8);
+  font-size: 30px;
+  font-weight: 1000;
+  transform: skew(-5deg);
+  box-shadow: 0 6px 0 rgba(0,0,0,.18);
+}
+
+.smallReadyBtn {
+  height: 46px;
+  font-size: 15px;
+  background: #ffc821;
+}
+
+.readyButton.disabled {
+  opacity: .55;
+  background: rgba(255,255,255,.2);
+  color: rgba(255,255,255,.6);
+}
+
+.roomCardFort {
+  width: 260px;
+  margin-left: 20px;
+  margin-top: 16px;
+  padding: 14px;
+  background: rgba(3,12,33,.76);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+}
+
+.roomCardFort div {
+  color: rgba(255,255,255,.58);
+  font-size: 11px;
+  letter-spacing: 1.4px;
+  font-weight: 1000;
+}
+
+.roomCardFort b {
+  display: block;
+  color: #ffdc47;
+  font-size: 30px;
+  line-height: 1;
+  margin: 6px 0;
+}
+
+.roomCardFort span {
+  display: block;
+  color: rgba(255,255,255,.66);
+  font-size: 12px;
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+
+.fortMenuPanel.activePanel {
+  display: block;
+  height: calc(100vh - 78px);
+  padding: 60px 70px 70px;
+  background: rgba(5,18,44,.7);
+  overflow-y: auto;
+}
+
+.fortPanelHeader {
+  height: 74px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid rgba(255,255,255,.12);
+  margin-bottom: 22px;
+}
+
+.fortPanelHeader h2 {
+  color: white;
+  font-size: 34px;
+  text-shadow: 0 4px 0 rgba(0,0,0,.25);
+}
+
+.fortMenuPanel .partyGrid,
+.fortMenuPanel .roomList,
+.fortMenuPanel .settingsGrid,
+.fortMenuPanel .lockerGrid,
+.fortMenuPanel .battlePassCards {
+  display: grid;
+  gap: 14px;
+}
+
+.fortMenuPanel .lockerGrid {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+.battlePassCards {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.bpCard {
+  min-height: 170px;
+  padding: 24px;
+  background: rgba(87,130,180,.68);
+  color: white;
+  border: 2px solid rgba(255,255,255,.14);
+}
+
+.bpCard.gold {
+  background: linear-gradient(135deg, rgba(255,198,40,.95), rgba(139,84,24,.85));
+}
+
+.bpCard b {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.bpCard span {
+  color: rgba(255,255,255,.8);
+}
+
+.fortMenuPanel .joinCard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  background: rgba(3,12,33,.55);
+  border: 2px solid rgba(255,255,255,.1);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.fortMenuPanel input,
+.fortMenuPanel select {
+  border-radius: 0;
+  background: rgba(3,12,33,.78);
+  border: 2px solid rgba(130,170,222,.35);
+}
+
+.fortMenuPanel .partyPlayer,
+.fortMenuPanel .roomListItem,
+.fortMenuPanel .emptyParty,
+.fortMenuPanel .settingBox {
+  background: rgba(3,12,33,.66);
+  border: 2px solid rgba(130,170,222,.25);
+  border-radius: 0;
+}
+
+@media (max-width: 1250px) {
+  .fortTop { grid-template-columns: 210px 1fr 210px; padding-left: 20px; }
+  .fortTab { padding: 0 10px; font-size: 11px; }
+  .fortMain { grid-template-columns: 310px 1fr 310px; }
+  .fortLeftPanel { padding-left: 26px; }
+  .fortRightPanel { padding-right: 26px; }
+}
+
+@media (max-width: 980px) {
+  .fortLobby { overflow: auto; }
+  .fortShell { height: auto; min-height: 100vh; }
+  .fortTop, .fortMain { grid-template-columns: 1fr; height: auto; }
+  .fortTop { align-items: center; padding: 12px; gap: 12px; }
+  .fortTabs { flex-wrap: wrap; height: auto; }
+  .fortLeftPanel, .fortRightPanel { padding: 16px; }
+  .fortCenter { min-height: 640px; }
+  .partyStage { height: 620px; }
+}

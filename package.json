@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v40-balance-ai-animation",
+  "name": "island-royale-multiplayer-v43-fort-lobby-redesign",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with slower movement, balanced bot damage, smarter AI, and walking animations.",
+  "description": "Host-ready multiplayer battle royale with a classic battle royale lobby redesign.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

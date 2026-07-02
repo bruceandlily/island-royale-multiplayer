@@ -279,12 +279,24 @@ function enableRoomButtons() {
   startMatchBtn.classList.remove("disabled");
 }
 function updateLobbyUI() {
+  const mainNameTag = document.getElementById("mainNameTag");
+  if (mainNameTag) mainNameTag.textContent = nameInput.value || "Player";
+  const topPartyCount = document.getElementById("topPartyCount");
+  const stageRoomText = document.getElementById("stageRoomText");
+
   if (!room) {
     roomCodeDisplay.textContent = "No Room";
     roomSub.textContent = "Pick Solo, Duos, or Squads in Settings, then click Quick Test to instantly start with bots.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
-    startMatchBtn.textContent = "Quick Test";
+    startMatchBtn.textContent = "QUICK TEST";
     startMatchBtn.classList.remove("disabled");
+    const mainReadyText = document.getElementById("mainReadyText");
+    if (mainReadyText) {
+      mainReadyText.textContent = "Not Ready";
+      mainReadyText.style.color = "#ff5667";
+    }
+    if (topPartyCount) topPartyCount.textContent = "1";
+    if (stageRoomText) stageRoomText.textContent = "Pick a mode, then Quick Test or Create Room.";
     return;
   }
   const humans = room.players.filter(p => !p.isBot);
@@ -296,7 +308,7 @@ function updateLobbyUI() {
   const me = getMe();
   const isHost = room.hostId === selfId;
   readyBtn.textContent = me?.ready ? "Unready" : "Ready";
-  startMatchBtn.textContent = room ? (isHost ? "Start Match" : "Waiting Host") : "Quick Test";
+  startMatchBtn.textContent = room ? (isHost ? "START MATCH" : "WAITING HOST") : "QUICK TEST";
   startMatchBtn.classList.toggle("disabled", room ? (!isHost || humans.length < 1) : false);
 
   partyList.innerHTML = humans.map(player => {
@@ -358,7 +370,7 @@ function applySettingsToUI() {
   controlsSelect.value = settings.controls || "on";
   modeSelect.value = settings.mode || "Solo";
   controlsHud?.classList.toggle("hidden", settings.controls === "off");
-  if (selectedModeTitle) selectedModeTitle.textContent = `${settings.mode || "Solo"} Battle Royale`;
+  if (selectedModeTitle) selectedModeTitle.textContent = `${(settings.mode || "Solo").toUpperCase()} BATTLE ROYALE`;
 }
 function applyCosmeticPreview() {
   const body = document.querySelector(".bigCharacter .body");
@@ -1003,3 +1015,12 @@ applyCosmeticPreview();
 updateQuestUI();
 requestRoomList();
 gameLoop();
+
+
+// V43: keep the center player name live while typing.
+if (typeof nameInput !== "undefined" && nameInput) {
+  nameInput.addEventListener("input", () => {
+    const mainNameTag = document.getElementById("mainNameTag");
+    if (mainNameTag) mainNameTag.textContent = nameInput.value || "Player";
+  });
+}

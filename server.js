@@ -604,19 +604,102 @@ function linePointDistance(px, py, ax, ay, bx, by) {
 }
 
 function rectLineHit(rect, ax, ay, bx, by) {
-  const steps = 16;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const x = ax + (bx - ax) * t;
-    const y = ay + (by - ay) * t;
-    if (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h) return true;
-  }
-  return false;
+  const hit = segmentAabbHitDistance(rect, ax, ay, bx, by);
+  return hit !== null;
 }
 
 function buildAsRect(build) {
-  if (build.type === "ramp") return { x: build.x - 48, y: build.y - 48, w: 96, h: 96 };
-  return { x: build.x - 60, y: build.y - 12, w: 120, h: 24 };
+  if (build.type === "ramp") return { x: build.x - 54, y: build.y - 48, w: 108, h: 96 };
+  return { x: build.x - 64, y: build.y - 16, w: 128, h: 32 };
+}
+
+function buildCorners(build) {
+  const width = build.type === "ramp" ? 118 : 132;
+  const height = build.type === "ramp" ? 100 : 34;
+  const hw = width / 2;
+  const hh = height / 2;
+  const angle = Number(build.angle) || 0;
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+
+  const points = [
+    { x: -hw, y: -hh },
+    { x: hw, y: -hh },
+    { x: hw, y: hh },
+    { x: -hw, y: hh }
+  ];
+
+  return points.map(p => ({
+    x: build.x + p.x * c - p.y * s,
+    y: build.y + p.x * s + p.y * c
+  }));
+}
+
+function pointInPolygon(point, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x, yi = polygon[i].y;
+    const xj = polygon[j].x, yj = polygon[j].y;
+    const intersect = ((yi > point.y) !== (yj > point.y)) &&
+      (point.x < (xj - xi) * (point.y - yi) / ((yj - yi) || 0.00001) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function segmentIntersectT(ax, ay, bx, by, cx, cy, dx, dy) {
+  const rX = bx - ax;
+  const rY = by - ay;
+  const sX = dx - cx;
+  const sY = dy - cy;
+  const denom = rX * sY - rY * sX;
+  if (Math.abs(denom) < 0.00001) return null;
+
+  const qpx = cx - ax;
+  const qpy = cy - ay;
+  const t = (qpx * sY - qpy * sX) / denom;
+  const u = (qpx * rY - qpy * rX) / denom;
+
+  if (t >= 0 && t <= 1 && u >= 0 && u <= 1) return t;
+  return null;
+}
+
+function segmentAabbHitDistance(rect, ax, ay, bx, by) {
+  const corners = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.w, y: rect.y },
+    { x: rect.x + rect.w, y: rect.y + rect.h },
+    { x: rect.x, y: rect.y + rect.h }
+  ];
+
+  if (ax >= rect.x && ax <= rect.x + rect.w && ay >= rect.y && ay <= rect.y + rect.h) return 0;
+
+  let bestT = null;
+  for (let i = 0; i < 4; i++) {
+    const a = corners[i];
+    const b = corners[(i + 1) % 4];
+    const t = segmentIntersectT(ax, ay, bx, by, a.x, a.y, b.x, b.y);
+    if (t !== null && (bestT === null || t < bestT)) bestT = t;
+  }
+
+  if (bestT === null) return null;
+  return Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2) * bestT;
+}
+
+function buildHitDistance(build, ax, ay, bx, by) {
+  const corners = buildCorners(build);
+  if (pointInPolygon({ x: ax, y: ay }, corners)) return 0;
+
+  let bestT = null;
+  for (let i = 0; i < corners.length; i++) {
+    const a = corners[i];
+    const b = corners[(i + 1) % corners.length];
+    const t = segmentIntersectT(ax, ay, bx, by, a.x, a.y, b.x, b.y);
+    if (t !== null && (bestT === null || t < bestT)) bestT = t;
+  }
+
+  if (bestT === null) return null;
+  return Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2) * bestT;
 }
 
 function applyDamage(target, amount, attacker, room) {
@@ -690,33 +773,43 @@ function fireShot(room, shooter, angle, clientId = null) {
     const endX = shooter.x + Math.cos(pelletAngle) * base.range;
     const endY = shooter.y + Math.sin(pelletAngle) * base.range;
 
-    let blocked = false;
+    let closestBuild = null;
+    let closestBuildDistance = Infinity;
+
     for (const build of room.builds) {
-      if (rectLineHit(buildAsRect(build), startX, startY, endX, endY)) {
-        build.hp -= base.damage;
-        blocked = true;
-        if (build.hp <= 0) {
-          room.builds = room.builds.filter(b => b.id !== build.id);
-          addFeed(room, "Build destroyed");
-        }
-        break;
+      const hitD = buildHitDistance(build, startX, startY, endX, endY);
+      if (hitD !== null && hitD < closestBuildDistance) {
+        closestBuild = build;
+        closestBuildDistance = hitD;
       }
     }
 
     let hit = null;
     let hitDistance = Infinity;
 
-    if (!blocked) {
-      for (const target of room.players.values()) {
-        if (target.id === shooter.id || !target.alive || target.phase !== "ground") continue;
-        if (isSameTeam(shooter, target)) continue;
-        const d = linePointDistance(target.x, target.y, startX, startY, endX, endY);
-        const along = dist(shooter, target);
-        if (d < 25 && along < hitDistance && along <= base.range) {
-          hit = target;
-          hitDistance = along;
-        }
+    for (const target of room.players.values()) {
+      if (target.id === shooter.id || !target.alive || target.phase !== "ground") continue;
+      if (isSameTeam(shooter, target)) continue;
+
+      const d = linePointDistance(target.x, target.y, startX, startY, endX, endY);
+      const along = dist(shooter, target);
+      if (d < 25 && along < hitDistance && along <= base.range) {
+        hit = target;
+        hitDistance = along;
       }
+    }
+
+    // Builds block bullets for both real players and bots.
+    // If a wall/ramp is closer than the player along the bullet path, the build absorbs the shot.
+    let blockedByBuild = closestBuild && closestBuildDistance <= Math.min(hitDistance, base.range);
+
+    if (blockedByBuild) {
+      closestBuild.hp -= Math.max(6, Math.round(base.damage * 1.15));
+      if (closestBuild.hp <= 0) {
+        room.builds = room.builds.filter(b => b.id !== closestBuild.id);
+        addFeed(room, "Build destroyed");
+      }
+      hit = null;
     }
 
     const event = {
@@ -726,7 +819,9 @@ function fireShot(room, shooter, angle, clientId = null) {
       y: shooter.y,
       angle: pelletAngle,
       weapon: weapon.type,
-      hitId: hit ? hit.id : null
+      hitId: hit ? hit.id : null,
+      blockedByBuild: !!blockedByBuild,
+      buildId: blockedByBuild && closestBuild ? closestBuild.id : null
     };
 
     if (hit) {

@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V40 Balance + Smart AI
+# Island Royale Multiplayer V43 Classic Lobby Redesign
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -125,3 +125,48 @@ Fixed:
 - Bot aim is less perfect
 - Bots are smarter with looting, chests, storm rotation, healing, distance control, and occasional defensive builds
 - Bots move smarter, but are less unfair
+
+
+## V41 Drop Movement Fix
+
+Fixed:
+- Jumping from the Battle Bus now immediately puts you into a controllable drop
+- WASD works while falling
+- Holding Space opens the glider
+- Drop/glider steering is faster than walking so it actually feels controllable
+- Camera follows your drop immediately instead of feeling stuck at the bus
+- Ground walking speed is still slow/balanced from V40
+
+
+## V42 Build Bullet Blocking
+
+Fixed:
+- Players cannot shoot through builds
+- Bots cannot shoot through builds
+- Walls and ramps block bullets on the server
+- The closest build blocks the shot before a player can be hit
+- Builds take damage when they block bullets
+- Builds can be destroyed by repeated shots
+- This works with rotated wall/ramp placement, not just straight boxes
+
+
+## V43 Lobby Redesign
+
+This update changes the lobby layout to match the classic battle royale lobby reference much more closely.
+
+Changed:
+- Big top navigation bar
+- LOBBY / BATTLE PASS / CHALLENGES / LOCKER / ITEM SHOP / PROFILE / LEADERBOARDS / STORE tabs
+- Left Season panel
+- Level banner
+- Battle Pass reward bars
+- Daily challenge list
+- Center party stage
+- Player standing on a glowing platform
+- Extra party slot and invite slot
+- Right game mode panel
+- Yellow READY / QUICK TEST styling
+- Room code panel
+- Bottom party chat bar
+
+Gameplay from V42 is kept.

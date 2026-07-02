@@ -3,173 +3,188 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V40 Balance</title>
+  <title>Island Royale Multiplayer V43 Lobby</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="game"></canvas>
 
-  <div id="lobby" class="screen">
-    <div class="lobbyShell">
-      <div class="topBar glass">
-        <div class="brand">
-          <div class="brandIcon"></div>
-          <div>
-            <div class="eyebrow">Island Royale</div>
-            <h1>Battle Lobby</h1>
-          </div>
+  <div id="lobby" class="screen fortLobby">
+    <div class="fortShell">
+      <header class="fortTop">
+        <div class="fortLogoBlock">
+          <div class="fortLogo">ISLAND<br>ROYALE</div>
         </div>
 
-        <div class="tabs">
-          <button class="tab active" data-tab="play">Play</button>
-          <button class="tab" data-tab="party">Party</button>
-          <button class="tab" data-tab="rooms">Rooms</button>
-          <button class="tab" data-tab="locker">Locker</button>
-          <button class="tab" data-tab="quests">Quests</button>
-          <button class="tab" data-tab="settings">Settings</button>
+        <nav class="fortTabs tabs">
+          <button class="tab active fortTab lobbyTab" data-tab="play">LOBBY</button>
+          <button class="tab fortTab" data-tab="quests">BATTLE PASS</button>
+          <button class="tab fortTab" data-tab="quests">CHALLENGES</button>
+          <button class="tab fortTab" data-tab="locker">LOCKER</button>
+          <button class="tab fortTab" data-tab="rooms">ITEM SHOP</button>
+          <button class="tab fortTab" data-tab="party">PROFILE</button>
+          <button class="tab fortTab" data-tab="rooms">LEADERBOARDS</button>
+          <button class="tab fortTab" data-tab="settings">STORE</button>
+        </nav>
+
+        <div class="fortCurrency">
+          <div class="currencyPill">◎ <b>0</b></div>
+          <div class="currencyPill">👥 <b id="topPartyCount">1</b></div>
+          <div id="serverStatus" class="serverStatus fortStatus">Connecting...</div>
         </div>
+      </header>
 
-        <div class="serverStatus" id="serverStatus">Connecting...</div>
-      </div>
-
-      <div class="contentGrid">
-        <aside class="leftRail glass">
-          <div class="sectionTitle">Player</div>
-          <label>Your Name</label>
-          <input id="nameInput" placeholder="Enter your name" maxlength="18" value="Player" />
-
-          <div class="avatarCard">
-            <div class="bigCharacter" id="lobbyCharacter">
-              <div class="cape"></div>
-              <div class="head"></div>
-              <div class="hair"></div>
-              <div class="body"></div>
-              <div class="arm left"></div>
-              <div class="arm right"></div>
-              <div class="leg left"></div>
-              <div class="leg right"></div>
-              <div class="gun"></div>
+      <main class="fortMain">
+        <aside class="fortLeftPanel">
+          <div class="seasonBox">
+            <div class="seasonTitle">SEASON 3</div>
+            <div class="bannerRow">
+              <div class="shieldBanner">
+                <div class="shieldTop"></div>
+                <div class="shieldWave"></div>
+              </div>
+              <div>
+                <div class="levelText">LEVEL <span>18</span></div>
+                <div class="xpText">740 / 1000</div>
+                <div class="xpLine"><div></div></div>
+              </div>
             </div>
-            <div class="platform"></div>
           </div>
 
-          <div class="levelCard">
+          <div class="passReward">
+            <div class="rewardIcon">★</div>
             <div>
-              <div class="eyebrow">Battle Pass</div>
-              <strong>Level 18</strong>
+              <b>BATTLE PASS</b>
+              <span>Unlock rewards and level up</span>
             </div>
-            <div class="levelBadge">18</div>
+            <div class="lockDot">🔒</div>
           </div>
-          <div class="xpBar"><div></div></div>
 
-          <button id="emoteBtn" class="secondaryButton">Emote</button>
+          <div class="tierReward">
+            <div class="tierIcon">✦</div>
+            <div>
+              <b>FREE PASS</b>
+              <span>TIER 2</span>
+            </div>
+            <div class="tierProgress">6 / 10</div>
+          </div>
+
+          <div class="dailyHeader">DAILY CHALLENGES</div>
+          <div class="dailyChallenge">
+            <span>Shotgun Eliminations</span>
+            <div class="challengeProgress"><div id="questElimsBar"></div></div>
+            <small id="questElimsText">0 / 5</small>
+          </div>
+          <div class="dailyChallenge">
+            <span>Play Matches</span>
+            <div class="challengeProgress"><div id="questMatchesBar"></div></div>
+            <small id="questMatchesText">0 / 3</small>
+          </div>
+          <div class="dailyChallenge">
+            <span>Create or Join Party</span>
+            <div class="challengeProgress"><div id="questPartyBar"></div></div>
+            <small id="questPartyText">0 / 1</small>
+          </div>
+
+          <button id="resetQuestsBtn" class="smallFortBtn">RESET CHALLENGES</button>
         </aside>
 
-        <main class="mainArea glass">
-          <section id="playPanel" class="tabPanel activePanel">
-            <div class="stage">
-              <div class="sun"></div>
-              <div class="cloud c1"></div>
-              <div class="cloud c2"></div>
-              <div class="cloud c3"></div>
-              <div class="sea"></div>
-              <div class="island"></div>
-              <div class="battleBus"></div>
-              <div class="lootFloat lf1">Rifle</div>
-              <div class="lootFloat lf2">Shield</div>
-              <div class="lootFloat lf3">Build</div>
+        <section class="fortCenter">
+          <section id="playPanel" class="tabPanel activePanel fortPlayPanel">
+            <div class="partyStage">
+              <div class="gridBg"></div>
+              <div class="partySlot plus leftSlot">+</div>
+              <div class="partySlot plus rightSlot">+</div>
+
+              <div class="heroStand mainHero">
+                <div class="nameTag">
+                  <span class="controllerBubble">A</span>
+                  <b id="mainNameTag">Player</b>
+                  <small id="mainReadyText">Not Ready</small>
+                </div>
+                <div class="lightBeam"></div>
+                <div class="glowDisc"></div>
+                <div class="fortCharacter bigCharacter" id="lobbyCharacter">
+                  <div class="cape"></div>
+                  <div class="head"></div>
+                  <div class="hair"></div>
+                  <div class="body"></div>
+                  <div class="arm left"></div>
+                  <div class="arm right"></div>
+                  <div class="leg left"></div>
+                  <div class="leg right"></div>
+                  <div class="gun"></div>
+                </div>
+              </div>
+
+              <div class="heroStand partyHero">
+                <div class="nameTag teammateName">
+                  <span class="chatBubble">💬</span>
+                  <b>Squad Slot</b>
+                  <small>Invite Friend</small>
+                </div>
+                <div class="lightBeam smallBeam"></div>
+                <div class="glowDisc smallDisc"></div>
+                <div class="miniCharacter">
+                  <div class="miniHead"></div>
+                  <div class="miniBody"></div>
+                  <div class="miniLeg l"></div>
+                  <div class="miniLeg r"></div>
+                </div>
+              </div>
+
+              <div class="stageFooterMsg">Party: <span id="stageRoomText">Create a room or quick test to start.</span></div>
             </div>
 
-            <div class="playFooter">
-              <div>
-                <div class="sectionTitle">Selected Mode</div>
-                <h2 id="selectedModeTitle">Solo Battle Royale</h2>
-                <p id="selectedModeDesc">Create a room, invite friends, ready up, and fight until one player wins.</p>
-              </div>
-              <div class="playActions">
-                <button id="createRoomBtn" class="goldButton">Create Room</button>
-                <button id="readyBtn" class="secondaryButton disabled">Ready</button>
-                <button id="startMatchBtn" class="goldButton">Quick Test</button>
-              </div>
-            </div>
-
-            <div class="roomStrip">
-              <div>
-                <div class="sectionTitle">Room Code</div>
-                <div id="roomCodeDisplay" class="roomCode">No Room</div>
-                <div id="roomSub" class="roomSub">Create or join a room to invite friends.</div>
-              </div>
-              <button id="copyInviteBtn" class="secondaryButton disabled">Copy Invite</button>
+            <div class="fortChatBar">
+              <div class="partyChat"><b>Party</b><span>Hold to chat</span></div>
+              <button id="emoteBtn" class="smallFortBtn">EMOTE</button>
             </div>
           </section>
 
-          <section id="partyPanel" class="tabPanel">
-            <div class="panelHeader">
-              <div>
-                <div class="sectionTitle">Party</div>
-                <h2>Party Channel</h2>
-                <p>See who joined, who is host, and who is ready.</p>
-              </div>
-              <button id="partyCopyInviteBtn" class="goldButton compact disabled">Copy Invite</button>
+          <section id="partyPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>PROFILE / PARTY</h2>
+              <button id="partyCopyInviteBtn" class="smallFortBtn disabled">COPY INVITE</button>
             </div>
             <div id="partyList" class="partyGrid">
               <div class="emptyParty">No players yet.</div>
             </div>
           </section>
 
-          <section id="roomsPanel" class="tabPanel">
-            <div class="panelHeader">
-              <div>
-                <div class="sectionTitle">Rooms</div>
-                <h2>Join or Browse Rooms</h2>
-                <p>Join by room code or refresh the public room list.</p>
-              </div>
-              <button id="refreshRoomsBtn" class="secondaryButton compact">Refresh</button>
+          <section id="roomsPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>ROOMS / ITEM SHOP</h2>
+              <button id="refreshRoomsBtn" class="smallFortBtn">REFRESH</button>
             </div>
-
             <div class="joinCard">
               <input id="roomCodeInput" placeholder="Room code like ABCD" maxlength="6" />
-              <button id="joinRoomBtn" class="goldButton compact">Join Room</button>
+              <button id="joinRoomBtn" class="smallFortBtn yellow">JOIN ROOM</button>
             </div>
-
             <div id="roomList" class="roomList">
               <div class="emptyParty">No open rooms yet.</div>
             </div>
           </section>
 
-          <section id="lockerPanel" class="tabPanel">
-            <div class="panelHeader">
-              <div>
-                <div class="sectionTitle">Locker</div>
-                <h2>Cosmetics</h2>
-                <p>Pick an outfit, banner, and character color. If you are in a room, everyone sees it.</p>
-              </div>
-              <button id="applyLockerBtn" class="goldButton compact">Apply</button>
+          <section id="lockerPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>LOCKER</h2>
+              <button id="applyLockerBtn" class="smallFortBtn yellow">APPLY</button>
             </div>
-
             <div class="lockerGrid">
               <button class="lockerItem selected" data-outfit="Raider" data-color="#2fb4ff">
-                <div class="lockerIcon blue"></div>
-                <b>Raider</b>
-                <span>Default</span>
+                <div class="lockerIcon blue"></div><b>Raider</b><span>Default</span>
               </button>
               <button class="lockerItem" data-outfit="Striker" data-color="#ff5b67">
-                <div class="lockerIcon red"></div>
-                <b>Striker</b>
-                <span>Rare</span>
+                <div class="lockerIcon red"></div><b>Striker</b><span>Rare</span>
               </button>
               <button class="lockerItem" data-outfit="Scout" data-color="#55d66b">
-                <div class="lockerIcon green"></div>
-                <b>Scout</b>
-                <span>Uncommon</span>
+                <div class="lockerIcon green"></div><b>Scout</b><span>Uncommon</span>
               </button>
               <button class="lockerItem" data-outfit="Shadow" data-color="#b65cff">
-                <div class="lockerIcon purple"></div>
-                <b>Shadow</b>
-                <span>Epic</span>
+                <div class="lockerIcon purple"></div><b>Shadow</b><span>Epic</span>
               </button>
             </div>
-
             <div class="bannerChoices">
               <button class="bannerChoice selected" data-banner="Blue">Blue Banner</button>
               <button class="bannerChoice" data-banner="Purple">Purple Banner</button>
@@ -177,51 +192,24 @@
             </div>
           </section>
 
-          <section id="questsPanel" class="tabPanel">
-            <div class="panelHeader">
-              <div>
-                <div class="sectionTitle">Quests</div>
-                <h2>Daily Challenges</h2>
-                <p>These are saved in your browser and update as you play.</p>
-              </div>
-              <button id="resetQuestsBtn" class="secondaryButton compact">Reset</button>
+          <section id="questsPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>BATTLE PASS / CHALLENGES</h2>
+              <button class="smallFortBtn yellow" onclick="document.querySelector('[data-tab=play]').click()">BACK TO LOBBY</button>
             </div>
-
-            <div class="questList">
-              <div class="questCard">
-                <div class="questTop"><b>Get 5 eliminations</b><span id="questElimsText">0 / 5</span></div>
-                <div class="questBar"><div id="questElimsBar"></div></div>
-              </div>
-              <div class="questCard">
-                <div class="questTop"><b>Play 3 matches</b><span id="questMatchesText">0 / 3</span></div>
-                <div class="questBar"><div id="questMatchesBar"></div></div>
-              </div>
-              <div class="questCard">
-                <div class="questTop"><b>Create or join a party</b><span id="questPartyText">0 / 1</span></div>
-                <div class="questBar"><div id="questPartyBar"></div></div>
-              </div>
+            <div class="battlePassCards">
+              <div class="bpCard gold"><b>Battle Pass</b><span>Earn XP by playing matches.</span></div>
+              <div class="bpCard"><b>Daily Challenge</b><span>Get eliminations and survive longer.</span></div>
+              <div class="bpCard"><b>Free Rewards</b><span>Level up to unlock cosmetics.</span></div>
             </div>
           </section>
 
-          <section id="settingsPanel" class="tabPanel">
-            <div class="panelHeader">
-              <div>
-                <div class="sectionTitle">Settings</div>
-                <h2>Game Options</h2>
-                <p>These settings actually save in your browser.</p>
-              </div>
-              <button id="saveSettingsBtn" class="goldButton compact">Save</button>
+          <section id="settingsPanel" class="tabPanel fortMenuPanel">
+            <div class="fortPanelHeader">
+              <h2>STORE / SETTINGS</h2>
+              <button class="smallFortBtn yellow" onclick="document.querySelector('[data-tab=play]').click()">BACK TO LOBBY</button>
             </div>
-
             <div class="settingsGrid">
-              <div class="settingBox">
-                <label>Mode</label>
-                <select id="modeSelect">
-                  <option value="Solo">Solo</option>
-                  <option value="Duos">Duos</option>
-                  <option value="Squads">Squads</option>
-                </select>
-              </div>
               <div class="settingBox">
                 <label>Graphics</label>
                 <select id="graphicsSelect">
@@ -243,38 +231,47 @@
               </div>
             </div>
           </section>
-        </main>
+        </section>
 
-        <aside class="rightRail glass">
-          <div class="sectionTitle">News</div>
-          <div class="newsCard goldNews">
-            <b>V36 Lobby Update</b>
-            <span>Tabs now work, rooms are browsable, locker saves, quests track progress, and party tools function.</span>
-          </div>
-          <div class="newsCard">
-            <b>Invite Friends</b>
-            <span>Create a room, copy invite, and send the public Render link to your friends.</span>
-          </div>
-          <div class="newsCard">
-            <b>Tip</b>
-            <span>Host must press Start Match. You need at least 2 players.</span>
-          </div>
+        <aside class="fortRightPanel">
+          <div class="regionText">Island Royale<br>NA-East<br>Fill with: Open<br>Play Against: Cross-Platform</div>
 
-          <div class="miniMapCard">
-            <div class="sectionTitle">Island Preview</div>
-            <div class="miniMap">
-              <div class="miniRoad r1"></div>
-              <div class="miniRoad r2"></div>
-              <div class="miniPOI p1"></div>
-              <div class="miniPOI p2"></div>
-              <div class="miniPOI p3"></div>
-              <div class="miniStorm"></div>
+          <div class="newModeBanner">NEW MODE AVAILABLE!</div>
+          <div class="modeCard">
+            <div class="modeLabel">GAME MODE</div>
+            <h2 id="selectedModeTitle">Solo Battle Royale</h2>
+
+            <select id="modeSelect" class="modeSelect">
+              <option value="Solo">Solo</option>
+              <option value="Duos">Duos</option>
+              <option value="Squads">Squads</option>
+            </select>
+
+            <button id="saveSettingsBtn" class="changeModeBtn">CHANGE MODE</button>
+
+            <div class="fillRow">
+              <span>Squad Fill</span>
+              <b>No Fill</b>
+            </div>
+
+            <div class="lobbyActions">
+              <button id="createRoomBtn" class="smallReadyBtn">CREATE ROOM</button>
+              <button id="readyBtn" class="readyButton disabled">READY</button>
+              <button id="startMatchBtn" class="readyButton">QUICK TEST</button>
             </div>
           </div>
+
+          <div class="roomCardFort">
+            <div>ROOM CODE</div>
+            <b id="roomCodeDisplay">No Room</b>
+            <span id="roomSub">Create or join a room to invite friends.</span>
+            <button id="copyInviteBtn" class="smallFortBtn disabled">COPY INVITE</button>
+          </div>
         </aside>
-      </div>
+      </main>
     </div>
   </div>
+
 
   <div id="hud" class="hud hidden">
     <div class="hudTopLeft glass">
