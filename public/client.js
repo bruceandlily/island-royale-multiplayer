@@ -1527,7 +1527,9 @@ document.querySelectorAll(".modePickButton").forEach(button => {
 
 
 
-// V51 fixed real party chat.
+
+
+// V52 party chat: fixed send, fixed minimize, better placement.
 const partyChatBox = document.getElementById("partyChatBox");
 const partyChatHeader = document.getElementById("partyChatHeader");
 const partyChatInput = document.getElementById("partyChatInput");
@@ -1538,19 +1540,15 @@ const partyChatMinBtn = document.getElementById("partyChatMinBtn");
 
 function setPartyChatOpen(open, focusInput = false) {
   if (!partyChatBox) return;
+
   partyChatBox.classList.toggle("collapsed", !open);
 
   if (partyChatStatus) {
-    partyChatStatus.textContent = open ? "Enter sends • Esc closes" : "Click box or press /";
-  }
-
-  if (open) {
-    partyChatBox.classList.add("chatAttention");
-    setTimeout(() => partyChatBox.classList.remove("chatAttention"), 500);
+    partyChatStatus.textContent = open ? "Enter sends • Esc closes" : "Click or press /";
   }
 
   if (open && focusInput && partyChatInput) {
-    setTimeout(() => partyChatInput.focus(), 20);
+    setTimeout(() => partyChatInput.focus(), 25);
   }
 }
 
@@ -1558,11 +1556,13 @@ function addPartyChatLine(chat, system = false, important = false) {
   if (!partyChatMessages) return;
 
   const line = document.createElement("div");
+
   if (system) {
     line.className = `chatSystem ${important ? "important" : ""}`;
     line.textContent = chat;
   } else {
     line.className = `chatLine ${chat.fromId === selfId ? "mine" : ""}`;
+
     const name = document.createElement("b");
     name.textContent = chat.name || "Player";
     name.style.color = chat.fromId === selfId ? "#ffe822" : (chat.color || "#55d66b");
@@ -1583,8 +1583,14 @@ function addPartyChatLine(chat, system = false, important = false) {
   partyChatMessages.scrollTop = partyChatMessages.scrollHeight;
 }
 
-function sendPartyChat() {
+function sendPartyChatCore(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   if (!partyChatInput) return;
+
   const message = partyChatInput.value.trim();
 
   if (!message) {
@@ -1593,16 +1599,26 @@ function sendPartyChat() {
   }
 
   if (!room) {
+    addPartyChatLine("Create or join a room first. Party chat only sends to players in your room.", true, true);
     toastMessage("Create or join a room first");
-    addPartyChatLine("Create or join a room first. Party chat only works when you are in a room with your party.", true, true);
+    partyChatInput.value = "";
     setPartyChatOpen(true, true);
     return;
   }
 
+  // Show a sending line only if server does not answer fast, so the button never feels dead.
+  let answered = false;
+  const slowTimer = setTimeout(() => {
+    if (!answered) addPartyChatLine("Sending...", true, false);
+  }, 450);
+
   socket.emit("partyChat", { message }, response => {
+    answered = true;
+    clearTimeout(slowTimer);
+
     if (!response?.ok) {
-      toastMessage(response?.error || "Could not send chat");
       addPartyChatLine(response?.error || "Could not send chat.", true, true);
+      toastMessage(response?.error || "Could not send chat");
       setPartyChatOpen(true, true);
       return;
     }
@@ -1610,6 +1626,29 @@ function sendPartyChat() {
     partyChatInput.value = "";
     setPartyChatOpen(true, true);
   });
+}
+
+function togglePartyChatCore(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const isCollapsed = partyChatBox?.classList.contains("collapsed");
+  setPartyChatOpen(!!isCollapsed, !!isCollapsed);
+}
+
+window.sendPartyChatNow = sendPartyChatCore;
+window.togglePartyChatBox = togglePartyChatCore;
+
+if (partyChatSendBtn) {
+  partyChatSendBtn.onclick = sendPartyChatCore;
+  partyChatSendBtn.addEventListener("click", sendPartyChatCore);
+}
+
+if (partyChatMinBtn) {
+  partyChatMinBtn.onclick = togglePartyChatCore;
+  partyChatMinBtn.addEventListener("click", togglePartyChatCore);
 }
 
 if (partyChatHeader) {
@@ -1621,45 +1660,28 @@ if (partyChatHeader) {
 
 if (partyChatBox) {
   partyChatBox.addEventListener("click", event => {
-    if (event.target === partyChatMinBtn) return;
+    if (event.target === partyChatMinBtn || event.target === partyChatSendBtn || event.target === partyChatInput) return;
     if (partyChatBox.classList.contains("collapsed")) setPartyChatOpen(true, true);
   });
 }
 
-if (partyChatMinBtn) {
-  partyChatMinBtn.addEventListener("click", event => {
-    event.stopPropagation();
-    setPartyChatOpen(partyChatBox?.classList.contains("collapsed"), false);
-  });
-}
-
-if (partyChatSendBtn) {
-  partyChatSendBtn.addEventListener("click", event => {
-    event.preventDefault();
-    sendPartyChat();
-  });
-}
-
 if (partyChatInput) {
-  partyChatInput.addEventListener("focus", () => setPartyChatOpen(true, false));
-
   partyChatInput.addEventListener("keydown", event => {
     event.stopPropagation();
 
     if (event.key === "Enter") {
-      event.preventDefault();
-      sendPartyChat();
+      sendPartyChatCore(event);
     }
 
     if (event.key === "Escape") {
       event.preventDefault();
+      event.stopPropagation();
       partyChatInput.blur();
       setPartyChatOpen(false, false);
     }
   });
 }
 
-// Keyboard shortcut: / opens the chat. T also works as a backup.
 function openChatShortcut(event) {
   const tag = document.activeElement?.tagName?.toLowerCase();
   const typingSomewhere = tag === "input" || tag === "textarea" || tag === "select";
@@ -1679,6 +1701,7 @@ socket.on("partyChat", chat => {
   setPartyChatOpen(true, false);
 });
 
-// Start open so it is obvious and clickable.
-setPartyChatOpen(true, false);
-addPartyChatLine("Click the input box, or press /, then press Enter to send.", true, true);
+// Start minimized so it does not block Daily Challenges.
+// Click PARTY CHAT, press /, or press T to open it.
+setPartyChatOpen(false, false);
+addPartyChatLine("Press / or T to chat. Create/join a room before sending to friends.", true, true);

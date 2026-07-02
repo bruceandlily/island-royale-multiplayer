@@ -1,4 +1,4 @@
-# Island Royale Multiplayer V51 Chat Fix
+# Island Royale Multiplayer V52 Chat Actually Fixed
 
 This version keeps the lobby concept from V36 and focuses on gameplay.
 
@@ -299,3 +299,18 @@ Fixed party chat not opening:
 - Esc closes/minimizes
 - Header can be clicked to reopen it
 - Only players in the same room/party see the messages
+
+
+## V52 Chat Actually Fixed
+
+Fixed:
+- SEND button now has a direct backup click handler
+- Minimize button now works
+- Chat starts minimized so it does not block Daily Challenges
+- Chat moved lower on screen
+- Click PARTY CHAT to open it
+- Press `/` or `T` to open it
+- Enter sends
+- Esc minimizes
+- If you are not in a room, it now shows a clear message instead of doing nothing
+- Messages still only go to players in your room/party

@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v51-chat-fix",
+  "name": "island-royale-multiplayer-v52-chat-actually-fixed",
   "version": "1.0.0",
-  "description": "Host-ready multiplayer battle royale with fixed clickable party chat.",
+  "description": "Host-ready multiplayer battle royale with working party chat send/minimize and better placement.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

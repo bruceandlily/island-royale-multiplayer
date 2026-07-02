@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Island Royale Multiplayer V51 Chat Fix</title>
+  <title>Island Royale Multiplayer V52 Chat Fixed</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -346,7 +346,7 @@
     <div class="partyChatHeader" id="partyChatHeader">
       <b>PARTY CHAT</b>
       <span id="partyChatStatus">Click box or press /</span>
-      <button id="partyChatMinBtn" type="button">—</button>
+      <button id="partyChatMinBtn" type="button" onclick="window.togglePartyChatBox && window.togglePartyChatBox(event)">—</button>
     </div>
     <div id="partyChatMessages" class="partyChatMessages">
       <div class="chatSystem">Party chat ready. Press / to type.</div>
@@ -354,7 +354,7 @@
     <div class="partyChatInputRow">
       <span>/</span>
       <input id="partyChatInput" maxlength="140" placeholder="Click here or press / to type..." autocomplete="off" />
-      <button id="partyChatSendBtn" type="button">SEND</button>
+      <button id="partyChatSendBtn" type="button" onclick="window.sendPartyChatNow && window.sendPartyChatNow(event)">SEND</button>
     </div>
   </div>
 
