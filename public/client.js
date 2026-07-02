@@ -1786,7 +1786,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
     if (show) toastMessage(`Emote: ${emote.toUpperCase()}`);
 
     clearTimeout(el.__emoteTimer);
-    el.__emoteTimer = setTimeout(() => clearEmotes(el), 4500);
+    el.__emoteTimer = setTimeout(() => clearEmotes(el), 6000);
   }
 
   function closeWheel() {
@@ -2117,7 +2117,7 @@ addPartyChatLine("Chat fixed. Press / or T to open, then Enter or SEND.", true, 
     av.classList.add(`emote-${emote}`);
     toastMessage(`Emote: ${emote.toUpperCase()}`);
     clearTimeout(av.__v60emoteTimer);
-    av.__v60emoteTimer = setTimeout(() => clear(av), 4500);
+    av.__v60emoteTimer = setTimeout(() => clear(av), 6000);
     if (room && room.phase === "lobby") socket.emit("lobbyEmote", { emote }, () => {});
   }
 

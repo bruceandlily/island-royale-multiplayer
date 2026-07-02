@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v60-stable-emote-menu",
-  "version": "60.0.0",
-  "description": "Island Royale multiplayer with a stable lobby-only emote menu.",
+  "name": "island-royale-multiplayer-v61-detailed-emotes-idle",
+  "version": "61.0.0",
+  "description": "Island Royale multiplayer with more detailed lobby emotes and a cool idle animation.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

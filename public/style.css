@@ -3408,3 +3408,599 @@ input[type="range"] {
     width: 100px !important;
   }
 }
+
+
+
+/* ===== V61 detailed emotes + cool lobby idle ===== */
+
+/* Better base idle */
+.fortCharacter.v56Avatar {
+  animation: lobbyIdleFloat 3.8s ease-in-out infinite !important;
+  transform-origin: center bottom;
+}
+
+.dynamicHero.hero2 .fortCharacter.v56Avatar { animation-delay: .35s !important; }
+.dynamicHero.hero3 .fortCharacter.v56Avatar { animation-delay: .7s !important; }
+.dynamicHero.hero4 .fortCharacter.v56Avatar { animation-delay: 1.05s !important; }
+
+.fortCharacter.v56Avatar .head {
+  animation: lobbyIdleHead 5.5s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+.fortCharacter.v56Avatar .body,
+.fortCharacter.v56Avatar .torsoVest,
+.fortCharacter.v56Avatar .chestPlate {
+  animation: lobbyIdleBreath 2.8s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+.fortCharacter.v56Avatar .cape {
+  animation: lobbyCape 2.3s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+.fortCharacter.v56Avatar .gun {
+  animation: lobbyGun 2.7s ease-in-out infinite;
+  transform-origin: 15% 50%;
+}
+
+.fortCharacter.v56Avatar .arm.left.upper,
+.fortCharacter.v56Avatar .arm.left.fore {
+  animation: lobbyArmLeft 3.2s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+.fortCharacter.v56Avatar .arm.right.upper,
+.fortCharacter.v56Avatar .arm.right.fore {
+  animation: lobbyArmRight 3.4s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+.fortCharacter.v56Avatar .thigh.left,
+.fortCharacter.v56Avatar .shin.left {
+  animation: lobbyLegLeft 3.8s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+.fortCharacter.v56Avatar .thigh.right,
+.fortCharacter.v56Avatar .shin.right {
+  animation: lobbyLegRight 3.8s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+.glowDisc {
+  animation: lobbyDiscGlow 2.8s ease-in-out infinite;
+}
+
+.lightBeam {
+  animation: lobbyBeamPulse 3.1s ease-in-out infinite;
+}
+
+/* Pause idle limb motions a bit while emoting so emotes look cleaner */
+.v56Avatar[class*="emote-"] .head,
+.v56Avatar[class*="emote-"] .body,
+.v56Avatar[class*="emote-"] .torsoVest,
+.v56Avatar[class*="emote-"] .chestPlate,
+.v56Avatar[class*="emote-"] .cape,
+.v56Avatar[class*="emote-"] .gun,
+.v56Avatar[class*="emote-"] .arm,
+.v56Avatar[class*="emote-"] .thigh,
+.v56Avatar[class*="emote-"] .shin {
+  animation-play-state: paused;
+}
+
+/* Detailed emotes */
+.v56Avatar.emote-dance {
+  animation: emoteDanceBody .52s ease-in-out infinite !important;
+}
+.v56Avatar.emote-dance .head {
+  animation: emoteDanceHead .48s ease-in-out infinite !important;
+}
+.v56Avatar.emote-dance .arm.left.upper,
+.v56Avatar.emote-dance .arm.left.fore {
+  animation: emoteDanceArmLeft .34s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dance .arm.right.upper,
+.v56Avatar.emote-dance .arm.right.fore {
+  animation: emoteDanceArmRight .34s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dance .thigh.left,
+.v56Avatar.emote-dance .shin.left {
+  animation: emoteDanceLegLeft .42s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dance .thigh.right,
+.v56Avatar.emote-dance .shin.right {
+  animation: emoteDanceLegRight .42s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dance .gun {
+  animation: emoteDanceGun .40s ease-in-out infinite alternate !important;
+}
+
+.v56Avatar.emote-wave {
+  animation: emoteWaveBody .8s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-wave .head {
+  animation: emoteWaveHead .7s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-wave .arm.right.upper {
+  animation: emoteWaveUpper .35s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-wave .arm.right.fore {
+  animation: emoteWaveFore .24s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-wave .arm.left.upper,
+.v56Avatar.emote-wave .arm.left.fore {
+  animation: emoteWaveSupport .8s ease-in-out infinite alternate !important;
+}
+
+.v56Avatar.emote-laugh {
+  animation: emoteLaughBody .4s ease-in-out infinite !important;
+}
+.v56Avatar.emote-laugh .head {
+  animation: emoteLaughHead .28s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-laugh .arm.left.upper,
+.v56Avatar.emote-laugh .arm.right.upper {
+  animation: emoteLaughUpper .35s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-laugh .arm.left.fore,
+.v56Avatar.emote-laugh .arm.right.fore {
+  animation: emoteLaughFore .3s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-laugh::before {
+  content: "HA!";
+  position: absolute;
+  left: 16px;
+  top: 10px;
+  font-size: 20px;
+  font-weight: 1000;
+  color: #fff58d;
+  text-shadow: 0 0 10px rgba(255,245,141,.8);
+  animation: laughBurst 1s ease-out infinite;
+}
+.v56Avatar.emote-laugh::after {
+  content: "😂";
+  position: absolute;
+  right: 18px;
+  top: -14px;
+  font-size: 30px;
+  animation: laughEmoji 1s ease-in-out infinite;
+}
+
+.v56Avatar.emote-clap {
+  animation: emoteClapBody .30s ease-in-out infinite !important;
+}
+.v56Avatar.emote-clap .arm.left.upper {
+  animation: emoteClapUpperL .25s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-clap .arm.right.upper {
+  animation: emoteClapUpperR .25s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-clap .arm.left.fore {
+  animation: emoteClapForeL .25s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-clap .arm.right.fore {
+  animation: emoteClapForeR .25s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-clap::after {
+  content: "✦";
+  position: absolute;
+  left: 72px;
+  top: 108px;
+  font-size: 28px;
+  color: #fff6a0;
+  opacity: 0;
+  animation: clapSpark .25s ease-in-out infinite;
+}
+
+.v56Avatar.emote-dab {
+  animation: emoteDabPose .72s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dab .head {
+  animation: emoteDabHead .72s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dab .arm.left.upper,
+.v56Avatar.emote-dab .arm.left.fore {
+  animation: emoteDabArmLeft .72s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-dab .arm.right.upper,
+.v56Avatar.emote-dab .arm.right.fore {
+  animation: emoteDabArmRight .72s ease-in-out infinite alternate !important;
+}
+
+.v56Avatar.emote-salute {
+  animation: emoteSaluteBody 1.0s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-salute .head {
+  animation: emoteSaluteHead 1.0s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-salute .arm.right.upper {
+  animation: emoteSaluteUpper .42s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-salute .arm.right.fore {
+  animation: emoteSaluteFore .42s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-salute::after {
+  content: "★";
+  position: absolute;
+  right: 18px;
+  top: 4px;
+  color: #ffe15a;
+  font-size: 24px;
+  animation: saluteStar 1s ease-in-out infinite;
+}
+
+.v56Avatar.emote-floss {
+  animation: emoteFlossBody .32s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-floss .arm.left.upper,
+.v56Avatar.emote-floss .arm.left.fore {
+  animation: emoteFlossArmLeft .25s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-floss .arm.right.upper,
+.v56Avatar.emote-floss .arm.right.fore {
+  animation: emoteFlossArmRight .25s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-floss .thigh.left,
+.v56Avatar.emote-floss .shin.left {
+  animation: emoteFlossLegLeft .32s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-floss .thigh.right,
+.v56Avatar.emote-floss .shin.right {
+  animation: emoteFlossLegRight .32s ease-in-out infinite alternate !important;
+}
+
+.v56Avatar.emote-heart {
+  animation: emoteHeartBody .9s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-heart .arm.left.upper,
+.v56Avatar.emote-heart .arm.left.fore {
+  animation: emoteHeartArmLeft .5s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-heart .arm.right.upper,
+.v56Avatar.emote-heart .arm.right.fore {
+  animation: emoteHeartArmRight .5s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-heart::before {
+  content: "♥ ♥";
+  position: absolute;
+  left: 41px;
+  top: 8px;
+  font-size: 22px;
+  color: #ff6da0;
+  text-shadow: 0 0 12px rgba(255,109,160,.7);
+  animation: heartBurst 1.0s ease-in-out infinite;
+}
+.v56Avatar.emote-heart::after {
+  content: "♥";
+  position: absolute;
+  left: 72px;
+  top: -22px;
+  color: #ff5b8f;
+  font-size: 36px;
+  text-shadow: 0 0 18px rgba(255,91,143,.8);
+  animation: heartFloatBig .9s ease-in-out infinite alternate;
+}
+
+.v56Avatar.emote-point {
+  animation: emotePointBody .8s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-point .head {
+  animation: emotePointHead .8s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-point .arm.right.upper {
+  animation: emotePointUpper .5s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-point .arm.right.fore {
+  animation: emotePointFore .4s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-point::after {
+  content: "➜";
+  position: absolute;
+  right: -4px;
+  top: 126px;
+  color: #ffd84c;
+  font-size: 26px;
+  animation: pointArrow .55s ease-in-out infinite alternate;
+}
+
+.v56Avatar.emote-sit {
+  animation: emoteSitBody 1.6s ease-in-out infinite !important;
+  transform: translateX(-50%) translateY(26px) scale(1.01) !important;
+}
+.v56Avatar.emote-sit .thigh.left,
+.v56Avatar.emote-sit .thigh.right {
+  animation: emoteSitThigh 1.6s ease-in-out infinite !important;
+}
+.v56Avatar.emote-sit .shin.left,
+.v56Avatar.emote-sit .shin.right {
+  animation: emoteSitShin 1.6s ease-in-out infinite !important;
+}
+.v56Avatar.emote-sit .arm.left.upper,
+.v56Avatar.emote-sit .arm.right.upper {
+  animation: emoteSitUpper .8s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-sit .arm.left.fore,
+.v56Avatar.emote-sit .arm.right.fore {
+  animation: emoteSitFore .8s ease-in-out infinite alternate !important;
+}
+.v56Avatar.emote-sit::before {
+  content: "";
+  position: absolute;
+  left: 34px;
+  top: 206px;
+  width: 96px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(10,24,50,.96), rgba(32,54,90,.96));
+  box-shadow: 0 10px 16px rgba(0,0,0,.28);
+}
+
+/* Keyframes */
+@keyframes lobbyIdleFloat {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-7px) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(0deg); }
+  75% { transform: translateY(-6px) rotate(1deg); }
+}
+@keyframes lobbyIdleHead {
+  0%,100% { transform: rotate(0deg) translateY(0); }
+  20% { transform: rotate(-3deg) translateY(-1px); }
+  48% { transform: rotate(1deg) translateY(0); }
+  70% { transform: rotate(3deg) translateY(0); }
+}
+@keyframes lobbyIdleBreath {
+  0%,100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(1.02) scaleX(1.01); }
+}
+@keyframes lobbyCape {
+  0%,100% { transform: rotate(-2deg) scaleX(1); }
+  50% { transform: rotate(4deg) scaleX(1.03); }
+}
+@keyframes lobbyGun {
+  0%,100% { transform: rotate(-13deg) translateY(0); }
+  50% { transform: rotate(-10deg) translateY(-2px); }
+}
+@keyframes lobbyArmLeft {
+  0%,100% { transform: rotate(13deg); }
+  50% { transform: rotate(17deg) translateY(-1px); }
+}
+@keyframes lobbyArmRight {
+  0%,100% { transform: rotate(-10deg); }
+  50% { transform: rotate(-14deg) translateY(-1px); }
+}
+@keyframes lobbyLegLeft {
+  0%,100% { transform: rotate(4deg); }
+  50% { transform: rotate(1deg); }
+}
+@keyframes lobbyLegRight {
+  0%,100% { transform: rotate(-4deg); }
+  50% { transform: rotate(-1deg); }
+}
+@keyframes lobbyDiscGlow {
+  0%,100% { transform: scale(1); filter: brightness(1); opacity: .98; }
+  50% { transform: scale(1.08); filter: brightness(1.12); opacity: 1; }
+}
+@keyframes lobbyBeamPulse {
+  0%,100% { opacity: .52; filter: brightness(1); }
+  50% { opacity: .86; filter: brightness(1.18); }
+}
+
+/* Emote keyframes */
+@keyframes emoteDanceBody {
+  0%,100% { transform: translateY(0) rotate(-6deg); }
+  25% { transform: translateY(-7px) rotate(4deg); }
+  50% { transform: translateY(-14px) rotate(8deg); }
+  75% { transform: translateY(-7px) rotate(-4deg); }
+}
+@keyframes emoteDanceHead {
+  0%,100% { transform: rotate(-4deg); }
+  50% { transform: rotate(8deg) translateY(-1px); }
+}
+@keyframes emoteDanceArmLeft {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(-52deg) translateY(-6px); }
+}
+@keyframes emoteDanceArmRight {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(52deg) translateY(-6px); }
+}
+@keyframes emoteDanceLegLeft {
+  from { transform: rotate(8deg); }
+  to { transform: rotate(-10deg) translateY(1px); }
+}
+@keyframes emoteDanceLegRight {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(10deg) translateY(1px); }
+}
+@keyframes emoteDanceGun {
+  from { transform: rotate(-16deg); }
+  to { transform: rotate(-6deg) translateY(-4px); }
+}
+@keyframes emoteWaveBody {
+  from { transform: translateY(0) rotate(-2deg); }
+  to { transform: translateY(-5px) rotate(2deg); }
+}
+@keyframes emoteWaveHead {
+  from { transform: rotate(-2deg); }
+  to { transform: rotate(7deg); }
+}
+@keyframes emoteWaveUpper {
+  from { transform: rotate(-18deg); }
+  to { transform: rotate(-76deg) translateY(-2px); }
+}
+@keyframes emoteWaveFore {
+  from { transform: rotate(-32deg); }
+  to { transform: rotate(-120deg) translateY(-6px); }
+}
+@keyframes emoteWaveSupport {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(4deg); }
+}
+@keyframes emoteLaughBody {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px) rotate(-3deg); }
+}
+@keyframes emoteLaughHead {
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(5deg) translateY(-2px); }
+}
+@keyframes emoteLaughUpper {
+  from { transform: rotate(10deg); }
+  to { transform: rotate(-8deg); }
+}
+@keyframes emoteLaughFore {
+  from { transform: rotate(18deg); }
+  to { transform: rotate(-18deg); }
+}
+@keyframes laughBurst {
+  0% { opacity: 0; transform: translateY(4px) scale(.6); }
+  20%,80% { opacity: 1; transform: translateY(-8px) scale(1); }
+  100% { opacity: 0; transform: translateY(-20px) scale(1.2); }
+}
+@keyframes laughEmoji {
+  0%,100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-12px) rotate(8deg); }
+}
+@keyframes emoteClapBody {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-4px) scale(1.01); }
+}
+@keyframes emoteClapUpperL {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(-18deg) translateX(8px); }
+}
+@keyframes emoteClapUpperR {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(18deg) translateX(-8px); }
+}
+@keyframes emoteClapForeL {
+  from { transform: rotate(20deg); }
+  to { transform: rotate(-56deg) translateX(12px); }
+}
+@keyframes emoteClapForeR {
+  from { transform: rotate(-28deg); }
+  to { transform: rotate(56deg) translateX(-12px); }
+}
+@keyframes clapSpark {
+  0%,100% { opacity: 0; transform: scale(.3); }
+  40%,60% { opacity: 1; transform: scale(1); }
+}
+@keyframes emoteDabPose {
+  from { transform: translateY(0) rotate(-6deg); }
+  to { transform: translateY(-6px) rotate(4deg); }
+}
+@keyframes emoteDabHead {
+  from { transform: rotate(-8deg) translateY(0); }
+  to { transform: rotate(-20deg) translateY(1px); }
+}
+@keyframes emoteDabArmLeft {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(-74deg) translateY(-10px); }
+}
+@keyframes emoteDabArmRight {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(68deg) translateY(-2px); }
+}
+@keyframes emoteSaluteBody {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px) scale(1.01); }
+}
+@keyframes emoteSaluteHead {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(8deg); }
+}
+@keyframes emoteSaluteUpper {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(-72deg) translateY(-4px); }
+}
+@keyframes emoteSaluteFore {
+  from { transform: rotate(-28deg); }
+  to { transform: rotate(-124deg) translateY(-8px); }
+}
+@keyframes saluteStar {
+  0%,100% { opacity: .3; transform: scale(.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+@keyframes emoteFlossBody {
+  from { transform: translateX(-8px) rotate(-3deg); }
+  to { transform: translateX(8px) rotate(3deg); }
+}
+@keyframes emoteFlossArmLeft {
+  from { transform: rotate(-44deg) translateX(6px); }
+  to { transform: rotate(42deg) translateX(-6px); }
+}
+@keyframes emoteFlossArmRight {
+  from { transform: rotate(44deg) translateX(-6px); }
+  to { transform: rotate(-42deg) translateX(6px); }
+}
+@keyframes emoteFlossLegLeft {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(-8deg); }
+}
+@keyframes emoteFlossLegRight {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(8deg); }
+}
+@keyframes emoteHeartBody {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-5px) scale(1.03); }
+}
+@keyframes emoteHeartArmLeft {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(-28deg) translateX(10px) translateY(-8px); }
+}
+@keyframes emoteHeartArmRight {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(28deg) translateX(-10px) translateY(-8px); }
+}
+@keyframes heartBurst {
+  0% { opacity: 0; transform: translateY(8px) scale(.6); }
+  35% { opacity: 1; transform: translateY(-4px) scale(1); }
+  100% { opacity: 0; transform: translateY(-18px) scale(1.18); }
+}
+@keyframes heartFloatBig {
+  from { transform: translateY(0) scale(.94); }
+  to { transform: translateY(-14px) scale(1.1); }
+}
+@keyframes emotePointBody {
+  from { transform: translateY(0) rotate(0deg); }
+  to { transform: translateY(-4px) rotate(-3deg); }
+}
+@keyframes emotePointHead {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(7deg); }
+}
+@keyframes emotePointUpper {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(-42deg) translateX(4px); }
+}
+@keyframes emotePointFore {
+  from { transform: rotate(-28deg); }
+  to { transform: rotate(-86deg) translateX(10px); }
+}
+@keyframes pointArrow {
+  from { transform: translateX(0); opacity: .4; }
+  to { transform: translateX(8px); opacity: 1; }
+}
+@keyframes emoteSitBody {
+  0%,100% { transform: translateX(-50%) translateY(26px) scale(1.01); }
+  50% { transform: translateX(-50%) translateY(20px) scale(1.02); }
+}
+@keyframes emoteSitThigh {
+  0%,100% { transform: rotate(72deg); }
+  50% { transform: rotate(78deg); }
+}
+@keyframes emoteSitShin {
+  0%,100% { transform: rotate(74deg); }
+  50% { transform: rotate(80deg); }
+}
+@keyframes emoteSitUpper {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(10deg); }
+}
+@keyframes emoteSitFore {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-10deg); }
+}

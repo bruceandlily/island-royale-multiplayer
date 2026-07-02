@@ -1,24 +1,32 @@
-# Island Royale Multiplayer V60 — Stable Emote Menu
+# Island Royale Multiplayer V61 — Detailed Emotes + Cool Idle
 
-This fixes the glitchy hover/click behavior on the emote wheel.
+This version improves the lobby character animations.
 
-## Fixed
-- Emote menu no longer uses jumpy radial hover buttons
-- Emotes are now in a stable clean menu
-- Hovering does not move buttons around
-- Clicking emotes is more reliable
-- Hold B in lobby opens the menu
-- EMOTE button still opens the menu
-- Emotes are lobby-only
-- B still works for build mode in-game
+## New
+- More detailed emotes
+- Better body movement during emotes
+- Extra small effects for some emotes
+  - hearts
+  - clap spark
+  - laugh text / emoji
+  - salute star
+  - point arrow
+- Better lobby idle animation
+  - floating / sway
+  - breathing
+  - head movement
+  - cape motion
+  - gun bob
+  - glowing platform pulse
+  - beam pulse
 
 ## Upload these files
 Replace these in GitHub:
-- package.json
-- server.js
-- render.yaml
-- public/index.html
-- public/client.js
-- public/style.css
+- `package.json`
+- `server.js`
+- `render.yaml`
+- `public/index.html`
+- `public/client.js`
+- `public/style.css`
 
-After Render redeploys, press Ctrl + F5.
+Then wait for Render and press **Ctrl + F5**.
