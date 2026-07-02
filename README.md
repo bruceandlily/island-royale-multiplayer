@@ -1,15 +1,16 @@
-# Island Royale Multiplayer V59 — Safe Fix
+# Island Royale Multiplayer V60 — Stable Emote Menu
 
-This build rolls back the broken V58 lobby code and adds the emote wheel safely on top of the last good build.
+This fixes the glitchy hover/click behavior on the emote wheel.
 
 ## Fixed
-- Lobby loads again
-- Characters show again
-- Status should connect again
-- Emote wheel is lobby-only
-- Hold **B** in lobby to open the wheel
-- Click **EMOTE** as a backup
-- B still works as build mode in-game
+- Emote menu no longer uses jumpy radial hover buttons
+- Emotes are now in a stable clean menu
+- Hovering does not move buttons around
+- Clicking emotes is more reliable
+- Hold B in lobby opens the menu
+- EMOTE button still opens the menu
+- Emotes are lobby-only
+- B still works for build mode in-game
 
 ## Upload these files
 Replace these in GitHub:

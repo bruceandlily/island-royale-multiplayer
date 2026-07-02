@@ -1864,7 +1864,7 @@ document.querySelectorAll(".modePickButton").forEach(button => {
       clearTimeout(holdTimer);
       holdTimer = setTimeout(() => {
         if (startedInLobby && lobbyIsOpen()) openWheel(false);
-      }, 180);
+      }, 120);
     }
 
     if (event.key === "Escape" && wheelOpen) {
@@ -2079,3 +2079,73 @@ socket.on("partyChat", chat => {
 installPartyChatHandlers();
 setPartyChatOpen(false, false);
 addPartyChatLine("Chat fixed. Press / or T to open, then Enter or SEND.", true, true);
+
+
+// V60 stable emote click backup.
+// Uses event delegation so clicking emote buttons works even if old listeners fail.
+(function setupStableEmoteBackup() {
+  const allowed = new Set(["dance", "wave", "laugh", "clap", "dab", "salute", "floss", "heart", "point", "sit"]);
+
+  function box() {
+    return document.getElementById("emoteWheelOverlay");
+  }
+
+  function closeBox() {
+    box()?.classList.add("hidden");
+  }
+
+  function lobbyOpen() {
+    return lobby && !lobby.classList.contains("hidden") && (!room || room.phase !== "game");
+  }
+
+  function clear(el) {
+    if (!el) return;
+    for (const name of allowed) el.classList.remove(`emote-${name}`);
+  }
+
+  function avatar() {
+    return document.querySelector("#stagePartyMembers .hero1 .v56Avatar") ||
+      document.querySelector("#stagePartyMembers .v56Avatar") ||
+      document.querySelector("#stagePartyMembers .fortCharacter");
+  }
+
+  function play(emote) {
+    if (!allowed.has(emote) || !lobbyOpen()) return;
+    const av = avatar();
+    if (!av) return toastMessage("No lobby character found");
+    clear(av);
+    av.classList.add(`emote-${emote}`);
+    toastMessage(`Emote: ${emote.toUpperCase()}`);
+    clearTimeout(av.__v60emoteTimer);
+    av.__v60emoteTimer = setTimeout(() => clear(av), 4500);
+    if (room && room.phase === "lobby") socket.emit("lobbyEmote", { emote }, () => {});
+  }
+
+  setTimeout(() => {
+    const overlay = box();
+    if (!overlay || overlay.dataset.v60installed === "1") return;
+    overlay.dataset.v60installed = "1";
+
+    overlay.addEventListener("click", event => {
+      const btn = event.target.closest?.(".emoteOption");
+      if (btn && allowed.has(btn.dataset.emote)) {
+        event.preventDefault();
+        event.stopPropagation();
+        play(btn.dataset.emote);
+        closeBox();
+        return;
+      }
+
+      if (event.target === overlay || event.target.classList.contains("emoteWheelBackdrop")) {
+        closeBox();
+      }
+    }, true);
+
+    overlay.addEventListener("mouseover", event => {
+      const btn = event.target.closest?.(".emoteOption");
+      if (!btn) return;
+      overlay.querySelectorAll(".emoteOption").forEach(x => x.classList.remove("selected"));
+      btn.classList.add("selected");
+    }, true);
+  }, 300);
+})();

@@ -3245,3 +3245,166 @@ input[type="range"] {
   .emotePos9 { transform: rotate(288deg) translateY(-132px) rotate(-288deg); }
   .emotePos10 { transform: rotate(324deg) translateY(-132px) rotate(-324deg); }
 }
+
+
+
+/* ===== V60 stable emote menu fix ===== */
+/* This overrides the old radial hover wheel because it was jumpy/glitchy. */
+.emoteWheelOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: grid !important;
+  place-items: center !important;
+  pointer-events: auto !important;
+}
+
+.emoteWheelOverlay.hidden {
+  display: none !important;
+}
+
+.emoteWheelBackdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  background: radial-gradient(circle at center, rgba(0,0,0,.18), rgba(0,0,0,.68)) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+.emoteWheel {
+  position: relative !important;
+  width: min(720px, 92vw) !important;
+  height: auto !important;
+  min-height: 390px !important;
+  border-radius: 18px !important;
+  padding: 92px 34px 34px !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(96px, 1fr)) !important;
+  gap: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(25, 55, 104, .98), rgba(7, 18, 42, .98)) !important;
+  border: 5px solid rgba(255,255,255,.82) !important;
+  box-shadow: 0 26px 90px rgba(0,0,0,.55), inset 0 0 0 4px rgba(255,255,255,.08) !important;
+  overflow: visible !important;
+}
+
+.emoteWheel::before {
+  content: "LOCKER EMOTES";
+  position: absolute;
+  top: 18px;
+  left: 26px;
+  color: #ffe822;
+  font-size: 28px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  text-shadow: 0 3px 0 rgba(0,0,0,.28);
+}
+
+.emoteWheel::after {
+  content: "Lobby only • Press ESC or click outside to close";
+  position: absolute;
+  top: 55px;
+  left: 28px;
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.emoteWheelCenter {
+  position: absolute !important;
+  right: 24px !important;
+  top: 18px !important;
+  left: auto !important;
+  width: 118px !important;
+  height: 56px !important;
+  transform: none !important;
+  border-radius: 12px !important;
+  background: rgba(3,12,33,.74) !important;
+  border: 2px solid rgba(255,255,255,.28) !important;
+  color: white !important;
+  display: grid !important;
+  place-items: center !important;
+  align-content: center !important;
+  gap: 1px !important;
+  text-align: center !important;
+}
+
+.emoteWheelCenter b {
+  color: #ffe822 !important;
+  font-size: 15px !important;
+  font-weight: 1000 !important;
+  letter-spacing: .6px !important;
+}
+
+.emoteWheelCenter span {
+  color: rgba(255,255,255,.74) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+}
+
+.emoteOption,
+.emotePos1,
+.emotePos2,
+.emotePos3,
+.emotePos4,
+.emotePos5,
+.emotePos6,
+.emotePos7,
+.emotePos8,
+.emotePos9,
+.emotePos10 {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 92px !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(62, 104, 166, .98), rgba(26, 54, 105, .98)) !important;
+  border: 3px solid rgba(255,255,255,.52) !important;
+  color: white !important;
+  font-size: 15px !important;
+  font-weight: 1000 !important;
+  text-transform: uppercase !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.28), inset 0 0 0 2px rgba(255,255,255,.05) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: background .08s ease, color .08s ease, border-color .08s ease, filter .08s ease !important;
+}
+
+.emoteOption:hover,
+.emoteOption.selected {
+  transform: none !important;
+  background:
+    linear-gradient(180deg, #fff34a, #ffc72e) !important;
+  color: #061126 !important;
+  border-color: white !important;
+  filter: drop-shadow(0 0 12px rgba(255,232,34,.52)) !important;
+}
+
+.emoteOption:active {
+  transform: scale(.97) !important;
+}
+
+@media (max-width: 720px) {
+  .emoteWheel {
+    grid-template-columns: repeat(2, 1fr) !important;
+    padding: 96px 16px 18px !important;
+    max-height: 86vh !important;
+    overflow-y: auto !important;
+  }
+
+  .emoteOption {
+    height: 68px !important;
+    font-size: 13px !important;
+  }
+
+  .emoteWheel::before {
+    font-size: 22px;
+  }
+
+  .emoteWheelCenter {
+    width: 100px !important;
+  }
+}
