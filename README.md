@@ -1,19 +1,21 @@
-# Island Royale Multiplayer V72 — Fortnite In-Game UI Rework
+# Island Royale Multiplayer V73 — Full Fortnite-Style In-Game UI
 
-This version focuses on the **actual in-game HUD/UI**.
+This version focuses on making the **entire in-game HUD/UI** feel much closer to Fortnite.
 
-## Main changes
-- Reworked the HUD to feel a lot closer to a Fortnite-style match screen
-- Reduced overlap between the minimap, real teams panel, and match info panel
-- Moved the teammate/party status into a cleaner top-left squad panel
-- Restyled the bottom hotbar, ammo panel, and health/shield/material area
-- Improved the visual style of the right-side rail (map + teams + match info)
-- Fixed more `undefined` labels by converting bad names into `Player` or `Bot`
-- Cleaned the feed text so `undefined` names do not show there either
+## What changed
+- Full in-game UI rework
+- Top-left squad panel styled closer to Fortnite
+- Top-right map area cleaned up
+- Right-side real teams + match info no longer stack over the minimap
+- Bottom health/shield/materials moved and restyled
+- Bottom hotbar / item slots restyled closer to Fortnite
+- Ammo panel restyled to float above the hotbar more like Fortnite
+- Feed restyled and cleaned
+- Solo now still shows your own player card in the squad area
 
 ## Replace these files
 - `package.json`
 - `public/style.css`
 - `public/client.js`
 
-Then redeploy and hard refresh with **Ctrl + F5**.
+Then redeploy and do **Ctrl + F5**.

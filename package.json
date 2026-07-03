@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v72-fort-ingame-ui",
-  "version": "72.0.0",
-  "description": "Fortnite-inspired in-game UI rework with cleaner HUD layout and overlap fixes.",
+  "name": "island-royale-multiplayer-v73-full-fortnite-ui",
+  "version": "73.0.0",
+  "description": "Full Fortnite-style in-game UI rework for Island Royale.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

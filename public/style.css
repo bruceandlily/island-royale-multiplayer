@@ -5089,3 +5089,508 @@ body.chat-minimized .partyChatInputRow {
   .teamsHudPanel { top: 228px; }
   .matchInfoHud { top: 394px; }
 }
+
+
+/* ===== V73 full fortnite-style in-game ui ===== */
+
+#hud {
+  pointer-events: none;
+}
+#hud .glass,
+#hud button,
+#hud canvas,
+#hud .playerChip,
+#hud .invSlot,
+#hud .healRow button,
+#hud #toggleTeamsPanelBtn,
+#hud .matchInfoGrid div,
+#hud .materials div {
+  pointer-events: auto;
+}
+
+#game {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,255,255,.08), transparent 32%),
+    linear-gradient(180deg, #87d8ff 0%, #7bd0ff 12%, #5fc44f 12.2%, #58bb46 100%);
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(10,20,46,.88), rgba(8,18,40,.70));
+  border: 1px solid rgba(185,225,255,.12);
+  box-shadow: none;
+  backdrop-filter: blur(4px);
+}
+
+/* left squad panel like Fortnite */
+.hudTopLeft {
+  top: 56px;
+  left: 18px;
+  min-width: 220px;
+  width: 220px;
+  padding: 0;
+  gap: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  display: none;
+}
+
+.squadHud {
+  top: 18px;
+  left: 18px;
+  width: 260px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.squadHudTitle {
+  display: none;
+}
+.squadList {
+  gap: 8px;
+}
+.squadMember {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.squadMember.you {
+  border: none;
+  box-shadow: none;
+}
+.squadMemberTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+.squadMemberTop span {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  text-shadow: 0 2px 4px rgba(0,0,0,.35);
+}
+.squadMemberTop span::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #59d8ff;
+  box-shadow: 0 0 10px rgba(89,216,255,.7);
+}
+.squadMember.you .squadMemberTop span::before {
+  background: #6eff79;
+  box-shadow: 0 0 10px rgba(110,255,121,.7);
+}
+.squadMemberTop small {
+  color: rgba(255,255,255,.72);
+  font-size: 10px;
+  font-weight: 1000;
+}
+.squadBars {
+  gap: 5px;
+}
+.squadMiniBar {
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(6,12,26,.55);
+  border: 1px solid rgba(255,255,255,.05);
+}
+.squadMiniBar > div {
+  border-radius: 2px;
+}
+
+/* top center like compass bar */
+.hudTopCenter {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 460px;
+  padding: 8px 18px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(8,17,42,.8), rgba(7,16,38,.52));
+  border: 1px solid rgba(255,255,255,.08);
+  gap: 16px;
+}
+.hudTopCenter span {
+  color: rgba(255,255,255,.82);
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+.hudTopCenter span:first-child {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+/* minimap and right rail */
+.minimapCard {
+  top: 18px;
+  right: 20px;
+  width: 218px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+.mapTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 0 2px;
+}
+.mapTop span,
+.mapTop b {
+  color: white;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0,0,0,.3);
+}
+#minimap {
+  width: 218px;
+  height: 218px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,.16);
+  background: #6bc653;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+.teamsHudPanel {
+  top: 252px;
+  right: 20px;
+  width: 218px;
+  max-height: 150px;
+  padding: 8px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8,17,42,.82), rgba(7,16,39,.60));
+  border: 1px solid rgba(255,255,255,.08);
+}
+.teamsPanelHeader {
+  margin-bottom: 6px;
+}
+.teamsPanelHeader b {
+  color: #ffe763;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+#toggleTeamsPanelBtn {
+  min-width: 48px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: white;
+  font-size: 10px;
+}
+.teamsPanelList {
+  max-height: 108px;
+  overflow-y: auto;
+}
+.teamRow {
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  margin-bottom: 6px;
+}
+.teamBadge {
+  font-size: 10px;
+}
+.teamCounts {
+  font-size: 9px;
+}
+.playerChip {
+  font-size: 8px;
+  padding: 3px 6px;
+}
+
+.matchInfoHud {
+  top: 410px;
+  right: 20px;
+  width: 218px;
+  left: auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8,17,42,.82), rgba(7,16,39,.60));
+  border: 1px solid rgba(255,255,255,.08);
+}
+.matchInfoTitle {
+  color: #ffe763;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.matchInfoGrid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.matchInfoGrid div {
+  padding: 6px 3px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.05);
+}
+.matchInfoGrid span {
+  font-size: 8px;
+}
+.matchInfoGrid b {
+  font-size: 14px;
+}
+.teamInfoText {
+  margin-top: 6px;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+/* kill feed */
+.feedBox {
+  top: 246px;
+  left: 18px;
+  width: 260px;
+}
+.feedItem {
+  background: rgba(22, 31, 44, .46);
+  border: none;
+  border-left: 3px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.92);
+  font-size: 12px;
+  padding: 6px 8px;
+  margin-bottom: 5px;
+}
+
+/* health, shield and mats more like fortnite bottom left */
+.hudBottomLeft {
+  left: 345px;
+  bottom: 18px;
+  width: 290px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.hudBottomLeft .barLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.hudBottomLeft .barLabel span {
+  font-size: 11px;
+  font-weight: 1000;
+  color: rgba(255,255,255,.85);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0,0,0,.35);
+}
+.hudBottomLeft .barLabel b {
+  font-size: 16px;
+  font-weight: 1000;
+  color: #fff;
+}
+.hudBottomLeft .bar {
+  height: 10px;
+  border-radius: 4px;
+  background: rgba(22,30,44,.68);
+  border: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.hudBottomLeft .materials {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.hudBottomLeft .materials div {
+  background: rgba(12,20,34,.65);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.88);
+  font-size: 10px;
+  padding: 6px 8px;
+}
+.hudBottomLeft .materials b {
+  font-size: 15px;
+}
+
+/* inventory like Fortnite hotbar */
+.inventoryHud {
+  left: auto;
+  right: 168px;
+  bottom: 12px;
+  transform: none;
+  width: 466px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.inventorySlots {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.invSlot {
+  min-height: 82px;
+  padding: 6px;
+  background: linear-gradient(180deg, rgba(36,40,53,.82), rgba(17,20,30,.92));
+  border: 2px solid rgba(255,255,255,.09);
+  border-radius: 8px;
+  position: relative;
+}
+.invSlot.selected {
+  border-color: #f8dd35;
+  box-shadow: 0 0 0 2px rgba(248,221,53,.22);
+}
+.invSlot .invIcon {
+  width: 100%;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  margin-bottom: 6px;
+}
+.invSlot span {
+  display: block;
+  font-size: 10px;
+  line-height: 1.05;
+  font-weight: 1000;
+  color: #fff;
+  text-transform: uppercase;
+  text-align: center;
+}
+.invSlot em {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  margin-top: 2px;
+}
+.healRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.healRow button {
+  width: 112px;
+  height: 38px;
+  background: linear-gradient(180deg, rgba(36,40,53,.82), rgba(17,20,30,.92));
+  border: 2px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  color: white;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+/* ammo like fortnite floating over hotbar */
+.hudBottomRight {
+  right: 336px;
+  bottom: 120px;
+  width: 220px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-align: left;
+}
+.weaponName {
+  color: rgba(255,255,255,.95);
+  font-size: 17px;
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,.34);
+}
+.ammoText {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 4px;
+}
+.ammoText span {
+  color: #fff;
+  font-size: 42px;
+  font-weight: 1000;
+  line-height: .9;
+  text-shadow: 0 2px 4px rgba(0,0,0,.35);
+}
+.ammoText small {
+  color: rgba(255,255,255,.74);
+  font-size: 22px;
+  font-weight: 900;
+}
+.weaponHint {
+  color: rgba(255,255,255,.75);
+}
+.smallText {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: rgba(255,255,255,.7);
+}
+
+/* prompts */
+.interactPrompt {
+  bottom: 168px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(18,24,39,.88);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.buildPrompt {
+  bottom: 140px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(18,24,39,.84);
+  font-size: 11px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.centerMessage {
+  top: 86px;
+  padding: 10px 16px;
+  background: rgba(18,24,39,.88);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 13px;
+}
+
+.partyChatBox.collapsed {
+  left: 18px;
+  bottom: 18px;
+  width: 165px;
+}
+.partyChatBox:not(.collapsed) {
+  left: 18px;
+  bottom: 214px;
+  width: 300px;
+}
+
+@media (max-width: 1500px) {
+  .squadHud { width: 230px; }
+  .feedBox { width: 230px; }
+  .hudBottomLeft { left: 290px; width: 260px; }
+  .inventoryHud { right: 140px; width: 420px; }
+  .hudBottomRight { right: 300px; }
+  .minimapCard, .teamsHudPanel, .matchInfoHud { width: 196px; }
+  #minimap { width: 196px; height: 196px; }
+  .teamsHudPanel { top: 230px; }
+  .matchInfoHud { top: 386px; }
+}
+
+/* V73 correction keep top stats visible */
+.hudTopLeft{display:flex;top:18px;left:300px;width:auto;min-width:250px;padding:8px 12px;border-radius:12px;background:linear-gradient(180deg, rgba(8,17,42,.82), rgba(7,16,39,.60));border:1px solid rgba(255,255,255,.08);}
