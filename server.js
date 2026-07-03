@@ -405,6 +405,39 @@ function publicPlayer(player) {
   };
 }
 
+
+function matchTeamSize(mode) {
+  return modeTeamSize(mode || "Solo");
+}
+
+function publicMatchStats(room) {
+  const players = Array.from(room.players.values());
+  const realPlayers = players.filter(p => !p.isBot).length;
+  const bots = players.filter(p => p.isBot).length;
+  const total = players.length;
+  const mode = room.mode || "Solo";
+  const teamSize = matchTeamSize(mode);
+  const expectedTotal = MATCH_TARGET_PLAYERS || 100;
+
+  const teamIds = new Set(players.map(p => p.teamId || p.id));
+  const actualTeams = teamIds.size || Math.ceil((total || expectedTotal) / teamSize);
+  const expectedTeams = Math.ceil(expectedTotal / teamSize);
+
+  return {
+    mode,
+    fill: !!room.fill,
+    realPlayers,
+    bots,
+    totalPlayers: total,
+    expectedTotal,
+    teamSize,
+    actualTeams,
+    expectedTeams,
+    teamLabel: mode === "Solo" ? "teams of 1" : `teams of ${teamSize}`
+  };
+}
+
+
 function publicBuild(build) {
   return {
     id: build.id,
@@ -429,10 +462,12 @@ function publicRoom(room) {
     storm: room.storm,
     bus: room.bus,
     players: Array.from(room.players.values()).map(publicPlayer),
+    matchStats: publicMatchStats(room),
     startedAt: room.startedAt,
     winner: room.winner,
     mode: room.mode || "Solo",
     fill: !!room.fill,
+    matchStats: publicMatchStats(room),
     matchmakingQueued: !!room.matchmakingQueued,
     matchmakingMessage: room.matchmakingMessage || "",
     maxPlayers: room.maxPlayers || MATCH_TARGET_PLAYERS,

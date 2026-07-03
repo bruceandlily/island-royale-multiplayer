@@ -1,44 +1,42 @@
-# Island Royale Multiplayer V67 — No Fill Enemy Matchmaking
+# Island Royale Multiplayer V68 — Match Info Counter
 
-This fixes No Fill behavior.
+This adds a match info counter for every mode.
 
-## What No Fill means now
-No Fill means:
-- you do **not** get random teammates
-- your party/team stays by itself
-- the server still searches for real enemy players/teams
-- bots fill the rest to 100
+## Shows
+- Real players
+- Bots
+- Total players
+- Teams
+- Team size
+- Mode
+- Fill / No Fill
 
-## Solo No Fill
-- Searches for other real Solo players as enemies
-- Bots fill the rest to 100
+## Works for
+- Solo
+- Duos
+- Trios
+- Squads
+- Fill
+- No Fill
 
-## Duos No Fill
-- If you are alone, you can solo-duo
-- If your friend is invited, both of you stay on the same team
-- Other Duos players/parties can join as enemy teams
-- Bots fill the rest to 100
+## Examples
+### Solo
+- 100 players = 100 teams of 1
 
-Example:
-- You are solo in Duos No Fill
-- Another real team of 2 is searching Duos
-- Match can become: you vs 2 real teammates vs 97 bots
+### Duos
+- 100 players = 50 teams of 2
 
-## Trios No Fill
-- Your party stays alone
-- Other Trios players/parties can join as enemy teams
-- Bots fill to 100
+### Trios
+- 100 players = 34 team slots of 3
+- The last slot may not be full because 100 does not divide evenly by 3
 
-## Squads No Fill
-- Your party stays alone
-- Other Squads players/parties can join as enemy teams
-- Bots fill to 100
+### Squads
+- 100 players = 25 teams of 4
 
-## Fill still works
-Fill still means:
-- tries to find real teammates for your team
-- also searches for real enemy teams
-- bots fill the rest to 100
+## Where it shows
+- In the lobby
+- In the in-game HUD
+- Updates after real players/bots are added
 
 ## Upload these files
 Replace these in GitHub:

@@ -46,6 +46,17 @@ const autoOpenChatSelect = document.getElementById("autoOpenChatSelect");
 const resetSettingsBtn = document.getElementById("resetSettingsBtn");
 const settingsSavedText = document.getElementById("settingsSavedText");
 
+const realPlayersCount = document.getElementById("realPlayersCount");
+const botPlayersCount = document.getElementById("botPlayersCount");
+const totalPlayersCount = document.getElementById("totalPlayersCount");
+const teamsCount = document.getElementById("teamsCount");
+const teamInfoText = document.getElementById("teamInfoText");
+const lobbyRealPlayersCount = document.getElementById("lobbyRealPlayersCount");
+const lobbyBotPlayersCount = document.getElementById("lobbyBotPlayersCount");
+const lobbyTotalPlayersCount = document.getElementById("lobbyTotalPlayersCount");
+const lobbyTeamsCount = document.getElementById("lobbyTeamsCount");
+const lobbyTeamInfoText = document.getElementById("lobbyTeamInfoText");
+
 const playersLeftText = document.getElementById("playersLeft");
 const killsText = document.getElementById("kills");
 const stormPhaseText = document.getElementById("stormPhase");
@@ -482,7 +493,77 @@ function enableRoomButtons() {
   readyBtn.classList.remove("disabled");
   startMatchBtn.classList.remove("disabled");
 }
+
+function matchInfoTeamSize(mode = currentModeName()) {
+  if (mode === "Squads") return 4;
+  if (mode === "Trios") return 3;
+  if (mode === "Duos") return 2;
+  return 1;
+}
+
+function getMatchInfoStats() {
+  const mode = room?.mode || settings.mode || "Solo";
+  const fill = room ? !!room.fill : !!settings.fill;
+  const teamSize = matchInfoTeamSize(mode);
+  const expectedTotal = 100;
+
+  const players = room?.players || [];
+  const realPlayers = players.length ? players.filter(p => !p.isBot).length : 1;
+  const totalPlayers = players.length || expectedTotal;
+  const bots = players.length ? players.filter(p => p.isBot).length : Math.max(0, expectedTotal - realPlayers);
+
+  const uniqueTeamIds = new Set(
+    players.map(p => p.teamId || (p.isBot ? p.id : (p.partyId || p.id)))
+  );
+
+  const actualTeams = players.length
+    ? (uniqueTeamIds.size || Math.ceil(totalPlayers / teamSize))
+    : Math.ceil(expectedTotal / teamSize);
+
+  const expectedTeams = Math.ceil(expectedTotal / teamSize);
+
+  return {
+    mode,
+    fill,
+    teamSize,
+    realPlayers,
+    bots,
+    totalPlayers,
+    actualTeams,
+    expectedTeams,
+    expectedTotal
+  };
+}
+
+function updateMatchInfoUI() {
+  const stats = room?.matchStats || getMatchInfoStats();
+
+  const real = stats.realPlayers ?? 0;
+  const bots = stats.bots ?? 0;
+  const total = stats.totalPlayers || stats.expectedTotal || 100;
+  const teamSize = stats.teamSize || matchInfoTeamSize(stats.mode);
+  const expectedTeams = stats.expectedTeams || Math.ceil((stats.expectedTotal || 100) / teamSize);
+  const actualTeams = stats.actualTeams || expectedTeams;
+  const fillText = stats.fill ? "Fill" : "No Fill";
+  const mode = stats.mode || "Solo";
+  const teamLine = `${mode} • ${fillText} • ${actualTeams} team(s) of ${teamSize} • ${expectedTeams} max team slots`;
+
+  if (realPlayersCount) realPlayersCount.textContent = real;
+  if (botPlayersCount) botPlayersCount.textContent = bots;
+  if (totalPlayersCount) totalPlayersCount.textContent = total;
+  if (teamsCount) teamsCount.textContent = actualTeams;
+  if (teamInfoText) teamInfoText.textContent = teamLine;
+
+  if (lobbyRealPlayersCount) lobbyRealPlayersCount.textContent = real;
+  if (lobbyBotPlayersCount) lobbyBotPlayersCount.textContent = bots;
+  if (lobbyTotalPlayersCount) lobbyTotalPlayersCount.textContent = total;
+  if (lobbyTeamsCount) lobbyTeamsCount.textContent = actualTeams;
+  if (lobbyTeamInfoText) lobbyTeamInfoText.textContent = teamLine;
+}
+
+
 function updateLobbyUI() {
+  updateMatchInfoUI();
   const mainNameTag = document.getElementById("mainNameTag");
   if (mainNameTag) mainNameTag.textContent = (nameInput && nameInput.value) ? nameInput.value : "Player";
   const topPartyCount = document.getElementById("topPartyCount");
@@ -521,7 +602,7 @@ function updateLobbyUI() {
     ? (room.matchmakingMessage || "Searching for players...")
     : modeOkForRoom
       ? (readyOkForRoom
-        ? `${humans.length} real player(s) • ${room.mode || "Solo"} • ${fillOn ? "Fill" : "No Fill"} • 100 total with bots`
+        ? `${getMatchInfoStats().realPlayers} real • ${getMatchInfoStats().bots} bots • ${getMatchInfoStats().actualTeams} team(s) • ${room.mode || "Solo"} • ${fillOn ? "Fill" : "No Fill"}`
         : `Correct mode, but everyone must ready up first. Waiting on: ${notReadyNames().join(", ")}`)
       : `${modeRequirementMessage(room.mode || "Solo", humans.length)} Change mode or invite/remove players.`;
   hudRoom.textContent = room.code;
@@ -1450,6 +1531,7 @@ function updateLocalPlayer() {
 }
 function updateHud() {
   if (!room) return;
+  updateMatchInfoUI();
   const alive = room.players.filter(player => player.alive).length;
   const me = getMe();
   const inv = me?.inventory;

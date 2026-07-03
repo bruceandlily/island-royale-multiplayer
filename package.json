@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v67-no-fill-enemy-matchmaking",
-  "version": "67.0.0",
-  "description": "Island Royale multiplayer where No Fill still searches for real enemy players before bots fill to 100.",
+  "name": "island-royale-multiplayer-v68-match-info-counter",
+  "version": "68.0.0",
+  "description": "Island Royale multiplayer with real players, bots, total players, and team count display.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
