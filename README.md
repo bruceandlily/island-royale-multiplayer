@@ -1,15 +1,19 @@
-# Island Royale Multiplayer V68 — Match Info Counter
+# Island Royale Multiplayer V69 — Real Teams Display
 
-This adds a match info counter for every mode.
+This version makes team info clearer.
 
-## Shows
-- Real players
-- Bots
-- Total players
-- Teams
-- Team size
-- Mode
-- Fill / No Fill
+## Important answer
+Bots are now definitely assigned to real teams with `teamId`.
+The display does not just fake the team number.
+
+## Added
+- Real Teams panel in the lobby
+- Real Teams panel in-game
+- Shows which teams have real players
+- Shows your team
+- Shows team size
+- Shows real players vs bots on each team
+- Labels players as REAL or BOT for testing
 
 ## Works for
 - Solo
@@ -20,23 +24,18 @@ This adds a match info counter for every mode.
 - No Fill
 
 ## Examples
-### Solo
-- 100 players = 100 teams of 1
-
-### Duos
-- 100 players = 50 teams of 2
+### Duos No Fill
+If you solo-duo and another real duo joins:
+- Your Team: 1 real + 1 bot
+- Enemy Team: 2 real + 0 bots
+- Other teams: bots
 
 ### Trios
-- 100 players = 34 team slots of 3
-- The last slot may not be full because 100 does not divide evenly by 3
-
-### Squads
-- 100 players = 25 teams of 4
-
-## Where it shows
-- In the lobby
-- In the in-game HUD
-- Updates after real players/bots are added
+Shows teams of 3:
+- 1 real + 2 bots
+- 2 real + 1 bot
+- 3 real + 0 bots
+- bot-only teams
 
 ## Upload these files
 Replace these in GitHub:

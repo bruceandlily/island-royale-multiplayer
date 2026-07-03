@@ -249,46 +249,52 @@ function isSameTeam(a, b) {
 }
 
 function assignTeams(room) {
-  const teamSize = modeTeamSize(room.mode || "Solo");
-  const humans = Array.from(room.players.values()).filter(p => !p.isBot);
-  const bots = Array.from(room.players.values()).filter(p => p.isBot);
+  // V69 strict team assignment:
+  // Every player and every bot gets a real teamId.
+  // Human party members stay together. Bots are grouped into teams based on mode.
+  const mode = room.mode || "Solo";
+  const teamSize = modeTeamSize(mode);
+  const players = Array.from(room.players.values());
 
-  if (room.mode === "Solo") {
-    for (const p of room.players.values()) {
-      p.teamId = p.id;
-      p.teamIndex = 1;
-      p.teamSize = 1;
+  let nextTeam = 1;
+  const partyTeams = new Map();
+
+  // Humans first, preserving their party/team.
+  for (const p of players.filter(player => !player.isBot)) {
+    const party = p.partyId || p.teamId || p.id;
+    if (!partyTeams.has(party)) partyTeams.set(party, `T${nextTeam++}`);
+    p.teamId = partyTeams.get(party);
+  }
+
+  // Bots fill into teams. If a human team is short, fill it first.
+  const bots = players.filter(player => player.isBot);
+  const teams = new Map();
+
+  for (const p of players.filter(player => !player.isBot)) {
+    if (!teams.has(p.teamId)) teams.set(p.teamId, []);
+    teams.get(p.teamId).push(p);
+  }
+
+  for (const bot of bots) {
+    let targetTeam = null;
+
+    for (const [teamId, members] of teams.entries()) {
+      if (members.length < teamSize) {
+        targetTeam = teamId;
+        break;
+      }
     }
-    return;
-  }
 
-  const partyGroups = new Map();
-  for (const p of humans) {
-    const partyId = p.partyId || p.roomCode || p.id;
-    p.partyId = partyId;
-    if (!partyGroups.has(partyId)) partyGroups.set(partyId, []);
-    partyGroups.get(partyId).push(p);
-  }
+    if (!targetTeam) {
+      targetTeam = `T${nextTeam++}`;
+      teams.set(targetTeam, []);
+    }
 
-  let teamNumber = 1;
-  for (const [partyId, players] of partyGroups.entries()) {
-    const teamId = `team_real_${teamNumber}`;
-    players.forEach((p, idx) => {
-      p.teamId = teamId;
-      p.teamIndex = idx + 1;
-      p.teamSize = teamSize;
-    });
-    teamNumber++;
+    bot.teamId = targetTeam;
+    teams.get(targetTeam).push(bot);
   }
-
-  bots.forEach((p, idx) => {
-    const botTeamNumber = Math.floor(idx / teamSize) + teamNumber;
-    p.teamId = `team_${botTeamNumber}`;
-    p.teamIndex = (idx % teamSize) + 1;
-    p.teamSize = teamSize;
-    p.partyId = p.teamId;
-  });
 }
+
 
 function targetTotalPlayersForMode(mode, humanCount) {
   return MATCH_TARGET_PLAYERS;
@@ -452,6 +458,49 @@ function publicBuild(build) {
   };
 }
 
+
+function publicTeams(room) {
+  const mode = room.mode || "Solo";
+  const teamSize = modeTeamSize(mode);
+  const players = Array.from(room.players.values());
+  const byTeam = new Map();
+
+  for (const p of players) {
+    const teamId = p.teamId || p.id;
+    if (!byTeam.has(teamId)) byTeam.set(teamId, []);
+    byTeam.get(teamId).push(p);
+  }
+
+  return Array.from(byTeam.entries())
+    .map(([teamId, members]) => {
+      const realPlayers = members.filter(p => !p.isBot).length;
+      const bots = members.filter(p => p.isBot).length;
+      return {
+        teamId,
+        teamSize,
+        realPlayers,
+        bots,
+        total: members.length,
+        hasRealPlayers: realPlayers > 0,
+        players: members.map(p => ({
+          id: p.id,
+          name: p.name,
+          isBot: !!p.isBot,
+          hp: Math.max(0, Math.round(p.hp || 0)),
+          alive: !p.dead && (p.hp || 0) > 0
+        }))
+      };
+    })
+    .sort((a, b) => {
+      // show real teams first, then fuller teams, then team id
+      if (b.hasRealPlayers !== a.hasRealPlayers) return Number(b.hasRealPlayers) - Number(a.hasRealPlayers);
+      if (b.realPlayers !== a.realPlayers) return b.realPlayers - a.realPlayers;
+      if (b.total !== a.total) return b.total - a.total;
+      return String(a.teamId).localeCompare(String(b.teamId));
+    });
+}
+
+
 function publicRoom(room) {
   return {
     code: room.code,
@@ -463,6 +512,7 @@ function publicRoom(room) {
     bus: room.bus,
     players: Array.from(room.players.values()).map(publicPlayer),
     matchStats: publicMatchStats(room),
+    teams: publicTeams(room),
     startedAt: room.startedAt,
     winner: room.winner,
     mode: room.mode || "Solo",

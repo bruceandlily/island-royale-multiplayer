@@ -4239,3 +4239,157 @@ body.chat-minimized .partyChatInputRow {
     width: 240px;
   }
 }
+
+
+
+/* ===== V69 real teams display ===== */
+.teamsHudPanel {
+  position: absolute;
+  right: 22px;
+  top: 126px;
+  width: 310px;
+  max-height: 420px;
+  z-index: 8;
+  padding: 12px;
+  color: white;
+  overflow: hidden;
+}
+
+.teamsPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.teamsPanelHeader b {
+  color: #ffe822;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 1.2px;
+}
+
+.teamsPanelHeader span {
+  color: rgba(255,255,255,.62);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.teamsPanelHeader button {
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.86);
+  font-size: 11px;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.teamsPanelList {
+  display: grid;
+  gap: 7px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.teamRow {
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(3,12,33,.48);
+  padding: 8px;
+}
+
+.teamRow.realTeam {
+  border-color: rgba(255,232,34,.44);
+  background: linear-gradient(90deg, rgba(255,232,34,.14), rgba(3,12,33,.50));
+}
+
+.teamRow.yourTeam {
+  border-color: rgba(53,184,255,.65);
+  box-shadow: 0 0 0 1px rgba(53,184,255,.28), inset 0 0 18px rgba(53,184,255,.09);
+}
+
+.teamRowTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 1000;
+  font-size: 12px;
+}
+
+.teamRowTop .teamBadge {
+  color: #ffe822;
+}
+
+.teamRowTop .teamCounts {
+  color: rgba(255,255,255,.72);
+  font-size: 11px;
+}
+
+.teamPlayers {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.playerChip {
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 10px;
+  font-weight: 1000;
+  background: rgba(255,255,255,.09);
+  color: rgba(255,255,255,.82);
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.playerChip.real {
+  background: rgba(255,232,34,.16);
+  color: #fff4a6;
+  border-color: rgba(255,232,34,.34);
+}
+
+.playerChip.you {
+  background: rgba(53,184,255,.18);
+  color: #9ee7ff;
+  border-color: rgba(53,184,255,.38);
+}
+
+.playerChip.bot {
+  opacity: .74;
+}
+
+.lobbyTeamsPanel {
+  margin: 12px 0;
+  padding: 12px;
+  width: 290px;
+  background: rgba(7,18,42,.82);
+  border: 2px solid rgba(130,170,222,.25);
+  color: white;
+}
+
+.lobbyTeamsPanel .teamsPanelList {
+  max-height: 180px;
+}
+
+.teamsPanelList.compact .teamRow:nth-child(n+7) {
+  display: none;
+}
+
+.teamsPanelList.collapsed .teamRow:nth-child(n+6) {
+  display: none;
+}
+
+@media (max-width: 1050px) {
+  .teamsHudPanel {
+    position: fixed;
+    right: 10px;
+    top: 86px;
+    width: 275px;
+    max-height: 330px;
+  }
+}

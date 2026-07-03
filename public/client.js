@@ -56,6 +56,11 @@ const lobbyBotPlayersCount = document.getElementById("lobbyBotPlayersCount");
 const lobbyTotalPlayersCount = document.getElementById("lobbyTotalPlayersCount");
 const lobbyTeamsCount = document.getElementById("lobbyTeamsCount");
 const lobbyTeamInfoText = document.getElementById("lobbyTeamInfoText");
+const teamsHudPanel = document.getElementById("teamsHudPanel");
+const teamsPanelList = document.getElementById("teamsPanelList");
+const lobbyTeamsPanelList = document.getElementById("lobbyTeamsPanelList");
+const lobbyTeamsMiniText = document.getElementById("lobbyTeamsMiniText");
+const toggleTeamsPanelBtn = document.getElementById("toggleTeamsPanelBtn");
 
 const playersLeftText = document.getElementById("playersLeft");
 const killsText = document.getElementById("kills");
@@ -535,6 +540,98 @@ function getMatchInfoStats() {
   };
 }
 
+
+function getRealTeamsData() {
+  if (room?.teams?.length) return room.teams;
+
+  const players = room?.players || [];
+  const byTeam = new Map();
+
+  for (const p of players) {
+    const teamId = p.teamId || p.partyId || p.id;
+    if (!byTeam.has(teamId)) byTeam.set(teamId, []);
+    byTeam.get(teamId).push(p);
+  }
+
+  return Array.from(byTeam.entries()).map(([teamId, members]) => ({
+    teamId,
+    teamSize: matchInfoTeamSize(room?.mode || settings.mode || "Solo"),
+    realPlayers: members.filter(p => !p.isBot).length,
+    bots: members.filter(p => p.isBot).length,
+    total: members.length,
+    hasRealPlayers: members.some(p => !p.isBot),
+    players: members.map(p => ({
+      id: p.id,
+      name: p.name,
+      isBot: !!p.isBot,
+      hp: Math.max(0, Math.round(p.hp || 0)),
+      alive: !p.dead && (p.hp || 0) > 0
+    }))
+  })).sort((a, b) => {
+    if (b.hasRealPlayers !== a.hasRealPlayers) return Number(b.hasRealPlayers) - Number(a.hasRealPlayers);
+    if (b.realPlayers !== a.realPlayers) return b.realPlayers - a.realPlayers;
+    return String(a.teamId).localeCompare(String(b.teamId));
+  });
+}
+
+function renderTeamsList(target, compact = false) {
+  if (!target) return;
+
+  const teams = getRealTeamsData();
+  if (!room || !teams.length) {
+    target.innerHTML = "No match yet";
+    return;
+  }
+
+  const myPlayer = room.players?.find(p => p.id === selfId);
+  const myTeamId = myPlayer?.teamId;
+
+  target.classList.toggle("compact", compact);
+  target.innerHTML = teams.map((team, index) => {
+    const isYourTeam = myTeamId && team.teamId === myTeamId;
+    const realLabel = team.realPlayers > 0 ? `${team.realPlayers} real` : "bot team";
+    const botLabel = `${team.bots} bot${team.bots === 1 ? "" : "s"}`;
+    const members = (team.players || []).map(p => {
+      const you = p.id === selfId;
+      const kind = p.isBot ? "bot" : "real";
+      const label = you ? `${p.name || "You"} (YOU)` : `${p.name || (p.isBot ? "Bot" : "Player")} ${p.isBot ? "(BOT)" : "(REAL)"}`;
+      return `<span class="playerChip ${kind} ${you ? "you" : ""}">${escapeHtml(label)}</span>`;
+    }).join("");
+
+    return `
+      <div class="teamRow ${team.hasRealPlayers ? "realTeam" : ""} ${isYourTeam ? "yourTeam" : ""}">
+        <div class="teamRowTop">
+          <span class="teamBadge">${isYourTeam ? "YOUR " : ""}TEAM ${index + 1}</span>
+          <span class="teamCounts">${realLabel} • ${botLabel} • ${team.total}/${team.teamSize || matchInfoTeamSize()}</span>
+        </div>
+        <div class="teamPlayers">${members || "<span class='playerChip bot'>Empty</span>"}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function updateTeamsDisplay() {
+  renderTeamsList(teamsPanelList, false);
+  renderTeamsList(lobbyTeamsPanelList, true);
+
+  if (lobbyTeamsMiniText) {
+    const teams = getRealTeamsData();
+    const realTeams = teams.filter(t => t.realPlayers > 0).length;
+    const botTeams = Math.max(0, teams.length - realTeams);
+    lobbyTeamsMiniText.textContent = room
+      ? `${realTeams} real team(s) • ${botTeams} bot-only team(s)`
+      : "Create or join a room";
+  }
+}
+
+if (toggleTeamsPanelBtn && teamsPanelList) {
+  toggleTeamsPanelBtn.addEventListener("click", () => {
+    const collapsed = teamsPanelList.classList.toggle("collapsed");
+    toggleTeamsPanelBtn.textContent = collapsed ? "SHOW" : "HIDE";
+  });
+}
+
+
 function updateMatchInfoUI() {
   const stats = room?.matchStats || getMatchInfoStats();
 
@@ -559,6 +656,7 @@ function updateMatchInfoUI() {
   if (lobbyTotalPlayersCount) lobbyTotalPlayersCount.textContent = total;
   if (lobbyTeamsCount) lobbyTeamsCount.textContent = actualTeams;
   if (lobbyTeamInfoText) lobbyTeamInfoText.textContent = teamLine;
+  updateTeamsDisplay();
 }
 
 

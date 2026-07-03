@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v68-match-info-counter",
-  "version": "68.0.0",
-  "description": "Island Royale multiplayer with real players, bots, total players, and team count display.",
+  "name": "island-royale-multiplayer-v69-real-teams-display",
+  "version": "69.0.0",
+  "description": "Island Royale multiplayer with real team data and a team viewer.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
