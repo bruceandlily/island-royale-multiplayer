@@ -4393,3 +4393,244 @@ body.chat-minimized .partyChatInputRow {
     max-height: 330px;
   }
 }
+
+
+
+/* ===== V71 gameplay polish ===== */
+#game {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(115,188,255,.14), transparent 28%),
+    linear-gradient(180deg, #8fd4ff 0%, #6ad0ff 7%, #58bb46 7.1%, #58bb46 100%);
+}
+
+.hudTopLeft {
+  top: 18px;
+  left: 18px;
+  gap: 20px;
+  min-width: 308px;
+  border-radius: 20px;
+}
+.hudTopLeft div span { color: rgba(255,255,255,.66); }
+.hudTopLeft div b { font-size: 18px; }
+
+.squadHud {
+  position: absolute;
+  top: 92px;
+  left: 18px;
+  width: 310px;
+  padding: 12px 12px 10px;
+  z-index: 6;
+}
+.squadHudTitle {
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 1.4px;
+  color: #bfe8ff;
+  margin-bottom: 8px;
+}
+.squadList {
+  display: grid;
+  gap: 8px;
+}
+.squadMember {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 8px;
+}
+.squadMember.you {
+  border-color: rgba(60,203,255,.65);
+  box-shadow: inset 0 0 14px rgba(60,203,255,.1);
+}
+.squadMemberTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 1000;
+  color: white;
+}
+.squadMemberTop small {
+  color: rgba(255,255,255,.65);
+  font-size: 11px;
+}
+.squadBars {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+}
+.squadMiniBar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.09);
+  overflow: hidden;
+}
+.squadMiniBar > div {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.matchInfoHud {
+  left: auto;
+  right: 18px;
+  top: 286px;
+  width: 250px;
+  border-radius: 18px;
+  z-index: 7;
+  background: linear-gradient(180deg, rgba(5,20,45,.92), rgba(4,14,34,.85));
+}
+.matchInfoGrid { gap: 7px; }
+.matchInfoGrid div { border-radius: 10px; }
+.teamInfoText { font-size: 11px; }
+
+.teamsHudPanel {
+  right: 18px;
+  top: 92px;
+  width: 250px;
+  max-height: 188px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(5,20,45,.92), rgba(4,14,34,.85));
+}
+.teamsPanelList {
+  max-height: 128px;
+}
+.teamRow {
+  border-radius: 12px;
+}
+.teamPlayers {
+  gap: 4px;
+}
+.playerChip {
+  font-size: 9px;
+  padding: 4px 6px;
+}
+#toggleTeamsPanelBtn {
+  padding: 0 8px;
+  font-size: 10px;
+}
+
+.minimapCard {
+  top: 18px;
+  right: 18px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(6,17,42,.94), rgba(7,19,48,.90));
+}
+#minimap {
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,.06);
+}
+
+.hudBottomLeft {
+  left: 18px;
+  bottom: 18px;
+  width: 320px;
+  border-radius: 22px;
+}
+.materials div {
+  border-radius: 10px;
+}
+
+.inventoryHud {
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 520px;
+  padding: 12px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(7,19,41,.95), rgba(7,19,41,.88));
+}
+.inventorySlots {
+  gap: 8px;
+}
+.invSlot {
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+  border: 2px solid rgba(255,255,255,.12);
+  min-height: 72px;
+}
+.invSlot.selected {
+  box-shadow: 0 0 0 2px rgba(255,225,70,.65), 0 0 18px rgba(255,225,70,.18);
+}
+.invSlot .invIcon {
+  width: 42px;
+  height: 28px;
+  margin: 4px auto 8px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+}
+.invSlot span {
+  font-weight: 1000;
+  font-size: 11px;
+}
+.invSlot em {
+  display: block;
+  color: rgba(255,255,255,.66);
+  font-size: 10px;
+  font-style: normal;
+  margin-top: 2px;
+}
+.rarity-common { border-color: rgba(180,180,180,.55); }
+.rarity-uncommon { border-color: rgba(80,220,100,.75); }
+.rarity-rare { border-color: rgba(70,160,255,.75); }
+.rarity-epic { border-color: rgba(180,90,255,.82); }
+.rarity-legendary { border-color: rgba(255,170,40,.86); }
+
+.hudBottomRight {
+  right: 18px;
+  bottom: 18px;
+  width: 190px;
+  border-radius: 22px;
+}
+.weaponName {
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.ammoText span {
+  font-size: 56px;
+}
+.ammoText small {
+  font-size: 18px;
+}
+
+.feedBox {
+  left: 18px;
+  top: 250px;
+  width: 320px;
+}
+.feedItem {
+  border-radius: 10px;
+  background: rgba(0,0,0,.35);
+  margin-bottom: 6px;
+}
+.interactPrompt {
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: rgba(8,17,38,.9);
+}
+.buildPrompt {
+  bottom: 98px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+.centerMessage {
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 16px;
+}
+
+@media (max-width: 1200px) {
+  .squadHud, .hudTopLeft, .feedBox { width: 280px; }
+  .inventoryHud { width: 460px; }
+  .matchInfoHud { top: 270px; width: 232px; }
+  .teamsHudPanel { width: 232px; }
+}
