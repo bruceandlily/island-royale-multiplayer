@@ -249,49 +249,74 @@ function isSameTeam(a, b) {
 }
 
 function assignTeams(room) {
-  // V69 strict team assignment:
-  // Every player and every bot gets a real teamId.
-  // Human party members stay together. Bots are grouped into teams based on mode.
+  // V70 TRUE NO FILL TEAMS:
+  // Fill ON  = short human teams can get bot teammates if needed.
+  // No Fill  = human teams stay exactly as the party entered. No random bot teammate.
+  // Enemy bot-only teams still exist and are grouped by the selected mode size.
   const mode = room.mode || "Solo";
   const teamSize = modeTeamSize(mode);
+  const fillOn = !!room.fill;
   const players = Array.from(room.players.values());
 
   let nextTeam = 1;
   const partyTeams = new Map();
-
-  // Humans first, preserving their party/team.
-  for (const p of players.filter(player => !player.isBot)) {
-    const party = p.partyId || p.teamId || p.id;
-    if (!partyTeams.has(party)) partyTeams.set(party, `T${nextTeam++}`);
-    p.teamId = partyTeams.get(party);
-  }
-
-  // Bots fill into teams. If a human team is short, fill it first.
-  const bots = players.filter(player => player.isBot);
   const teams = new Map();
 
-  for (const p of players.filter(player => !player.isBot)) {
-    if (!teams.has(p.teamId)) teams.set(p.teamId, []);
-    teams.get(p.teamId).push(p);
+  function newTeamId() {
+    return `T${nextTeam++}`;
   }
 
-  for (const bot of bots) {
-    let targetTeam = null;
+  function addToTeam(player, teamId) {
+    player.teamId = teamId;
+    if (!teams.has(teamId)) teams.set(teamId, []);
+    teams.get(teamId).push(player);
+  }
 
-    for (const [teamId, members] of teams.entries()) {
-      if (members.length < teamSize) {
-        targetTeam = teamId;
-        break;
+  // Human players first.
+  // Same party stays together.
+  // Different no-fill players stay on different teams.
+  for (const p of players.filter(player => !player.isBot)) {
+    const party = p.partyId || p.teamId || p.id;
+    if (!partyTeams.has(party)) partyTeams.set(party, newTeamId());
+    addToTeam(p, partyTeams.get(party));
+  }
+
+  const bots = players.filter(player => player.isBot);
+
+  if (fillOn) {
+    // Fill mode: bot teammates can fill short human teams.
+    for (const bot of bots) {
+      let targetTeam = null;
+
+      for (const [teamId, members] of teams.entries()) {
+        if (members.length < teamSize) {
+          targetTeam = teamId;
+          break;
+        }
       }
-    }
 
-    if (!targetTeam) {
-      targetTeam = `T${nextTeam++}`;
-      teams.set(targetTeam, []);
-    }
+      if (!targetTeam) {
+        targetTeam = newTeamId();
+        teams.set(targetTeam, []);
+      }
 
-    bot.teamId = targetTeam;
-    teams.get(targetTeam).push(bot);
+      addToTeam(bot, targetTeam);
+    }
+  } else {
+    // No Fill mode: DO NOT fill short human teams.
+    // If you solo-duo, your team remains only you.
+    // If someone else solo-duos, they are their own enemy team.
+    // Bots are only placed into separate bot-only enemy teams.
+    let currentBotTeam = null;
+
+    for (const bot of bots) {
+      if (!currentBotTeam || (teams.get(currentBotTeam)?.length || 0) >= teamSize) {
+        currentBotTeam = newTeamId();
+        teams.set(currentBotTeam, []);
+      }
+
+      addToTeam(bot, currentBotTeam);
+    }
   }
 }
 
@@ -478,6 +503,8 @@ function publicTeams(room) {
       return {
         teamId,
         teamSize,
+        fill: !!room.fill,
+        isNoFillShortTeam: !room.fill && realPlayers > 0 && members.length < teamSize,
         realPlayers,
         bots,
         total: members.length,

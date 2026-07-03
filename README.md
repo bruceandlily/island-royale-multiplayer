@@ -1,41 +1,42 @@
-# Island Royale Multiplayer V69 — Real Teams Display
+# Island Royale Multiplayer V70 — True No Fill Teams
 
-This version makes team info clearer.
+This fixes No Fill team behavior.
 
-## Important answer
-Bots are now definitely assigned to real teams with `teamId`.
-The display does not just fake the team number.
+## What No Fill means now
+No Fill means your team stays exactly as your party entered.
 
-## Added
-- Real Teams panel in the lobby
-- Real Teams panel in-game
-- Shows which teams have real players
-- Shows your team
-- Shows team size
-- Shows real players vs bots on each team
-- Labels players as REAL or BOT for testing
+Examples:
+- Duos No Fill alone = your team is only you
+- Trios No Fill alone = your team is only you
+- Squads No Fill alone = your team is only you
+- Duos No Fill with invited friend = your team is you + friend
+- Trios No Fill with 2 invited friends = your team is 3 real players
 
-## Works for
-- Solo
-- Duos
-- Trios
-- Squads
-- Fill
-- No Fill
+## What still happens
+- The match still searches for real enemy players/teams
+- Other No Fill players stay on their own teams too
+- Bots still fill the match to 100
+- Bots are grouped into enemy bot-only teams
+- Fill mode can still put bot teammates on your team if needed
 
 ## Examples
-### Duos No Fill
-If you solo-duo and another real duo joins:
-- Your Team: 1 real + 1 bot
-- Enemy Team: 2 real + 0 bots
-- Other teams: bots
 
-### Trios
-Shows teams of 3:
-- 1 real + 2 bots
-- 2 real + 1 bot
-- 3 real + 0 bots
-- bot-only teams
+### Duos No Fill alone
+- Your Team: 1 real + 0 bots
+- Enemy Team: 2 bots
+- Enemy Team: 2 real players
+- Enemy Team: 1 real no-fill player
+- Bots fill the rest to 100
+
+### Trios No Fill with 2 real friends
+- Your Team: 3 real + 0 bots
+- Enemy Team: 3 bots
+- Enemy Team: 1 real no-fill player
+- Bots fill the rest to 100
+
+### Squads No Fill alone
+- Your Team: 1 real + 0 bots
+- Enemy teams are real parties or bot-only squads
 
 ## Upload these files
 Replace these in GitHub:

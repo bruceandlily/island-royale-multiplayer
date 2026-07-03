@@ -590,7 +590,8 @@ function renderTeamsList(target, compact = false) {
   target.innerHTML = teams.map((team, index) => {
     const isYourTeam = myTeamId && team.teamId === myTeamId;
     const realLabel = team.realPlayers > 0 ? `${team.realPlayers} real` : "bot team";
-    const botLabel = `${team.bots} bot${team.bots === 1 ? "" : "s"}`;
+    const noFillShort = !room?.fill && team.realPlayers > 0 && team.total < (team.teamSize || matchInfoTeamSize());
+    const botLabel = noFillShort ? "NO FILL" : `${team.bots} bot${team.bots === 1 ? "" : "s"}`;
     const members = (team.players || []).map(p => {
       const you = p.id === selfId;
       const kind = p.isBot ? "bot" : "real";
@@ -671,7 +672,7 @@ function updateLobbyUI() {
     roomCodeDisplay.textContent = "No Room";
     roomSub.textContent = settings.fill && (settings.mode || "Solo") !== "Solo"
       ? "Fill is ON. Click FIND MATCH to search for real teammates."
-      : "Fill searches for real players first. No Fill keeps your party alone, still searches for real enemies, then bots fill to 100 players.";
+      : "Fill searches for real players first. No Fill keeps your party exactly by itself, still searches for real enemies, then bot-only teams fill to 100 players.";
     partyList.innerHTML = '<div class="emptyParty">No players yet.</div>';
     const mode = settings.mode || "Solo";
     startMatchBtn.textContent = settings.fill && mode !== "Solo" ? "FIND MATCH" : "QUICK TEST";
