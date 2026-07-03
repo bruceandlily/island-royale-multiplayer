@@ -4634,3 +4634,458 @@ body.chat-minimized .partyChatInputRow {
   .matchInfoHud { top: 270px; width: 232px; }
   .teamsHudPanel { width: 232px; }
 }
+
+
+/* ===== V72 fortnite in-game ui rework ===== */
+
+:root {
+  --fort-blue-1: rgba(7,20,46,.96);
+  --fort-blue-2: rgba(13,31,67,.94);
+  --fort-border: rgba(161, 209, 255, .18);
+  --fort-yellow: #f8dd35;
+  --fort-text-dim: rgba(255,255,255,.68);
+}
+
+.glass {
+  background: linear-gradient(180deg, var(--fort-blue-1), var(--fort-blue-2));
+  border: 1px solid var(--fort-border);
+  box-shadow: 0 14px 30px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+.hudTopLeft {
+  top: 14px;
+  left: 14px;
+  min-width: 330px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  gap: 26px;
+  z-index: 7;
+}
+.hudTopLeft div { min-width: 62px; }
+.hudTopLeft div span {
+  color: var(--fort-text-dim);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.hudTopLeft div b {
+  color: white;
+  font-size: 21px;
+  font-weight: 1000;
+}
+
+.squadHud {
+  top: 88px;
+  left: 14px;
+  width: 330px;
+  padding: 12px;
+  border-radius: 16px;
+  z-index: 7;
+}
+.squadHudTitle {
+  color: #dbeeff;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 1.4px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.squadList {
+  display: grid;
+  gap: 8px;
+}
+.squadMember {
+  padding: 9px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.08);
+}
+.squadMember.you {
+  border-color: rgba(255, 232, 82, .55);
+  box-shadow: inset 0 0 0 1px rgba(255,232,82,.2);
+}
+.squadMemberTop span {
+  font-size: 13px;
+  font-weight: 1000;
+}
+.squadMemberTop small {
+  color: #d7efff;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.squadMiniBar {
+  height: 7px;
+  background: rgba(255,255,255,.08);
+}
+
+.hudTopCenter {
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 16px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  z-index: 7;
+  min-width: 420px;
+  justify-content: center;
+}
+.hudTopCenter span {
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.9);
+}
+.hudTopCenter span:first-child {
+  color: var(--fort-yellow);
+}
+
+.minimapCard {
+  top: 14px;
+  right: 14px;
+  width: 236px;
+  padding: 10px 10px 12px;
+  border-radius: 16px;
+  z-index: 8;
+}
+.mapTop span, .mapTop b {
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+#minimap {
+  width: 216px;
+  height: 216px;
+  border-radius: 14px;
+  border: 3px solid rgba(85,147,255,.7);
+  background: #63bf51;
+}
+
+.teamsHudPanel {
+  top: 276px;
+  right: 14px;
+  width: 236px;
+  max-height: 184px;
+  border-radius: 16px;
+  padding: 10px;
+  z-index: 8;
+  background: linear-gradient(180deg, rgba(6,19,46,.98), rgba(9,25,57,.95));
+}
+.teamsPanelHeader {
+  margin-bottom: 8px;
+}
+.teamsPanelHeader b {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+#toggleTeamsPanelBtn {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  color: white;
+  border-radius: 8px;
+  min-width: 52px;
+  height: 28px;
+  font-size: 10px;
+  font-weight: 900;
+}
+.teamsPanelList {
+  max-height: 132px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.teamRow {
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 7px;
+}
+.teamRow.yourTeam {
+  border-color: rgba(89,198,255,.45);
+  box-shadow: inset 0 0 0 1px rgba(89,198,255,.1);
+}
+.teamRowTop {
+  gap: 6px;
+}
+.teamBadge {
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: #ffe763;
+}
+.teamCounts {
+  font-size: 10px;
+  color: rgba(255,255,255,.76);
+}
+.playerChip {
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 4px 7px;
+}
+.playerChip.real { background: rgba(66,164,255,.18); color: #d9f0ff; }
+.playerChip.bot { background: rgba(255,211,93,.12); color: #ffe98a; }
+.playerChip.you { background: rgba(95,238,123,.16); color: #caffd3; }
+
+.matchInfoHud {
+  top: 470px;
+  right: 14px;
+  left: auto;
+  width: 236px;
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+  z-index: 8;
+}
+.matchInfoTitle {
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffe763;
+}
+.matchInfoGrid {
+  gap: 6px;
+}
+.matchInfoGrid div {
+  border-radius: 10px;
+  padding: 7px 4px;
+  background: rgba(255,255,255,.04);
+}
+.matchInfoGrid span {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.65);
+  letter-spacing: .8px;
+}
+.matchInfoGrid b {
+  font-size: 15px;
+}
+.teamInfoText {
+  margin-top: 8px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: rgba(255,255,255,.84);
+}
+
+.feedBox {
+  top: 256px;
+  left: 14px;
+  width: 330px;
+  z-index: 6;
+}
+.feedItem {
+  background: rgba(15, 32, 58, .74);
+  border: 1px solid rgba(255,255,255,.05);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: #eef7ff;
+}
+
+.hudBottomLeft {
+  left: 14px;
+  bottom: 14px;
+  width: 302px;
+  padding: 14px;
+  border-radius: 16px;
+  z-index: 7;
+}
+.barLabel span {
+  font-size: 12px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.72);
+}
+.barLabel b {
+  font-size: 18px;
+}
+.bar {
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.09);
+}
+.healthFill { background: linear-gradient(90deg, #34d96c, #7cff8d); }
+.shieldFill { background: linear-gradient(90deg, #39aef4, #77dbff); }
+.materials {
+  gap: 8px;
+  margin-top: 12px;
+}
+.materials div {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 12px;
+  font-weight: 900;
+}
+.materials b { display: block; margin-top: 2px; font-size: 19px; }
+
+.inventoryHud {
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 496px;
+  padding: 10px;
+  border-radius: 16px;
+  z-index: 7;
+}
+.inventorySlots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.invSlot {
+  min-height: 78px;
+  padding: 8px 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+  border: 2px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+}
+.invSlot.selected {
+  border-color: rgba(248,221,53,.95);
+  box-shadow: 0 0 0 2px rgba(248,221,53,.22), inset 0 0 0 1px rgba(248,221,53,.18);
+}
+.invSlot .invIcon {
+  width: 46px;
+  height: 24px;
+  margin-bottom: 8px;
+  font-size: 20px;
+}
+.invSlot span {
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.invSlot em {
+  font-size: 10px;
+  color: rgba(255,255,255,.65);
+}
+.healRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+.healRow button {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.05);
+  color: white;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.hudBottomRight {
+  right: 14px;
+  bottom: 14px;
+  width: 178px;
+  padding: 14px;
+  border-radius: 16px;
+  z-index: 7;
+}
+.weaponName {
+  font-size: 18px;
+  font-weight: 1000;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #d9e9ff;
+}
+.ammoText {
+  margin-top: 8px;
+}
+.ammoText span {
+  font-size: 50px;
+  font-weight: 1000;
+  line-height: .9;
+}
+.ammoText small {
+  font-size: 19px;
+  color: rgba(255,255,255,.74);
+}
+.smallText {
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgba(255,255,255,.72);
+  text-transform: none;
+}
+
+.interactPrompt {
+  left: 50%;
+  bottom: 132px;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: rgba(8,22,46,.95);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+.buildPrompt {
+  left: 50%;
+  bottom: 98px;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: rgba(8,22,46,.92);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 11px;
+}
+.centerMessage {
+  top: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9;
+  background: rgba(8,22,46,.92);
+  border-radius: 12px;
+  padding: 12px 20px;
+  border: 1px solid rgba(255,255,255,.12);
+  max-width: 420px;
+}
+
+.partyChatBox.collapsed {
+  left: 14px;
+  bottom: 14px;
+  width: 160px;
+  z-index: 10;
+}
+.partyChatBox:not(.collapsed) {
+  left: 14px;
+  bottom: 330px;
+  width: 320px;
+  z-index: 10;
+}
+
+.damageNumber {
+  font-weight: 1000;
+  text-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
+@media (max-width: 1600px) {
+  .minimapCard, .teamsHudPanel, .matchInfoHud { width: 210px; }
+  #minimap { width: 190px; height: 190px; }
+  .teamsHudPanel { top: 250px; max-height: 170px; }
+  .matchInfoHud { top: 430px; }
+}
+
+@media (max-width: 1320px) {
+  .hudTopLeft, .squadHud, .feedBox { width: 280px; }
+  .hudTopCenter { min-width: 380px; gap: 12px; }
+  .inventoryHud { width: 440px; }
+  .minimapCard, .teamsHudPanel, .matchInfoHud { width: 188px; }
+  #minimap { width: 168px; height: 168px; }
+  .teamsHudPanel { top: 228px; }
+  .matchInfoHud { top: 394px; }
+}

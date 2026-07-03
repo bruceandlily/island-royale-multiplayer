@@ -1,7 +1,7 @@
 {
-  "name": "island-royale-multiplayer-v71-gameplay-polish",
-  "version": "71.0.0",
-  "description": "Island Royale gameplay polish: improved in-game HUD, teammate corner panel, polished loot, chest effects, and shooting feedback.",
+  "name": "island-royale-multiplayer-v72-fort-ingame-ui",
+  "version": "72.0.0",
+  "description": "Fortnite-inspired in-game UI rework with cleaner HUD layout and overlap fixes.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
